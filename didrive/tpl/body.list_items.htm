@@ -1,0 +1,255 @@
+
+
+<p>Сортировка от большего к меньшему, при изменении рамка должна стать зелёной, порядок обновится после обновления страницы</p>
+<!-- p>Удаление помеченных пунктов "удалить" происходит в 00:05</p -->
+<p>После внесения изменений в видимость записей, кликните ссылку > <a href="?level={$smarty.get.level}&refresh_cash=da">обновить данные на сайте</a></p>
+
+<form action="" method="post" >
+    <div class="row">
+        <div class="col-lg-12 col-md-12 col-xs-12 list_data">
+
+            <style type='text/css' >
+                .va-top img{ max-width: 100px; }
+            </style>
+
+            {*f\pa($list.data)}
+            {f\pa($now_mod)*}
+
+            <table class='table'>
+                <thead>
+
+                <th>id</th>
+
+                {if isset($now_mod.head_skip) && $now_mod.head_skip == 'da' }
+                <th></th>
+                {else}
+                <th>{if isset($now_mod.head_name)}{$now_mod.head_name}{else}Название{/if}</th>
+                {/if}
+
+                {foreach $now_mod as $k => $v }
+
+                {*f\pa($v)*}
+
+                {if isset($v.skip_didr_list) && $v.skip_didr_list == 'da' }
+                {continue}
+                {/if}
+
+                {if isset($v.name_rus) }
+                <th>{$v.name_rus}</th>
+                {/if}
+                {/foreach}
+
+                </thead>
+                <tbody>
+
+                    <!-- {* 
+                    1
+                    {f\pa($massa_img,2)}
+                    2
+                    {f\pa($massa,2)}
+                    *} -->
+
+
+                    {foreach $list.data as $k1 => $v1 }
+
+                    {if isset($smarty.get.level) && $v1.module == $smarty.get.level }{else}{continue}{/if}
+                    {*\f\pa($v1)*}
+
+                        {*\f\pa($v1)*}
+                    
+                    {if isset($smarty.get.filtr) }
+                    
+                    {$skip = true}
+                    
+                        {foreach $smarty.get.filtr as $k0 => $v0 }
+                        
+                            {if isset($v1.dop[$k0]) && $v1.dop[$k0] == $v0 }{$skip = false}{/if}
+                        
+                        {/foreach}
+                    {/if}
+                    
+                    {if $skip == true}{continue}{/if}
+                    
+                    
+                    
+                    
+                    
+                    {if $v1.status == 'delete' }
+                    <tr id='item_id_{$v1.id}a' >
+                        <td class="va-top">{$v1.id}</td>
+                        <td class="va-top" >
+
+                            {if isset($now_mod.head_skip) && $now_mod.head_skip == 'da' }
+                            {else}
+                                {if isset($v1.head) }
+                                {$v1.head}
+                                {/if}
+                            {/if}
+
+                            Удалено <button onclick="$('#item_id_{$v1.id}').toggle('slow');return false;">показать/скрыть</button>
+
+                        </td>
+                    </tr>
+                    {/if}
+
+                    <tr id='item_id_{$v1.id}' {if $v1.status == 'delete' }style="display:none"{/if} >
+
+                        <td class="va-top">{$v1.id}</td>
+
+                        <td class="va-top">
+
+                            {if isset($v1.head) }
+                            
+                            {if isset($v1.dop.head_translit) }
+                            <abbr style="float:right;" title="{$v1.dop.head_translit}" >t</abbr>
+                            {/if}
+
+
+                            {if isset($now_mod.head_skip) && $now_mod.head_skip == 'da' }{else}
+                            <span onclick="$(this).hide();$('#head{$k1}').show('slow');">{$v1.head}</span>
+                            {/if}
+
+                            <span><input type='text' id='head{$k1}' value="{$v1.head|escape}" name="head" style="display:none;width: 100%;" 
+                                         class='edit_pole form-control' folder='{$folder}'
+                                         rel="{$k1}" s='{Nyos\nyos::creatSecret("`$k1`")}' 
+                                         /></span>
+                            {/if}
+
+
+                            <span class="action">
+                                <div onclick='$("#but_{$k1}").show();' >
+
+                                    <b>Статус:</b>
+                                    <span id="shows{$k1}" >
+                                        {if $v1.status == 'show' }видно
+                                        {elseif $v1.status == 'hide' }скрыто
+                                        {elseif $v1.status == 'delete' }удалено
+                                        {else}непонятно
+                                        {/if}
+                                    </span>
+
+                                </div>
+
+                                <input class="edit_item" type="button" rel="{$k1}" alt="status" rev="show" value="показать" s='{Nyos\nyos::creatSecret("`$k1`")}' for_res="shows{$k1}"  />
+                                <input class="edit_item" type="button" rel="{$k1}" alt="status" rev="hide" value="скрыть"  s='{Nyos\nyos::creatSecret("`$k1`")}' for_res="shows{$k1}"  />
+                                <input class="edit_item" type="button" rel="{$k1}" alt="status" rev="delete" s='{Nyos\nyos::creatSecret("`$k1`")}' for_res="shows{$k1}" value="Удалить" />
+                            </span>
+
+                            <label>
+                                Сортировка <span><input type="number" min="0" max="99" class="edit_pole edit_sort" 
+                                                        rel="{$k1}" name="sort" s='{Nyos\nyos::creatSecret("`$k1`")}' for_res="shows{$k1}" 
+                                                        value="{$v1.sort}" /></span>
+                            </label>
+
+                            <a href="?level={$smarty.get['level']}&edit_id={$k1}">редактировать</a>
+
+                            {*\f\pa($v1)*}
+                            
+                        </td>
+
+
+
+
+
+
+
+
+
+                        {*f\pa($now_mod)*}
+
+                        {foreach $now_mod as $k => $v }
+
+                        {if isset($v.skip_didr_list) && $v.skip_didr_list == 'da' }
+                        {continue}
+                        {/if}
+
+                        {if isset($v.name_rus) }
+
+                        <td class="va-top">
+
+                            {*
+                            {$k}
+                            {f\pa($v)}10
+                            {f\pa($v1)}
+                            *}
+
+                            {if isset($v1.dop.$k) && $v1.dop.$k|count_characters:true > 0 }
+
+                            {if isset($v.type) && $v.type == 'image' }
+                            
+                                <a href="{Nyos\mod\items::$dir_img_uri}{$v1.dop.$k}" target="_blank" >
+
+                                    <img src='/didra-nyos/min/w/50/{Nyos\mod\items::$dir_img_uri_download}{$v1.dop.$k}' alt='' border='0' />
+                                    {*
+                                    <img src='/0.service/show.edit.image.php?q=80&w=100&uri=/{Nyos\mod\items::$dir_img_uri}{$v1.dop.$k}' alt='' border='0' />
+                                    *}
+                                </a>
+                            
+                            {else}
+
+                                {if $v1.dop.$k|count_characters:true > 500}
+
+                                {$r = 1|rand:99999999}
+
+                                большое значение <input type="button" onclick="$('#pole_{$k}_{$r}').toggle('slow');return false;" value="показать/скрыть" class="btn btn-info" >
+                                <div id="pole_{$k}_{$r}" style="display:none;">{$v1.dop.$k}</div>
+
+                                {else}
+
+                                {*f\pa($now_mod[$k])*}
+
+                                    {if isset($now_mod[$k]['import_1_module']) }
+                                    
+                                    {include file="./body.list_items.select.import_polya.htm"}
+
+                                    {else}
+
+                                    {*f\pa($k)}
+                                    {f\pa($k1)*}
+                                    {*f\pa($v1)}
+                                    {f\pa($now_mod)*}
+
+                                    {*$v_data[$v.value_import_local] = Nyos\mod\items::getItems($db, $folder, $v.value_import_local, null, 50)*}
+
+                                    {$v1.dop.$k}
+
+                                    {/if}
+
+                                {/if}
+
+                            {/if}
+
+                            {/if}
+
+
+
+
+                            {if 1 == 2 }
+                            {if isset($v.type) && $v.type == "image" }
+                            <a href="{$sd}{if isset($mod_folder) }{$mod_folder}/{else}module_items_image/{/if}{$v1.dop[$k]}" target="_blank" >
+                                <img src="/0.service/show.edit.image.php?q=90&w=200&uri=/{if isset($mod_folder) }{$mod_folder}/{else}module_items_image/{/if}{$v1.dop[$k]}" alt="" border="0" />
+                            </a>
+                            {else}
+
+                            {*if isset($massa.{$k1}.{$v.name}) }{$massa.{$k1}.{$v.name}}{/if*}
+
+                            {/if}
+                            {/if}
+
+
+                        </td>
+                        {/if}
+                        {/foreach}
+
+                    </tr>
+                    {/foreach}
+
+                </tbody>
+            </table>
+        </div>
+
+        <br/>
+
+    </div>
+
+</form>

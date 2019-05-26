@@ -1,0 +1,306 @@
+{*f\pa($now_mod,2)*}
+<!-- {strip} -->
+
+{* если есть $edit_item то форма редактирования *}
+{* в переменной $edit_item данные редактируемого объекта *}
+
+{if isset($smarty.get.edit_id) && isset($list.data[$smarty.get.edit_id]) }
+{$edit_item = $smarty.get.edit_id}
+{/if}
+
+{*
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-xs-12 listimg">
+        *}
+
+        {if !isset($edit_item) }
+        <button class="btn btn-success" onclick="$('#addform1').show('slow');
+                $(this).hide();
+                $('#i_head').focus();">Добавить</button>
+        {/if}
+
+        <form action="?level={$smarty.get['level']}&rand=(5|rand:1000)" method="POST" 
+              enctype="multipart/form-data" id="addform1" 
+              style="{if !isset($edit_item) }display:none;{/if} padding:10px; background-color: #eeeeee;" >
+
+            <div class="container-fluid">
+                <div class="grid">
+
+                    {*f\pa($now_mod)*}
+
+                    {if isset($now_mod.head_skip) && $now_mod.head_skip == 'da' }
+                    <input type="hidden" name="head" value="{1|rand:99999}" />
+                    {else}
+                    <div class="row">
+                        <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right">
+                            <label for='i_head'>{if isset($now_mod.head_name) && $now_mod.head_name|count_characters:true > 0 }{$now_mod.head_name}{else}Заголовок записи{/if}</label>
+                        </div>
+                        <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
+                            <input id='i_head' type="text" name="head" class="form-control" 
+                                   {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['head']) }
+                                   value="{$list.data[$smarty.get.edit_id]['head']|escape}" 
+                                   {/if}
+                                   />
+                        </div>
+                    </div>
+
+                    {/if}
+
+                    {foreach $now_mod as $k => $v }
+                    {*f\pa($v)*}
+
+                    {if is_array($v) && isset($v.name_rus) }
+
+
+
+
+                    {if $v.type == 'head' }
+
+                    <div class="row">
+
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                            <h4>{$v.name_rus}</h4>
+                        </div>
+                    </div>
+                    {continue}
+                    {/if}
+
+
+
+                    <div class="row">
+
+                        <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right" >
+                            <label for='i_{$k}'>{$v.name_rus}</label>
+                            {* <Br/> {$k*}
+                        </div>
+                        <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
+
+                            {* <input id='i_{$k}' type="text" name="head" value="" /> *}
+
+                            {if isset($v.type) && $v.type == "image" }
+
+                            {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['dop'][$k]) }
+                            <a href="{$sd}module_items_image/{$list.data[$smarty.get.edit_id]['dop'][$k]}" target="_blank" >
+                                <img style="float:left; padding: 0 10px;" src="/0.service/show.edit.image.php?q=80&w=150&uri=/module_items_image/{$list.data[$smarty.get.edit_id]['dop'][$k]}" />
+                            </a>
+                            <input id='ii_{$k}' type="hidden" name="{$k}" value="{$list.data[$smarty.get.edit_id]['dop'][$k]}" />
+                            <label>
+                                <input type="checkbox" name="{$k}_del" value="yes" /> удалить изображение
+                            </label>
+                            <br/>
+                            для замены фото, выберите новое изображение<br/>
+                            {/if}
+
+                            <input id='i_{$k}' type="file" name="{$k}" value="" />
+                            <br/>
+
+                            {elseif isset($v.type) && $v.type == "file" }
+
+                            {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['dop'][$k]) }
+                            <a href="{$sd}module_items_image/{$list.data[$smarty.get.edit_id]['dop'][$k]}" target="_blank" >{$list.data[$smarty.get.edit_id]['dop'][$k]}</a>
+                            <br/>
+                            <input id='ii_{$k}' type="hidden" name="{$k}" value="{$list.data[$smarty.get.edit_id]['dop'][$k]}" />
+                            <label>
+                                <input type="checkbox" name="{$k}_del" value="yes" /> удалить файл
+                            </label>
+                            <br/>
+                            для замены файла, выберите новый<br/>
+                            {/if}
+
+                            <input id='i_{$k}' type="file" name="{$k}" value="" />
+
+                            {elseif isset($v.type) && $v.type == 'select' }
+
+                            <span>
+
+                                {*f\pa($v,2,'','$v')*}
+                                {*f\pa($v1)}
+                                {f\pa($v_data[$v.value_import_local]['data'])}
+                                {f\pa($edit_item)}
+                                {f\pa($list.data[$smarty.get.edit_id]['dop'][$k])}
+                                {\f\pa($list.data[$smarty.get.edit_id]['dop'][$k])*}
+
+                                {*
+                                {$v_data[$v.value_import_local] = Nyos\mod\items::getItems($db, $folder, $v.value_import_local, null, 50)}
+                                *}
+
+
+                                {$v_data[$v.import_1_module] = Nyos\mod\items::getItems2($db, $folder, $v.import_1_module)}
+                                {*$v.import_1_module*}
+                                {*\f\pa($v_data[$v.import_1_module],2,null,'$v.import_1_module')*}
+
+                                {$v_data[$v.import_2_module] = Nyos\mod\items::getItems2($db, $folder, $v.import_2_module)}
+                                {*$v.import_2_module*}
+                                {*\f\pa($v_data[$v.import_2_module],2,null,'$v.import_2_module')*}
+
+
+                                <select id='i_{$k}' name="{$k}" class="form-control" />
+
+                                {if !isset($v.obayz) }
+                                <option value="">можете выбрать</option>
+                                {/if}
+
+                                {if isset($v_data[$v.import_1_module]['data']) }
+                                {foreach $v_data[$v.import_1_module]['data'] as $k1 => $v1 }
+
+                                <option value='{$k1}' 
+                                        {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['dop'][$k]) && $list.data[$smarty.get.edit_id]['dop'][$k] == $k1 } selected="selected" {/if} 
+                                        >
+
+
+                                        {if isset($v.import_2_module) && isset($v_data[$v.import_2_module]['data']) }
+
+                                        (                               
+                                            {foreach $v_data[$v.import_2_module]['data'] as $k2 => $v2 }
+
+                                                {if $k2 == $v1.dop.head1 }{else}{continue}{/if}
+
+                                            #{$k2} {$v2.head|escape}
+                                                {if $v2.status == 'hide'} <sup>(скрыто)</sup>{/if}
+
+                                            {break}
+
+                                            {/foreach}
+                                        )                                
+                                        {/strip} >> {strip}
+
+                                {/if}
+
+
+                                {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['dop'][$k]) && $list.data[$smarty.get.edit_id]['dop'][$k] == $k1 } + {/if} 
+                                #{$k1} {$v1.head|escape}
+
+                                {if $v1.status == 'hide'} <sup>(скрыто)</sup>{/if}
+
+
+
+                                </option>
+
+                                {/foreach}
+                                {/if}
+
+                                </select>
+
+                                <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
+
+                            </span>
+
+                            {elseif isset($v.type) && $v.type == 'textarea' }
+
+                            <textarea id='i_{$k}' name="{$k}" class="form-control" >
+                                    {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['dop'][$k]) }
+                                        {$list.data[$smarty.get.edit_id]['dop'][$k]}
+                                    {/if}
+                            </textarea>
+
+                            {elseif isset($v.type) && $v.type == 'textarea_html' }
+
+                            <textarea id='i_{$k}' name="{$k}" class="form-control" >
+                                    {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['dop'][$k]) }
+                                        {$list.data[$smarty.get.edit_id]['dop'][$k]}
+                                    {/if}
+                            </textarea>
+
+
+                            {if !isset($wfwcwsdv)}
+                            {$wfwcwsdv = 1}
+                            <script type="text/javascript" charset="utf-8" src="/js/ckeditor.4.5.11/ckeditor.js"></script>
+                            {/if}
+
+                            {literal}
+                            <script type="text/javascript" charset="utf-8">
+            CKEDITOR.replace("i_{/literal}{$k}{literal}");
+                            </script>
+                            {/literal}
+
+
+                            {elseif isset($v.type) && $v.type == 'date' }
+
+                            <input id='i_{$k}' type="date" name="{$k}" 
+
+                                   {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['dop'][$k]) }
+                                   value="{$list.data[$smarty.get.edit_id]['dop'][$k]}" 
+                                   {/if}
+
+                                   class="form-control" />
+
+                                   {elseif isset($v.type) && $v.type == 'number' }
+
+                                   <input id='i_{$k}' type="number" name="{$k}" 
+
+                                   {if isset($v.type2) && $v.type2 == 2 } step="0.01" 
+                                   {elseif isset($v.step) } step="{$v.step}" 
+                                   {/if}
+
+                                   {if isset($v.min) } min="{$v.min}" {/if}
+                                   {if isset($v.max) } max="{$v.max}" {/if}
+
+
+
+                                   {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['dop'][$k]) }
+                                   value="{$list.data[$smarty.get.edit_id]['dop'][$k]}" 
+                                   {/if}
+
+                                   class="form-control" />
+
+                                   {elseif isset($v.type) && $v.type == 'check' }
+
+                                   <input id='i_{$k}' type="checkbox" name="{$k}" 
+                                   value="yes" 
+                                   class="form-control" 
+
+                                   {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['dop'][$k]) }
+                                   check="checked"
+                                   {/if}
+
+                                   />
+
+                                   {*elseif $v.type == 'string' *}
+                                   {else}
+
+                                   <input id='i_{$k}' type="text" name="{$k}" 
+
+                                   {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['dop'][$k]) }
+                                   value="{$list.data[$smarty.get.edit_id]['dop'][$k]}" 
+                                   {/if}
+
+                                   class="form-control" />
+
+                                   {/if}                            
+
+                                   {if isset($v.comment)}
+                                   <small>{$v.comment}</small>
+                            {/if}
+
+                            {* <br/>{$k*}
+                        </div>                    
+                    </div>                    
+
+                    {/if}
+                    {/foreach}
+
+                    <div class="row">
+                        <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right">
+                        </div>
+                        <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
+
+                            {if isset($edit_item) && isset($list.data[$smarty.get.edit_id]['id']) }
+                            <input type="hidden" name="save_id" value="{$smarty.get.edit_id}" />
+                            <input type="submit" name="save_edit" value="Сохранить" class="btn btn-warning"  />
+                            {else}
+                            <input type="submit" name="addnew" value="Добавить" class="btn btn-success"  />
+                            {/if}
+
+                            {if isset($now_mod.folder) }<input type="hidden" name="dop_folder" value="{$now_mod.folder}" />{/if}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+        {*
+    </div>
+</div>
+*}
+<!-- {/strip} -->

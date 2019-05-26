@@ -1,0 +1,44 @@
+{strip}
+
+{$head_cat1 = null}
+{$head_cat2 = null}
+
+{if isset($now_mod[$k]['import_1_module']) && isset($modules[$now_mod[$k]['import_1_module']]) }
+
+{$head_cat1 = $now_mod[$k]['import_1_module']}
+
+    {if $head_cat1 !== null }
+
+    {$v_data[$head_cat1] = \Nyos\mod\items::getItems($db, $folder, $now_mod[$k]['import_1_module'], null )}
+
+    {$head2_id = null}
+
+        {if isset($v_data[$head_cat1]['data'][$v1.dop.head1]['dop']['head1']) }
+        {$head2_id = $v_data[$head_cat1]['data'][$v1.dop.head1]['dop']['head1']}
+        {/if}
+        
+        {if $head2_id !== null && isset($now_mod[$k]['import_2_module']) && isset($modules[$now_mod[$k]['import_2_module']]) }
+
+        {$head_cat2 = $now_mod[$k]['import_2_module']}
+
+            {if !isset($v_data[$head_cat2])}
+            {$v_data[$head_cat2] = \Nyos\mod\items::getItems($db, $folder, $head_cat2, null )}
+            {/if}
+
+        {$v_data[$head_cat2]['data'][$head2_id]['head']}
+        <br/> 
+
+        {/if}
+
+        {$ur = $smarty.get}
+        {$ur.filtr[$k] = $v1.dop.head1}
+        {*$ur.filtr[$k] = $v_data[$head_cat1]['data'][$v1.dop.head1]['head']*}
+        
+        <a href='?{http_build_query($ur)}' >{$v_data[$head_cat1]['data'][$v1.dop.head1]['head']}</a>
+
+    {/if}
+
+{/if}
+
+
+{/strip}

@@ -1,0 +1,25 @@
+{
+    "name": "nyos/mod/items",
+    "description": "Модулья для Didrive - items",
+    "version": "0.0.1",
+    "keywords": [
+        "didrive", "module", "nyos", "uralweb.info"
+    ],
+    "authors": [
+        {
+            "name": "Sergey Baklanov",
+            "email": "1@php-cat.com",
+            "homepage": "https://php-cat.com",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://uralweb.info/php/#classes",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.1.0"
+    }
+    ,
+    "autoload": {
+        "classmap": ["start.class.php","didrive/start.class.php"]
+    }
+}

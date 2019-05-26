@@ -13,13 +13,15 @@
             "role": "Developer"
         }
     ],
+    
     "homepage": "https://uralweb.info/php/#classes",
     "license": "MIT",
     "require": {
         "php": ">=7.1.0"
-    }
-    ,
+    },
+
     "autoload": {
         "classmap": ["start.class.php","didrive/start.class.php"]
     }
+
 }

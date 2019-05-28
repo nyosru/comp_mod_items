@@ -1,7 +1,7 @@
 {
     "name": "didrive_mod/items",
-    "description": "Модулья для Didrive - items",
-    "version": "0.0.3",
+    "description": "Модуль для Didrive - items",
+    "version": "0.0.4",
     "keywords": [
         "didrive", "module", "nyos", "uralweb.info"
     ],
@@ -21,7 +21,7 @@
     },
 
     "autoload": {
-        "classmap": ["start.class.php","didrive/start.class.php"]
+        "classmap": ["class.php","didrive/class.php"]
     }
 
 }

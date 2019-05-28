@@ -19,7 +19,7 @@ class Items {
      * @return type
      */
     public static function getDir() {
-        return self::$my_dir = dirname(__FILE__);
+        return self::$my_dir = dirname(__FILE__).DIRECTORY_SEPARATOR;
     }
     
     public static function creatTable($db, string $table = 'mitems') {

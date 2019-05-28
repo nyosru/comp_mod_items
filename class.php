@@ -1,31 +1,27 @@
 <?php
 
-namespace Nyos\Mod;
+namespace Nyos\mod;
 
 use f\db as db;
 use f as f;
 
+//echo __FILE__.'<br/>';
 // строки безопасности
-    if (!defined('IN_NYOS_PROJECT'))
-    throw new Exception('Что то пошло не так',666);
+if (!defined('IN_NYOS_PROJECT'))
+    die('<center><h1><br><br><br><br>Cтудия Сергея</h1><p>Сработала защита <b>TPL</b> от злостных розовых хакеров.</p>
+    <a href="http://www.uralweb.info" target="_blank">Создание, дизайн, вёрстка и программирование сайтов.</a><br />
+    <a href="http://www.nyos.ru" target="_blank">Только отдельные услуги: Дизайн, вёрстка и программирование сайтов.</a>');
 
-class Items {
+//echo __FILE__;
+
+
+
+class items {
 
     public static $dir_img_server = false;
     public static $dir_img_uri = false;
     public static $dir_img_uri_download = false;
-    public static $my_dir = null;
 
-    
-    /**
-     * возвращает папку где лежит /.../src/папка где лежит класс/
-     * @return type
-     */
-    public static function getDir() {
-        return self::$my_dir = dirname(__FILE__).DIRECTORY_SEPARATOR;
-    }
-    
-    
     /**
      * определяем папку для фоток
      * @param type $folder

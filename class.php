@@ -1,16 +1,27 @@
 <?php
 
-namespace didrive\mod;
+namespace Didrive\Mod;
 
 if (!defined('IN_NYOS_PROJECT'))
     throw new Exception('Что то пошло не так, обратитесь к администратору', 666);
+
+echo '<br/>Привет буфет '.__FILE__.' ['.__LINE__.']';
 
 class Items {
 
     public static $dir_img_server = false;
     public static $dir_img_uri = false;
     public static $dir_img_uri_download = false;
+    public static $my_dir = null;
 
+    /**
+     * возвращает путь теущего файла класса (путь всего модуля)
+     * @return type
+     */
+    public static function getDir() {
+        return self::$my_dir = dirname(__FILE__);
+    }
+    
     public static function creatTable($db, string $table = 'mitems') {
         if ($table == 'mitems') {
 

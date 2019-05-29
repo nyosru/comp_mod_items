@@ -30,8 +30,8 @@ class items {
     public static function creatFolderImage($folder) {
 
         self::$dir_img_uri_download = 'module_items_image' . DS;
-        self::$dir_img_uri = DS . '9.site' . DS . $folder . DS . 'download' . DS . self::$dir_img_uri_download;
-        self::$dir_img_server = $_SERVER['DOCUMENT_ROOT'] . self::$dir_img_uri;
+        self::$dir_img_uri = dir_site_sd . self::$dir_img_uri_download;
+        self::$dir_img_server = DR . self::$dir_img_uri;
 
         // echo self::$dir_img_server;
         if (!is_dir(self::$dir_img_server))
@@ -61,61 +61,67 @@ class items {
         }
     }
 
-    public static function getItems($db, $folder, $module = null, $stat = 'show', $limit = 50) {
-
-        //$_SESSION['status1'] = true;
-        //$status = '';
-
-        if (isset($_SESSION['status1']) && $_SESSION['status1'] === true) {
-            global $status;
-            $status .= '<fieldset><legen>' . __CLASS__ . ' #' . __LINE__ . ' + ' . __FUNCTION__ . '</legend>';
-        }
+    public static function getItems($db, string $folder, $module = null, $stat = 'show', $limit = 50) {
 
         if (self::$dir_img_server === false) {
             self::creatFolderImage($folder);
         }
 
-        // папка для кеша данных
-        $dir_for_cash = $_SERVER['DOCUMENT_ROOT'] . '/9.site/' . $folder . '/';
+//        $dir_for_cash = DR . dir_site;
+//        if (isset($module{1}) && file_exists($dir_for_cash . 'cash.items.' . $module . '.arr')) {
+//
+//            $out = unserialize(file_get_contents($dir_for_cash . 'cash.items.' . $module . '.arr'));
+//            return f\end2('Достали список', 'ok', $out, 'array');
+//        } elseif (file_exists($dir_for_cash . 'cash.items.arr')) {
+//
+//            $out = unserialize(file_get_contents($dir_for_cash . 'cash.items.arr'));
+//            return f\end2('Достали список', 'ok', $out, 'array');
+//        }
 
-        if (is_dir($dir_for_cash)) {
-            if (isset($module{1}) && file_exists($dir_for_cash . 'cash.items.' . $module . '.arr')) {
-                $out = unserialize(file_get_contents($dir_for_cash . 'cash.items.' . $module . '.arr'));
-                return f\end2('Достали список', 'ok', $out, 'array');
-            } elseif (file_exists($dir_for_cash . 'cash.items.arr')) {
-                $out = unserialize(file_get_contents($dir_for_cash . 'cash.items.arr'));
-                return f\end2('Достали список', 'ok', $out, 'array');
+
+        try {
+
+            $ff = $db->prepare('SELECT * FROM `mitems` WHERE `folder` = \'' . $folder . '\' '
+                    . ( isset($module{1}) ? ' AND `module` = \'' . addslashes($module) . '\' ' : '' )
+                    . ( isset($stat{1}) ? ' AND `status` = \'' . addslashes($stat) . '\' ' : '' )
+                    . 'AND `status` != \'delete2\' '
+                    . 'ORDER BY `sort` DESC, `add_d` DESC, `add_t` DESC '
+                    . ( isset($limit{1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '' )
+                    . ';');
+            $ff->execute();
+        } catch (\PDOException $ex) {
+
+//            echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
+//            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+//            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+//            . PHP_EOL . $ex->getTraceAsString()
+//            . '</pre>';
+// не найдена таблица, создаём значит её
+            if (strpos($ex->getMessage(), 'no such table') !== false) {
+
+                self::creatTable($db);
+                // \f\redirect( '/' );
             }
         }
-
-        //if ($module == '005.news') {
-        //    $shows = true;
-        //    $_SESSION['status1'] = true;
-        //    $status = '';
-        //}
-        $sql = $db->sql_query('SELECT * FROM `mitems` WHERE `folder` = \'' . $folder . '\' '
-                . ( isset($module{1}) ? ' AND `module` = \'' . addslashes($module) . '\' ' : '' )
-                . ( isset($stat{1}) ? ' AND `status` = \'' . addslashes($stat) . '\' ' : '' )
-                . 'AND `status` != \'delete2\' '
-                . 'ORDER BY `sort` DESC, `add_d` DESC, `add_t` DESC '
-                . ( isset($limit{1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '' )
-                . ';');
-        //if ($shows === true) {
-        //    $_SESSION['status1'] = false;
-        //    echo $status;
-        //}
 
         $in_sql2 = '';
         $return = array();
 
-        while ($r = $db->sql_fr($sql)) {
+        //while ($r = $db->sql_fr($sql)) {
+        while ($r = $ff->fetch()) {
             $return[$r['id']] = $r;
             $in_sql2 .= ( isset($in_sql2{3}) ? ' OR ' : '' ) . ' `id_item` = \'' . $r['id'] . '\' ';
         }
 
-        $sql2 = $db->sql_query('SELECT `id_item`, `name`, `value`,`value_text` FROM `mitems-dops` WHERE (' . $in_sql2 . ') AND `status` IS NULL ;');
+        // $sql2 = $db->sql_query('SELECT `id_item`, `name`, `value`,`value_text` FROM `mitems-dops` WHERE (' . $in_sql2 . ') AND `status` IS NULL ;');
 
-        while ($r = $db->sql_fr($sql2)) {
+        $ff = $db->prepare('SELECT `id_item`, `name`, `value`,`value_text` FROM `mitems-dops` WHERE '
+                . ( isset($in_sql2{5}) ? ' (' . $in_sql2 . ') AND ' : '' )
+                . ' `status` IS NULL ;');
+        $ff->execute();
+
+        //while ($r = $db->sql_fr($sql2)) {
+        while ($r = $ff->fetch()) {
 
             if (!isset($return[$r['id_item']]['dop']))
                 $return[$r['id_item']]['dop'] = array();
@@ -123,32 +129,61 @@ class items {
             if (isset($r['value_text']{0})) {
                 $return[$r['id_item']]['dop'][$r['name']] = $r['value_text'];
             } elseif (isset($r['value']{0})) {
+
                 $return[$r['id_item']]['dop'][$r['name']] = $r['value'];
             }
         }
-
-        if (isset($_SESSION['status1']) && $_SESSION['status1'] === true)
-            $status .= '<span class="bot_line">#' . __LINE__ . '</span></fieldset>';
-
-        //echo $status;
-        // if( $module == '005.news' ){
-        // \f\pa($return);
-        // }
 
         $out = array('data' => $return
             , 'img_dir' => self::$dir_img_uri
             , 'img_dir_dl' => self::$dir_img_uri_download
         );
 
-        if (is_dir($dir_for_cash)) {
-            if (isset($module{1})) {
-                file_put_contents($dir_for_cash . 'cash.items.' . $module . '.arr', serialize($out));
-            } else {
-                file_put_contents($dir_for_cash . 'cash.items.arr', serialize($out));
-            }
-        }
+//        if (is_dir($dir_for_cash)) {
+//            if (isset($module{1})) {
+//                file_put_contents($dir_for_cash . 'cash.items.' . \f\translit($module, 'uri2') . '.arr', serialize($out));
+//            } else {
+//                file_put_contents($dir_for_cash . 'cash' . \f\translit($module, 'uri2') . 'items.arr', serialize($out));
+//            }
+//        }
 
         return f\end2('Достали список', 'ok', $out, 'array');
+    }
+
+    public static function creatTable($db) {
+
+
+        $ff = $db->prepare('CREATE TABLE mitems (
+                    `id`   INTEGER       UNIQUE
+                         PRIMARY KEY AUTOINCREMENT
+                         NOT NULL,
+                    `folder` VARCHAR (50)  NOT NULL,
+                    `module` VARCHAR (50)  NOT NULL,
+                    `head`   VARCHAR (255) DEFAULT NULL,
+                    `sort`   INTEGER (2)       NOT NULL
+                                         DEFAULT \'50\',
+                    `status` VARCHAR       NOT NULL
+                                         DEFAULT \'show\',
+                    `add_d`  INTEGER           NOT NULL,
+                    `add_t`  INTEGER           NOT NULL
+                );');
+        $ff->execute();
+        $ff = $db->prepare('CREATE TABLE [mitems-dops] (
+                    `id`        INTEGER       UNIQUE
+                         PRIMARY KEY AUTOINCREMENT
+                         NOT NULL,
+                    `id_item`     INTEGER       NOT NULL    REFERENCES mitems (id),
+                    `name`        VARCHAR (255) NOT NULL,
+                    `value`       VARCHAR (255),
+                    `value_text`  TEXT,
+                    `status`      VARCHAR,
+                    `date_status` INTEGER
+                );');
+        $ff->execute();
+
+        //die('Созданы таблицы, перезагрузите страницу');
+        \nyos\Msg::sendTelegramm( 'Создали таблицы для итемов', null, 1 );
+        
     }
 
     /**
@@ -168,7 +203,7 @@ class items {
 //            $status = '';
 //        }
         // папка для кеша данных
-        $cash_dir = $_SERVER['DOCUMENT_ROOT'] . '/9.site/' . $folder . '/';
+        $cash_dir = DR . dir_site;
 
         $cash_file = 'items.'
                 . ( isset($folder{1}) ? (string) $folder . '.' : '' )
@@ -309,7 +344,7 @@ class items {
      * @param type $data
      * @return type
      */
-    public static function addNew($db, $folder, $cfg_mod, $data) {
+    public static function addNew_old($db, $folder, $cfg_mod, $data) {
 
         // \f\pa($cfg_mod);
         // \f\pa($data);
@@ -430,7 +465,7 @@ class items {
      * @param array $data
      * @return type
      */
-    public static function addNew2($db, string $folder, array $cfg_mod, array $data, array $files = array()) {
+    public static function addNew($db, string $folder, array $cfg_mod, array $data, $files = array()) {
 
         if (empty(self::$dir_img_server)) {
             self::creatFolderImage($folder);
@@ -441,24 +476,15 @@ class items {
 
         if (isset($data['head'])) {
 
-            //$_SESSION['status1'] = true;
-            //$status = '';
-            $new_id = db\db2_insert($db, 'mitems', array(
+            $new_id = \f\db\db2_insert($db, 'mitems', array(
                 'folder' => $folder
                 , 'module' => $cfg_mod['cfg.level']
                 , 'head' => $data['head']
-                , 'add_d' => 'NOW'
-                , 'add_t' => 'NOW'
+                , 'add_d' => date('Y-m-d',$_SERVER['REQUEST_TIME'])
+                , 'add_t' => date('H:i:s',$_SERVER['REQUEST_TIME'])
                     ), 'da', 'last_id');
-            //echo $status;
-            //
-            //echo '<br/>#'.__LINE__;
-            //echo '<br/>#-'.$new_id;
 
             $in_db = array();
-
-//            \f\pa($cfg_mod);
-//            \f\pa($data);
 
             foreach ($cfg_mod as $k => $v) {
 
@@ -525,7 +551,7 @@ class items {
             //\f\pa($in_db);
             // echo '<Br/>db\sql_insert_mnogo - ' .$new_id ;
             //$status = '';
-            \f\db\sql_insert_mnogo2($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
+            \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
             // db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
             //echo $status;
         }
@@ -537,12 +563,10 @@ class items {
 
     public static function clearCash(string $folder) {
 
-        $dir_cash = $_SERVER['DOCUMENT_ROOT'] . '/9.site/' . $folder . '/';
-
-        $s = scandir($dir_cash);
+        $s = scandir(DR . dir_site);
         foreach ($s as $k => $v) {
             if (strpos($v, 'items') !== false && strpos($v, 'cash') !== false) {
-                unlink($dir_cash . $v);
+                unlink(DR . dir_site . $v);
             }
         }
     }

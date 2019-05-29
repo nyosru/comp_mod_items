@@ -1,25 +1,22 @@
-{*f\pa($now_mod,2)*}
 
-<!-- {strip} -->
 <div class="container-fluid">
     <div class="grid">
 
-        {*f\pa($now_mod)*}
-        {* формируем list в index.php *}
-        {$list = Nyos\mod\items::getItems( $db, $folder, $now_mod['cfg.level'], null)}
-
-        {* если редактирование, то показываем форму редактирования *}
-        {if isset($smarty.get.edit_id) && isset($list.data[$smarty.get.edit_id]) }
-
-        {include file="./body.form_add.htm"}
+        {# list #}
         
-        {else}
+        {# если редактирование, то показываем форму редактирования #}
+        
+            {% if get.edit_id is defined and list.data[get.edit_id] is defined %}
 
-        {include file="./body.form_add.htm"}
-        {include file="./body.list_items.htm"}
+                {% include 'vendor/didrive_mod/items/1/didrive/t/body.form_add.htm' %}
 
-        {/if}
+            {% else %}
 
+                {% include 'vendor/didrive_mod/items/1/didrive/t/body.form_add.htm' %}
+                {% include 'vendor/didrive_mod/items/1/didrive/t/body.list_items.htm' %}
+
+            {% endif %}
+
+        
     </div>
 </div>
-<!-- {/strip} -->

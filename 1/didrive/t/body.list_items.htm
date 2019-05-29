@@ -1,7 +1,5 @@
-
-
 <p>Сортировка от большего к меньшему, при изменении рамка должна стать зелёной, порядок обновится после обновления страницы</p>
-<!-- p>Удаление помеченных пунктов "удалить" происходит в 00:05</p -->
+{# <!-- p>Удаление помеченных пунктов "удалить" происходит в 00:05</p --> #}
 <p>После внесения изменений в видимость записей, кликните ссылку > <a href="?level={$smarty.get.level}&refresh_cash=da">обновить данные на сайте</a></p>
 
 <form action="" method="post" >
@@ -12,120 +10,105 @@
                 .va-top img{ max-width: 100px; }
             </style>
 
-            {*f\pa($list.data)}
-            {f\pa($now_mod)*}
+            {# *f\pa($list.data)}
+            {f\pa($now_level)* #}
 
             <table class='table'>
                 <thead>
 
                 <th>id</th>
 
-                {if isset($now_mod.head_skip) && $now_mod.head_skip == 'da' }
+                {% if now_level.head_skip is defined and now_level.head_skip == 'da' %}
                 <th></th>
-                {else}
-                <th>{if isset($now_mod.head_name)}{$now_mod.head_name}{else}Название{/if}</th>
-                {/if}
+                {% else %}
 
-                {foreach $now_mod as $k => $v }
+                <th>{% if now_level.head_name is defined %}{{ now_level.head_name }}{% else %}Название{% endif %}</th>
 
-                {*f\pa($v)*}
+                {% endif %}
 
-                {if isset($v.skip_didr_list) && $v.skip_didr_list == 'da' }
-                {continue}
-                {/if}
+                {% for k, v in now_level %}
 
-                {if isset($v.name_rus) }
-                <th>{$v.name_rus}</th>
-                {/if}
-                {/foreach}
+                {% if v.skip_didr_list is defined and v.skip_didr_list == 'da' %}
+                {% else %}
+
+                {% if v.name_rus is defined %}
+                <th>{{ v.name_rus }}</th>
+                {% endif %}
+
+                {% endif %}
+
+                {% endfor %}
 
                 </thead>
                 <tbody>
 
-                    <!-- {* 
-                    1
-                    {f\pa($massa_img,2)}
-                    2
-                    {f\pa($massa,2)}
-                    *} -->
 
+                    {% for k1, v1 in list.data if v1.module == get.level %}
 
-                    {foreach $list.data as $k1 => $v1 }
-
-                    {if isset($smarty.get.level) && $v1.module == $smarty.get.level }{else}{continue}{/if}
-                    {*\f\pa($v1)*}
-
-                        {*\f\pa($v1)*}
-                    
-                    {if isset($smarty.get.filtr) }
-                    
+                    {# if isset($smarty.get.filtr) }
                     {$skip = true}
-                    
-                        {foreach $smarty.get.filtr as $k0 => $v0 }
-                        
-                            {if isset($v1.dop[$k0]) && $v1.dop[$k0] == $v0 }{$skip = false}{/if}
-                        
-                        {/foreach}
-                    {/if}
-                    
-                    {if $skip == true}{continue}{/if}
-                    
-                    
-                    
-                    
-                    
-                    {if $v1.status == 'delete' }
+                    {foreach $smarty.get.filtr as $k0 => $v0 }
+                    {if isset($v1.dop[$k0]) && $v1.dop[$k0] == $v0 }{$skip = false}{/if}
+                    {/foreach}
+                    {/if #}
+
+                    {# if skip == true %}{% else %}{% endif % #}
+
+                    {# % if v1.status == 'delete' %}
                     <tr id='item_id_{$v1.id}a' >
-                        <td class="va-top">{$v1.id}</td>
+                        <td class="va-top">{{ v1.id }}</td>
                         <td class="va-top" >
 
-                            {if isset($now_mod.head_skip) && $now_mod.head_skip == 'da' }
+                            {% if isset($now_level.head_skip) && $now_level.head_skip == 'da' }
                             {else}
-                                {if isset($v1.head) }
-                                {$v1.head}
-                                {/if}
+                            {if isset($v1.head) }
+                            {$v1.head}
+                            {/if}
                             {/if}
 
-                            Удалено <button onclick="$('#item_id_{$v1.id}').toggle('slow');return false;">показать/скрыть</button>
+                            Удалено <button onclick="$('#item_id_{$v1.id}').toggle('slow'); return false;">показать/скрыть</button>
 
                         </td>
                     </tr>
-                    {/if}
+                    {% endif % #}
 
-                    <tr id='item_id_{$v1.id}' {if $v1.status == 'delete' }style="display:none"{/if} >
 
-                        <td class="va-top">{$v1.id}</td>
+
+                    <tr id='item_id_{$v1.id}' {% if v1.status == 'delete' %} style="display:none" {% endif %} >
+
+                        <td class="va-top" >{{ v1.id }}</td>
 
                         <td class="va-top">
 
-                            {if isset($v1.head) }
-                            
-                            {if isset($v1.dop.head_translit) }
+
+                            {% if v1.head is defined  %}
+
+                            {# if isset($v1.dop.head_translit) }
                             <abbr style="float:right;" title="{$v1.dop.head_translit}" >t</abbr>
-                            {/if}
+                            {/if #}
 
+                            {% if now_level.head_skip is defined and now_level.head_skip == 'da' %}{% else %}
+                            <span onclick="$(this).hide();$('#head{{ v1.id }}').show('slow');">{{ v1.head }}</span>
+                            {% endif %}
 
-                            {if isset($now_mod.head_skip) && $now_mod.head_skip == 'da' }{else}
-                            <span onclick="$(this).hide();$('#head{$k1}').show('slow');">{$v1.head}</span>
-                            {/if}
-
-                            <span><input type='text' id='head{$k1}' value="{$v1.head|escape}" name="head" style="display:none;width: 100%;" 
-                                         class='edit_pole form-control' folder='{$folder}'
-                                         rel="{$k1}" s='{Nyos\nyos::creatSecret("`$k1`")}' 
+                            <span><input type='text' id='head{{ k1 }}' value="{{ v1.head|escape }}" name="head" style="display:none;width: 100%;" 
+                                         class='edit_pole form-control' folder='{{ folder }}'
+                                         rel="{{ k1 }}" s='{{ v1.id }}' 
                                          /></span>
-                            {/if}
 
-
+                            {% endif %}
+{#
                             <span class="action">
-                                <div onclick='$("#but_{$k1}").show();' >
+                                <div onclick='$("#but_{{ k1 }}").show();' >
+
 
                                     <b>Статус:</b>
-                                    <span id="shows{$k1}" >
-                                        {if $v1.status == 'show' }видно
-                                        {elseif $v1.status == 'hide' }скрыто
-                                        {elseif $v1.status == 'delete' }удалено
-                                        {else}непонятно
-                                        {/if}
+                                    <span id="shows{{ k1 }}" >
+                                        {% if v1.status == 'show' %}видно
+                                        {% elseif v1.status == 'hide' %}скрыто
+                                        {% elseif v1.status == 'delete' %}удалено
+                                        {% else %}непонятно
+                                        {% endif %}
                                     </span>
 
                                 </div>
@@ -134,30 +117,49 @@
                                 <input class="edit_item" type="button" rel="{$k1}" alt="status" rev="hide" value="скрыть"  s='{Nyos\nyos::creatSecret("`$k1`")}' for_res="shows{$k1}"  />
                                 <input class="edit_item" type="button" rel="{$k1}" alt="status" rev="delete" s='{Nyos\nyos::creatSecret("`$k1`")}' for_res="shows{$k1}" value="Удалить" />
                             </span>
+#}
 
+<br/>
+{#
                             <label>
                                 Сортировка <span><input type="number" min="0" max="99" class="edit_pole edit_sort" 
                                                         rel="{$k1}" name="sort" s='{Nyos\nyos::creatSecret("`$k1`")}' for_res="shows{$k1}" 
                                                         value="{$v1.sort}" /></span>
                             </label>
+#}
+                            <a href="?level={{ get.level }}&edit_id={{ k1 }}">редактировать</a>
 
-                            <a href="?level={$smarty.get['level']}&edit_id={$k1}">редактировать</a>
-
-                            {*\f\pa($v1)*}
-                            
                         </td>
 
+                        {% for k, v in now_level if v.name_rus is defined and ( v.skip_didr_list is not defined or ( v.skip_didr_list is defined and v.skip_didr_list != 'da' ) ) %}
 
+                        <td class="va-top">
 
+                            {{ list.data[k1]['dop'][k] }}
+                            
+                        </td>
+                        
+                        {% endfor %}
 
-
-
-
-
-
-                        {*f\pa($now_mod)*}
-
-                        {foreach $now_mod as $k => $v }
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        {# foreach $now_level as $k => $v }
 
                         {if isset($v.skip_didr_list) && $v.skip_didr_list == 'da' }
                         {continue}
@@ -176,46 +178,46 @@
                             {if isset($v1.dop.$k) && $v1.dop.$k|count_characters:true > 0 }
 
                             {if isset($v.type) && $v.type == 'image' }
-                            
-                                <a href="{Nyos\mod\items::$dir_img_uri}{$v1.dop.$k}" target="_blank" >
 
-                                    <img src='/didra-nyos/min/w/50/{Nyos\mod\items::$dir_img_uri_download}{$v1.dop.$k}' alt='' border='0' />
-                                    {*
-                                    <img src='/0.service/show.edit.image.php?q=80&w=100&uri=/{Nyos\mod\items::$dir_img_uri}{$v1.dop.$k}' alt='' border='0' />
-                                    *}
-                                </a>
-                            
+                            <a href="{Nyos\mod\items::$dir_img_uri}{$v1.dop.$k}" target="_blank" >
+
+                                <img src='/didra-nyos/min/w/50/{Nyos\mod\items::$dir_img_uri_download}{$v1.dop.$k}' alt='' border='0' />
+                                {*
+                                <img src='/0.service/show.edit.image.php?q=80&w=100&uri=/{Nyos\mod\items::$dir_img_uri}{$v1.dop.$k}' alt='' border='0' />
+                                *}
+                            </a>
+
                             {else}
 
-                                {if $v1.dop.$k|count_characters:true > 500}
+                            {if $v1.dop.$k|count_characters:true > 500}
 
-                                {$r = 1|rand:99999999}
+                            {$r = 1|rand:99999999}
 
-                                большое значение <input type="button" onclick="$('#pole_{$k}_{$r}').toggle('slow');return false;" value="показать/скрыть" class="btn btn-info" >
-                                <div id="pole_{$k}_{$r}" style="display:none;">{$v1.dop.$k}</div>
+                            большое значение <input type="button" onclick="$('#pole_{$k}_{$r}').toggle('slow'); return false;" value="показать/скрыть" class="btn btn-info" >
+                            <div id="pole_{$k}_{$r}" style="display:none;">{$v1.dop.$k}</div>
 
-                                {else}
+                            {else}
 
-                                {*f\pa($now_mod[$k])*}
+                            {*f\pa($now_level[$k])*}
 
-                                    {if isset($now_mod[$k]['import_1_module']) }
-                                    
-                                    {include file="./body.list_items.select.import_polya.htm"}
+                            {if isset($now_level[$k]['import_1_module']) }
 
-                                    {else}
+                            {include file="./body.list_items.select.import_polya.htm"}
 
-                                    {*f\pa($k)}
-                                    {f\pa($k1)*}
-                                    {*f\pa($v1)}
-                                    {f\pa($now_mod)*}
+                            {else}
 
-                                    {*$v_data[$v.value_import_local] = Nyos\mod\items::getItems($db, $folder, $v.value_import_local, null, 50)*}
+                            {*f\pa($k)}
+                            {f\pa($k1)*}
+                            {*f\pa($v1)}
+                            {f\pa($now_level)*}
 
-                                    {$v1.dop.$k}
+                            {*$v_data[$v.value_import_local] = Nyos\mod\items::getItems($db, $folder, $v.value_import_local, null, 50)*}
 
-                                    {/if}
+                            {$v1.dop.$k}
 
-                                {/if}
+                            {/if}
+
+                            {/if}
 
                             {/if}
 
@@ -239,10 +241,10 @@
 
                         </td>
                         {/if}
-                        {/foreach}
+                        {/foreach #}
 
                     </tr>
-                    {/foreach}
+                    {% endfor %}
 
                 </tbody>
             </table>

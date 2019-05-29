@@ -1,5 +1,22 @@
 <?php
 
+
+
+
+
+
+//        $s = $db->prepare('SELECT sql FROM `sqlite_master` WHERE `name` = :table LIMIT 1 ');
+//        $s->execute( array( ':table' => $table ) );
+//        $r = $s->fetchAll();
+//        \f\pa($r);
+
+
+
+
+
+
+// echo '<br/>'.__FILE__.' ('.__LINE__.')';
+
 /**
  * добавление записи
  */
@@ -7,15 +24,15 @@ if (isset($_POST['addnew']{1})) {
 
     try {
 
-        Nyos\mod\items::addNew2( $db, $vv['folder'], $vv['now_mod'], $_POST, $_FILES );
+        Nyos\mod\items::addNew( $db, $vv['folder'], $vv['now_level'], $_POST, $_FILES );
         $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . 'Запись добавлена';
 
     } catch (Exception $e) {
-        
-        $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . 'Произошла неописуемая ситуация #' . $e->getCode() . '.' . $e->getLine() . ' (ошибка: ' . $e->getMessage() . ' )';
-        
-    }
 
+        $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . 'Произошла неописуемая ситуация #' . $e->getCode() . '.' . $e->getLine() . ' (ошибка: ' . $e->getMessage() . ' )';
+
+    }
+    
 }
 //
 elseif ( 1 == 2 && isset($_REQUEST['addnew']{1})) {
@@ -107,70 +124,16 @@ elseif( isset($_GET['refresh_cash']) && $_GET['refresh_cash'] == 'da' ){
     \Nyos\mod\items::clearCash($vv['folder']);
 }
 
-// $vv['tpl_body'] = didr_tpl . 'body.htm';
-$vv['tpl_body'] = \f\like_tpl('body', didr_tpl, didr_tpl_on_site);
-/*
-  echo didr_tpl;
-  echo '<br/>';
-  echo didr_tpl_on_site ;
-  echo '<br/>';
-  echo $vv['tpl_body'];
- */
 
 
-if (1 == 2) {
 
-// Nyos\mod\items::creatFolderImage($vv['folder']);
+$vv['krohi'] = [];
+$vv['krohi'][1] = array(
+    'text' => $vv['now_level']['name'],
+    'uri' => '/i.didrive.php?level='.$vv['now_level']['cfg.level']
+);
+$vv['list'] = \Nyos\mod\items::getItems( $db, $vv['folder'], $vv['now_level']['cfg.level'], null);
 
-    if (isset($_POST['addnew']{1})) {
+//\f\pa($vv['list']);
 
-        //echo __LINE__;
-
-        $d = $_POST;
-        unset($d['addnew']);
-        $d['files'] = $_FILES;
-
-        $_SESSION['status1'] = true;
-        // $status = '';
-        //echo '<br/>'.__FILE__.'['.__LINE__.']';
-        $r = Nyos\mod\items::addNew($db, $vv['folder'], $vv['now_mod'], $d);
-        //echo '<br/>'.__FILE__.'['.__LINE__.']';
-        // f\pa($r);
-
-        if (isset($r['status']) && $r['status'] == 'ok') {
-            $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . $r['html'];
-        }
-
-        // echo $status;
-    }
-//  [save_edit] => Сохранить
-    elseif (isset($_REQUEST['save_id']) && is_numeric($_REQUEST['save_id']) && isset($_REQUEST['save_edit'])) {
-
-        $d = $_POST;
-        unset($d['addnew']);
-        $d['files'] = $_FILES;
-
-        $r = Nyos\mod\items::saveEdit($db, $_REQUEST['save_id'], $vv['folder'], $vv['now_mod'], $d);
-        if (isset($r['status']) && $r['status'] == 'ok') {
-            $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . $r['html'];
-        }
-    }
-
-//f\pa($_m);
-//f\pa($vv['now_mod']);
-//$status = '';
-    $vv['list'] = Nyos\mod\items::getItems($db, $vv['folder'], $vv['now_mod']['cfg.level'], null);
-//echo $status;
-//f\pa($vv['list'],2);
-
-    if (isset($_GET['edit_id']) && isset($vv['list']['data'][$_GET['edit_id']])) {
-        $vv['show_put_up_string'] = array(
-            1 => array('name' => 'Редактирование записи №' . $_GET['edit_id'])
-        );
-    }
-
-// создание папки для картинок
-    Nyos\mod\items::creatFolderImage($vv['folder']);
-
-    $vv['tpl_body'] = didr_tpl . 'body.htm';
-}
+$vv['tpl_body'] = \f\like_tpl('body', dir_mods_mod_vers_didrive_tpl,  dir_site_module_nowlev_tpldidr, DR );

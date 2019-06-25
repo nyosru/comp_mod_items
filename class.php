@@ -14,13 +14,41 @@ if (!defined('IN_NYOS_PROJECT'))
 
 //echo __FILE__;
 
-
-
 class items {
 
     public static $dir_img_server = false;
     public static $dir_img_uri = false;
     public static $dir_img_uri_download = false;
+    public static $sort_head = null;
+
+    /**
+     * добавляем в выборку из главной таблицы " WHERE + $sql_add_where "
+     * `mitems` mi 
+     * @var string
+     */
+    // public static $sql_items_add_where = null;
+    /**
+     * добавляем в выборку из дополнительной таблицы " WHERE + $sql_add_where "
+      midop.`name`,
+      midop.`value`,
+      midop.`value_text`
+      FROM
+      `mitems-dops` midop
+     * @var string
+     */
+    public static $sql_itemsdop_add_where = null;
+
+    /**
+     * массив переменных для запроса
+     * @var type 
+     */
+    public static $sql_itemsdop_add_where_array = [];
+
+    public static function setSort($a1, $a2) {
+        if ($a1 == 'head' && ( $a2 == 'asc' || $a2 == 'desc' )) {
+            self::$sort_head = $a2;
+        }
+    }
 
     /**
      * определяем папку для фоток
@@ -61,7 +89,22 @@ class items {
         }
     }
 
+    /**
+     * Получение инфы
+     * @param type $db
+     * PDO class
+     * @param string $folder
+     * @param type $module
+     * @param type $stat
+     * @param type $limit
+     * @return type
+     */
     public static function getItems($db, string $folder, $module = null, $stat = 'show', $limit = 50) {
+
+
+//        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' ){
+//            echo $folder. '<Br/> 2 '.$module.'<br/> 3 '.$stat.'<Br/> 4 '.$limit;
+//        }
 
         if (self::$dir_img_server === false) {
             self::creatFolderImage($folder);
@@ -81,13 +124,145 @@ class items {
 
         try {
 
-            $ff = $db->prepare('SELECT * FROM `mitems` WHERE `folder` = \'' . $folder . '\' '
+            $f = 'SELECT * FROM `mitems` mi WHERE mi.folder = \'' . $folder . '\' '
+                    . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
+                    . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
+                    . 'AND mi.`status` != \'delete2\' '
+                    . 'ORDER BY '
+                    . ( self::$sort_head == 'desc' ? ' mi.head DESC, ' : '' )
+                    . ( self::$sort_head == 'asc' ? ' mi.head ASC, ' : '' )
+                    . ' mi.`sort` DESC, mi.`add_d` DESC, mi.`add_t` DESC '
+                    . ( isset($limit{1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '' )
+                    . ';';
+
+//            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
+//                echo '<br/>'.'<br/>'.$f;
+
+            $ff = $db->prepare($f);
+            $ff->execute();
+
+            //$re1 = $ff->fetchAll();
+            $re = [];
+
+            while ($v = $ff->fetch()) {
+                // foreach ($re1 as $k => $v) {
+                $re[$v['id']] = $v;
+            }
+        } catch (\PDOException $ex) {
+
+//            echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
+//            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+//            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+//            . PHP_EOL . $ex->getTraceAsString()
+//            . '</pre>';
+// не найдена таблица, создаём значит её
+            if (strpos($ex->getMessage(), 'no such table') !== false) {
+
+                self::creatTable($db);
+                // \f\redirect( '/' );
+            }
+        }
+
+
+//            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
+//                \f\pa($re);
+
+        $ff1 = 'SELECT 
+                midop.`id_item`, 
+                midop.`name`, 
+                midop.`value`,
+                midop.`value_text` 
+            FROM 
+                `mitems-dops` midop 
+                
+            INNER JOIN `mitems` mi ON mi.folder = :folder '
+                . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
+                . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
+                . 'AND mi.`status` != \'delete2\' 
+                AND mi.id = midop.id_item
+            WHERE 
+                midop.status IS NULL 
+                ' . ( isset(self::$sql_itemsdop_add_where{3}) ? ' AND ' . self::$sql_itemsdop_add_where : '' ) . '                
+            ;';
+        self::$sql_itemsdop_add_where = null;
+
+//        echo $ff1;
+//        echo '<br/><br/>';
+
+        $ff = $db->prepare($ff1);
+
+        $for_sql = self::$sql_itemsdop_add_where_array;
+        $for_sql[':folder'] = $folder;
+        self::$sql_itemsdop_add_where_array = [];
+
+        $ff->execute($for_sql);
+
+        // \f\pa($ff->fetchAll());
+
+        while ($r = $ff->fetch()) {
+
+//            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
+//                \f\pa($re);
+
+            if (!isset($re[$r['id_item']]['dop']))
+                $re[$r['id_item']]['dop'] = array();
+
+            $re[$r['id_item']]['dop'][$r['name']] = (isset($r['value_text']{1})) ? $r['value_text'] : $r['value'];
+        }
+
+        $out = array('data' => $re
+            , 'img_dir' => self::$dir_img_uri
+            , 'img_dir_dl' => self::$dir_img_uri_download
+        );
+
+//        if (is_dir($dir_for_cash)) {
+//            if (isset($module{1})) {
+//                file_put_contents($dir_for_cash . 'cash.items.' . \f\translit($module, 'uri2') . '.arr', serialize($out));
+//            } else {
+//                file_put_contents($dir_for_cash . 'cash' . \f\translit($module, 'uri2') . 'items.arr', serialize($out));
+//            }
+//        }
+
+        return f\end2('Достали список', 'ok', $out, 'array');
+    }
+
+    public static function getItems_old190605($db, string $folder, $module = null, $stat = 'show', $limit = 50) {
+
+
+//        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' ){
+//            echo $folder. '<Br/> 2 '.$module.'<br/> 3 '.$stat.'<Br/> 4 '.$limit;
+//        }
+
+        if (self::$dir_img_server === false) {
+            self::creatFolderImage($folder);
+        }
+
+//        $dir_for_cash = DR . dir_site;
+//        if (isset($module{1}) && file_exists($dir_for_cash . 'cash.items.' . $module . '.arr')) {
+//
+//            $out = unserialize(file_get_contents($dir_for_cash . 'cash.items.' . $module . '.arr'));
+//            return f\end2('Достали список', 'ok', $out, 'array');
+//        } elseif (file_exists($dir_for_cash . 'cash.items.arr')) {
+//
+//            $out = unserialize(file_get_contents($dir_for_cash . 'cash.items.arr'));
+//            return f\end2('Достали список', 'ok', $out, 'array');
+//        }
+
+
+        try {
+
+            $f = 'SELECT * FROM `mitems` WHERE `folder` = \'' . $folder . '\' '
                     . ( isset($module{1}) ? ' AND `module` = \'' . addslashes($module) . '\' ' : '' )
                     . ( isset($stat{1}) ? ' AND `status` = \'' . addslashes($stat) . '\' ' : '' )
                     . 'AND `status` != \'delete2\' '
                     . 'ORDER BY `sort` DESC, `add_d` DESC, `add_t` DESC '
                     . ( isset($limit{1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '' )
-                    . ';');
+                    . ';';
+
+            if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info')
+                echo '<br/>' . '<br/>' . $f;
+
+            $ff = $db->prepare($f);
             $ff->execute();
         } catch (\PDOException $ex) {
 
@@ -109,19 +284,42 @@ class items {
 
         //while ($r = $db->sql_fr($sql)) {
         while ($r = $ff->fetch()) {
+
+
+            if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+                //echo '<br/>'.'<br/>'.$f;
+                \f\pa($r);
+            }
+
+
             $return[$r['id']] = $r;
             $in_sql2 .= ( isset($in_sql2{3}) ? ' OR ' : '' ) . ' `id_item` = \'' . $r['id'] . '\' ';
         }
 
         // $sql2 = $db->sql_query('SELECT `id_item`, `name`, `value`,`value_text` FROM `mitems-dops` WHERE (' . $in_sql2 . ') AND `status` IS NULL ;');
 
-        $ff = $db->prepare('SELECT `id_item`, `name`, `value`,`value_text` FROM `mitems-dops` WHERE '
+        $ff1 = 'SELECT `id_item`, `name`, `value`,`value_text` FROM `mitems-dops` WHERE '
                 . ( isset($in_sql2{5}) ? ' (' . $in_sql2 . ') AND ' : '' )
-                . ' `status` IS NULL ;');
+                . ' `status` IS NULL ;';
+
+        if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+            echo '<br/>' . '<br/>' . $ff1;
+            //\f\pa($r);
+        }
+
+
+        $ff = $db->prepare($ff1);
         $ff->execute();
 
         //while ($r = $db->sql_fr($sql2)) {
         while ($r = $ff->fetch()) {
+
+
+            if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+                //echo '<br/>'.'<br/>'.$ff1;
+                \f\pa($r);
+            }
+
 
             if (!isset($return[$r['id_item']]['dop']))
                 $return[$r['id_item']]['dop'] = array();
@@ -182,8 +380,7 @@ class items {
         $ff->execute();
 
         //die('Созданы таблицы, перезагрузите страницу');
-        \nyos\Msg::sendTelegramm( 'Создали таблицы для итемов', null, 1 );
-        
+        \nyos\Msg::sendTelegramm('Создали таблицы для итемов', null, 1);
     }
 
     /**
@@ -465,7 +662,7 @@ class items {
      * @param array $data
      * @return type
      */
-    public static function addNew($db, string $folder, array $cfg_mod, array $data, $files = array()) {
+    public static function addNew($db, string $folder, array $cfg_mod, array $data, $files = array(), $add_all_dops = false) {
 
         if (empty(self::$dir_img_server)) {
             self::creatFolderImage($folder);
@@ -474,25 +671,41 @@ class items {
         if (self::$dir_img_server === false)
             throw new \Exception('Ошибка, папка для файлов не создана');
 
+        if (!isset($data['head']{0}))
+            $data['head'] = 1;
+
+        //echo '<Br/>'.__FILE__.' '.__LINE__;
+        // \f\pa($data);
+
         if (isset($data['head'])) {
+
+            // echo '<Br/>'.__FILE__.' '.__LINE__;
 
             $new_id = \f\db\db2_insert($db, 'mitems', array(
                 'folder' => $folder
                 , 'module' => $cfg_mod['cfg.level']
                 , 'head' => $data['head']
-                , 'add_d' => date('Y-m-d',$_SERVER['REQUEST_TIME'])
-                , 'add_t' => date('H:i:s',$_SERVER['REQUEST_TIME'])
+                , 'add_d' => date('Y-m-d', $_SERVER['REQUEST_TIME'])
+                , 'add_t' => date('H:i:s', $_SERVER['REQUEST_TIME'])
                     ), 'da', 'last_id');
+
+            // echo 'новый id '.$new_id;
 
             $in_db = array();
 
             foreach ($cfg_mod as $k => $v) {
 
-                if (empty($v['type']))
+                if ($add_all_dops === false && empty($v['type']))
                     continue;
 
+//                echo '<br/>';
 //                echo $k;
+//                echo '<br/>';
 //                \f\pa($v);
+//                echo '<br/>';
+//                if( isset($data[$k]) )
+//                \f\pa($data[$k]);
+//                echo '<br/>';
                 //if (isset($data[$k]{0}) && isset($v['name_rus']{0})) {
                 if (isset($data[$k]{0})) {
 
@@ -501,6 +714,12 @@ class items {
                         $in_db[] = array(
                             'name' => $k,
                             'value_text' => $data[$k]
+                        );
+                    } elseif ($v['type'] == 'datetime') {
+
+                        $in_db[] = array(
+                            'name' => $k,
+                            'value_text' => date('Y-m-d H:i:s', strtotime($data[$k] . ' ' . ( isset($data[$k . '_time']) ? $data[$k . '_time'] : '' )))
                         );
                     } else {
 
@@ -520,7 +739,6 @@ class items {
 
             if (isset($files) && sizeof($files) > 0) {
 
-                require_once $_SERVER['DOCUMENT_ROOT'] . '/0.all/class/nyos_image.php';
 
                 //echo '<br/>#'.__LINE__;
                 $nn = 1;
@@ -533,6 +751,9 @@ class items {
                     ) {
 
                         $new_name = $new_id . '_' . $nn . '_' . substr(\f\translit($v['name'], 'uri2'), 0, 50) . '_' . rand(10, 99) . '.' . f\get_file_ext($v['name']);
+
+                        if (!function_exists('\Nyos\nyos_image::autoJpgRotate') && file_exists(DR . '/vendor/didrive/base/Nyos_image.php'))
+                            require_once DR . '/vendor/didrive/base/Nyos_image.php';
 
                         $e = \Nyos\nyos_image::autoJpgRotate($v['tmp_name'], self::$dir_img_server . $new_name);
 
@@ -573,18 +794,6 @@ class items {
 
     public static function saveEdit($db, $id_item, $folder, $cfg_mod, $data) {
 
-        //$show_status = true;
-
-        if (isset($show_status) && $show_status === true) {
-            $status = '';
-            $_SESSION['status1'] = true;
-        }
-
-        if (isset($_SESSION['status1']) && $_SESSION['status1'] === true) {
-            global $status;
-
-            $status .= '<fieldset class="status" ><legend>' . __CLASS__ . ' #' . __LINE__ . ' + ' . __FUNCTION__ . '</legend>';
-        }
 
         if (self::$dir_img_server === false) {
             self::creatFolderImage($folder);
@@ -595,8 +804,7 @@ class items {
 
         if (isset($data['head']{0})) {
 
-
-            f\db\db_edit2($db, 'mitems', array('id' => $id_item), array('head' => $data['head']), false, 1, 'da');
+            \f\db\db_edit2($db, 'mitems', array('id' => $id_item), array('head' => $data['head']), false, 1, 'da');
 
             /*
               $new_id = db\db2_insert($db, 'mitems', array(
@@ -636,7 +844,7 @@ class items {
 
             if (isset($data['files']) && sizeof($data['files']) > 0) {
 
-                require_once $_SERVER['DOCUMENT_ROOT'] . '/0.all/class/nyos_image.php';
+                //require_once $_SERVER['DOCUMENT_ROOT'] . '/0.all/class/nyos_image.php';
 
                 $nn = 1;
 
@@ -662,28 +870,26 @@ class items {
             }
 
             // $db->sql_query('DELETE FROM `mitems-dops` WHERE `id_item` = \'' . $id_item . '\' AND (' . $dop_sql . ') ;');
-            $db->sql_query('DELETE FROM `mitems-dops` WHERE `id_item` = \'' . $id_item . '\' ;');
+            // $db->sql_query('DELETE FROM `mitems-dops` WHERE `id_item` = \'' . $id_item . '\' ;');
 
+            $ff = $db->prepare('DELETE FROM `mitems-dops` WHERE `id_item` = \'' . $id_item . '\' ;');
+            $ff->execute();
 
             $in = [];
 
-            foreach ($in_db_text as $k => $v) {
-                $in[] = array('name' => $k, 'value_text' => $v);
-            }
-            foreach ($in_db as $k => $v) {
-                $in[] = array('name' => $k, 'value' => $v);
-            }
+            if (isset($in_db_text))
+                foreach ($in_db_text as $k => $v) {
+                    $in[] = array('name' => $k, 'value_text' => $v);
+                }
 
-            db\sql_insert_mnogo($db, 'mitems-dops', $in, array('id_item' => $id_item));
+            if (isset($in_db))
+                foreach ($in_db as $k => $v) {
+                    $in[] = array('name' => $k, 'value' => $v);
+                }
+
+            \f\db\sql_insert_mnogo($db, 'mitems-dops', $in, array('id_item' => $id_item));
 
             self::clearCash($folder);
-        }
-
-        if (isset($_SESSION['status1']) && $_SESSION['status1'] === true) {
-            $status .= '<span class="bot_line">#' . __LINE__ . '</span></fieldset>';
-
-            if (isset($show_status) && $show_status === true)
-                echo $status;
         }
 
         return f\end2('Изменения сохранены', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');

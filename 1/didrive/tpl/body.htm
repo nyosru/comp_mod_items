@@ -8,12 +8,15 @@
         
             {% if get.edit_id is defined and list.data[get.edit_id] is defined %}
 
-                {% include 'vendor/didrive_mod/items/1/didrive/t/body.form_add.htm' %}
+                {% include dir_mod_now_mod_ditpl~'body.form_add.htm' %}
 
             {% else %}
 
-                {% include 'vendor/didrive_mod/items/1/didrive/t/body.form_add.htm' %}
-                {% include 'vendor/didrive_mod/items/1/didrive/t/body.list_items.htm' %}
+                {% include dir_mod_now_mod_ditpl~'body.form_add.htm' %}
+                
+                {% if get.showonly is not defined %}
+                {% include dir_mod_now_mod_ditpl~'body.list_items.htm' %}
+                {% endif %}
 
             {% endif %}
 

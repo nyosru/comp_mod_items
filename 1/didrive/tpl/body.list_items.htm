@@ -54,27 +54,32 @@
 
                     {# if skip == true %}{% else %}{% endif % #}
 
-                    {# % if v1.status == 'delete' %}
+                    {% if v1.status == 'delete' %}
+                    
                     <tr id='item_id_{$v1.id}a' >
                         <td class="va-top">{{ v1.id }}</td>
                         <td class="va-top" >
 
-                            {% if isset($now_level.head_skip) && $now_level.head_skip == 'da' }
-                            {else}
-                            {if isset($v1.head) }
-                            {$v1.head}
-                            {/if}
-                            {/if}
-
-                            Удалено <button onclick="$('#item_id_{$v1.id}').toggle('slow'); return false;">показать/скрыть</button>
+                            {# % if now_level.head_skip is defined && now_level.head_skip == 'da' %}
+                            {else #}
+                            
+                            {% if v1.head is defined %}
+                            {{ v1.head }}
+                            {% endif %}
+                            
+                            {# /if #}
+<br/>
+                            Удалено {# <button onclick="$('#item_id_{$v1.id}').toggle('slow'); return false;">показать/скрыть</button> #}
 
                         </td>
                     </tr>
-                    {% endif % #}
+                    
+                    
+                    {% else %}
 
 
 
-                    <tr id='item_id_{$v1.id}' {% if v1.status == 'delete' %} style="display:none" {% endif %} >
+                    <tr id='item_id_{{ v1.id }}' {# % if v1.status == 'delete' %} style="display:none" {% endif % #} >
 
                         <td class="va-top" >{{ v1.id }}</td>
 
@@ -97,7 +102,7 @@
                                          /></span>
 
                             {% endif %}
-{#
+
                             <span class="action">
                                 <div onclick='$("#but_{{ k1 }}").show();' >
 
@@ -113,52 +118,80 @@
 
                                 </div>
 
-                                <input class="edit_item" type="button" rel="{$k1}" alt="status" rev="show" value="показать" s='{Nyos\nyos::creatSecret("`$k1`")}' for_res="shows{$k1}"  />
-                                <input class="edit_item" type="button" rel="{$k1}" alt="status" rev="hide" value="скрыть"  s='{Nyos\nyos::creatSecret("`$k1`")}' for_res="shows{$k1}"  />
-                                <input class="edit_item" type="button" rel="{$k1}" alt="status" rev="delete" s='{Nyos\nyos::creatSecret("`$k1`")}' for_res="shows{$k1}" value="Удалить" />
-                            </span>
-#}
+                                <input class="edit_item" type="button" rel="{{ k1 }}" alt="status" rev="show" value="показать" s='{{ creatSecret(k1) }}' for_res="shows{{ k1 }}"  />
+                                <input class="edit_item" type="button" rel="{{ k1 }}" alt="status" rev="hide" value="скрыть"  s='{{ creatSecret(k1) }}' for_res="shows{{ k1 }}"  />
+                                <input class="edit_item" type="button" rel="{{ k1 }}" alt="status" rev="delete" s='{{ creatSecret(k1) }}' for_res="shows{{ k1 }}" value="Удалить" />
 
-<br/>
-{#
+                            </span>
+
+
+                            <br/>
+                            {#
                             <label>
                                 Сортировка <span><input type="number" min="0" max="99" class="edit_pole edit_sort" 
-                                                        rel="{$k1}" name="sort" s='{Nyos\nyos::creatSecret("`$k1`")}' for_res="shows{$k1}" 
+                                                        rel="{{ k1 }}" name="sort" s='{{ creatSecret(k1) }}' for_res="shows{{ k1 }}" 
                                                         value="{$v1.sort}" /></span>
                             </label>
-#}
-                            <a href="?level={{ get.level }}&edit_id={{ k1 }}">редактировать</a>
+                            #}
+                            <a href="?level={{ get.level }}&edit_id={{ k1 }}" class="btn btn-xs btn-info">редактировать</a>
 
                         </td>
+
+
 
                         {% for k, v in now_level if v.name_rus is defined and ( v.skip_didr_list is not defined or ( v.skip_didr_list is defined and v.skip_didr_list != 'da' ) ) %}
 
                         <td class="va-top">
 
+
+                            {% if v.type is defined and v.type == 'image' %}
+
+                            {% if list.data[k1]['dop'][k] is not empty %}
+                            <a href="{{ sd }}{{ item_dir_img_uri_download() }}{{ list.data[k1]['dop'][k] }}" target="_blank" >
+                                <img src='{{ sd }}{{ item_dir_img_uri_download() }}{{ list.data[k1]['dop'][k] }}' style='max-width: 150px;' />
+                            </a>
+                            {% endif %}
+
+                            {% elseif v.type is defined and v.type == 'select' %}
+
+                            {# { pa(v)|raw } #}
+
+                            {% if v.import_1_module is defined %}
+
+                            {# { pa(v_data[v.import_1_module]['data'])|raw } #}
+
+                            {{ v_data[v.import_1_module]['data'][list.data[k1]['dop'][k]]['head'] }}
+
+                            {% endif %}
+
+                            {% else %}
+
                             {{ list.data[k1]['dop'][k] }}
-                            
+
+                            {% endif %}
+
                         </td>
-                        
+
                         {% endfor %}
 
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                         {# foreach $now_level as $k => $v }
 
                         {if isset($v.skip_didr_list) && $v.skip_didr_list == 'da' }
@@ -181,7 +214,7 @@
 
                             <a href="{Nyos\mod\items::$dir_img_uri}{$v1.dop.$k}" target="_blank" >
 
-                                <img src='/didra-nyos/min/w/50/{Nyos\mod\items::$dir_img_uri_download}{$v1.dop.$k}' alt='' border='0' />
+                                <img src='{{ sd }}/didra-nyos/min/w/50/{Nyos\mod\items::$dir_img_uri_download}{$v1.dop.$k}' alt='' border='0' />
                                 {*
                                 <img src='/0.service/show.edit.image.php?q=80&w=100&uri=/{Nyos\mod\items::$dir_img_uri}{$v1.dop.$k}' alt='' border='0' />
                                 *}
@@ -233,7 +266,7 @@
                             </a>
                             {else}
 
-                            {*if isset($massa.{$k1}.{$v.name}) }{$massa.{$k1}.{$v.name}}{/if*}
+                            {*if isset($massa.{{ k1 }}.{$v.name}) }{$massa.{{ k1 }}.{$v.name}}{/if*}
 
                             {/if}
                             {/if}
@@ -244,6 +277,10 @@
                         {/foreach #}
 
                     </tr>
+
+                    {% endif %}
+
+
                     {% endfor %}
 
                 </tbody>

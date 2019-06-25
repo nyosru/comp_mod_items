@@ -56,7 +56,11 @@ if( isset($vv['now_mod']['datain_name_file']) ){
     
 }
 
-$vv['tpl_0body'] = \f\like_tpl('body', $vv['dir_module_tpl'], $vv['dir_site_tpl']);
+$vv['tpl_body'] = DR.dir_site_module_nowlev_tpl.'body.htm';
+
+// $vv['tpl_body'] = \f\like_tpl('body', null, dir_site_module_nowlev_tpl, DR );
+
+// $vv['tpl_0body'] = \f\like_tpl('body', $vv['dir_module_tpl'], $vv['dir_site_tpl']);
 
 /*
         {* медленная загрузка фото в новостях 

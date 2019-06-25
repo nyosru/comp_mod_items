@@ -6,10 +6,11 @@ if (isset($vv['now_inf_cfg']['load_inf']) && $vv['now_inf_cfg']['load_inf'] == '
     //$vv['inf']['items'][$vv['now_inf_cfg']['cfg.level']] = \Nyos\mod\items::getItems($db, $vv['folder'], $vv['now_inf_cfg']['cfg.level']);
     try{
         $vv['inf']['items'][$vv['now_inf_cfg']['cfg.level']] = \Nyos\mod\items::getItems2($db, $vv['folder'], $vv['now_inf_cfg']['cfg.level']);
-    } catch ( Exception $e ){
+    } catch ( \Exception $e ){
         // ошибку писать в лог
     }
 }
+
 
 if (1 == 2) {
 // echo '11<pre>'; print_r($q); echo '</pre>';

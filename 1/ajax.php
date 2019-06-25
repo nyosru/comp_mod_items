@@ -1,86 +1,28 @@
 <?php
 
-// namespace Nyos\mod;
-
-// use Nyos\mod\lk as lk;
-// use Nyos as Nyos;
-// use f as f;
-
-$_SESSION['status1'] = true;
-
-if (isset($_SESSION['status1']) && $_SESSION['status1'] === true) {
-    ini_set('display_errors', 'On'); // сообщения с ошибками будут показываться
-    error_reporting(E_ALL); // E_ALL - отображаем ВСЕ ошибки
-}
+ini_set('display_errors', 'On'); // сообщения с ошибками будут показываться
+error_reporting(E_ALL); // E_ALL - отображаем ВСЕ ошибки
 
 date_default_timezone_set("Asia/Yekaterinburg");
 define('IN_NYOS_PROJECT', true);
 
-// sleep(1);
+require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
+require( $_SERVER['DOCUMENT_ROOT'] . '/all/ajax.start.php' );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-require( $_SERVER['DOCUMENT_ROOT'] . '/index.session_start.php' );
-require( $_SERVER['DOCUMENT_ROOT'] . '/0.all/class/nyos.2.php' );
-require( $_SERVER['DOCUMENT_ROOT'] . '/0.all/f/ajax.php' );
-
-require_once( dirname(__FILE__).'/class.php' );
-
-// echo '<br/>#'.__LINE__;
-
+//require_once( DR.'/vendor/didrive/base/class/Nyos.php' );
+//require_once( dirname(__FILE__).'/../class.php' );
 
 if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 
     scanNewData($db);
     //cron_scan_new_datafile();
-    
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // проверяем секрет
 if (
         isset($_REQUEST['id']{0}) && isset($_REQUEST['s']{5}) &&
-        Nyos\nyos::checkSecret($_REQUEST['s'], $_REQUEST['id']) === true
+        \Nyos\nyos::checkSecret($_REQUEST['s'], $_REQUEST['id']) === true
 ) {
     
 }
@@ -90,25 +32,57 @@ else {
             , 'error');
 }
 
-require_once( $_SERVER['DOCUMENT_ROOT'] . '/0.all/sql.start.php');
+//require_once( $_SERVER['DOCUMENT_ROOT'] . '/0.all/sql.start.php');
 //require( $_SERVER['DOCUMENT_ROOT'] . '/0.site/0.cfg.start.php');
 //require( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'class' . DS . 'mysql.php' );
 //require( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'db.connector.php' );
 
 
-if (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
 
-    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'db.2.php' );
-    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'txt.2.php' );
 
+
+
+if (isset($_POST['action']) && $_POST['action'] == 'show_info_strings') {
+    
+    
+    require_once '../../../../all/ajax.start.php';
+    require_once dirname(__FILE__).'/../class.php';
+    
+    // \Nyos\mod\items::getItems( $db, $folder )
+    
+    \f\end2( 'окей', true, array( 'data' => 'новый статус ' . 'val' ) );
+    
+    
+    
+}
+//
+elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
+
+//    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'db.2.php' );
+//    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'txt.2.php' );
 // $_SESSION['status1'] = true;
 // $status = '';
-    \f\db\db_edit2($db, 'mitems', array('id' => (int) $_POST['id']), array($_POST['pole'] => $_POST['val']));
 
-    $folder = \Nyos\nyos::getFolder($db);
-
+    $e = array('id' => (int) $_POST['id']);
+    $e1 = array($_POST['pole'] => $_POST['val']);
+//    \f\pa($e);
+//    \f\pa($e1);
+//    exit;
+    
+     \f\db\db_edit2($db, 'mitems', $e, $e1);
+    
+//$table = 'mitems';
+//    $polya = \f\db\pole_list($db, $table);
+//    \f\pa($polya);
+//    
+//$table = 'mitems_dop';    
+//    $polya = \f\db\pole_list($db, $table);
+//    \f\pa($polya);
+    
+    //$folder = \Nyos\nyos::getFolder($db);
 // папка для кеша данных
-    $dir_for_cash = $_SERVER['DOCUMENT_ROOT'] . '/9.site/' . $folder . '/';
+    //$dir_for_cash = $_SERVER['DOCUMENT_ROOT'] . '/9.site/' . $folder . '/';
+    $dir_for_cash = DR . dir_site;
 
     $list_cash = scandir($dir_for_cash);
     foreach ($list_cash as $k => $v) {

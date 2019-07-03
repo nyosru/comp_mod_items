@@ -1,5 +1,6 @@
 $().ready(function () {
 
+
 // var $elements = $('#list .element');
     $('span .edit_pole').on('keyup input', function () {
 // var $val = this.value;
@@ -14,9 +15,9 @@ $().ready(function () {
         var $s = $(this).attr('s');
         // var $div_res = $('#' + $(this).attr('for_res'));
         var $th = $(this);
-        if (!confirm('выполнить ?')) {
-            return false;
-        }
+//        if (!confirm('выполнить ?')) {
+//            return false;
+//        }
 
         $.ajax({
 

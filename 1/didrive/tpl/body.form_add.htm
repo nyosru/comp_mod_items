@@ -31,8 +31,9 @@
     {% endif %}    
 
     <br clear='all' />
+    <div style="xoverflow: auto; xborder: 1px solid gray;">
     <div class="container-fluid">
-        <div class="grid">
+        <div class="grid" style="xborder:0; xoverflow:auto; ">
 
             {% if now_level.head_skip is defined and now_level.head_skip == 'da' %}
                 <input type="hidden" name="head" value="{1|rand:99999}" />
@@ -115,9 +116,6 @@
                                                     {# % if v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['status'] == 'hide' } (скрыто) {% endif % #}
 
                                                     {# { v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['head'] } #} 
-                                                    >
-
-
 
                                                     {{ v1.head }}
                                                     {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
@@ -336,15 +334,10 @@
 
             {% endfor %}
 
-
-
-
-
-
-            <div class="row">
+            <div class="row" >
                 <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right">
                 </div>
-                <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
+                <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12" style="xposition:sticky; xbottom:0;  " >
 
                     {% if edit_item is defined and list.data[get.edit_id]['id'] is defined %}
 
@@ -353,8 +346,8 @@
 
                     {% else %}
 
-                        <input type="submit" name="addnew" value="Добавить" class="btn btn-success"  />
-
+                        <input type="submit" name="addnew" value="Добавить" class="btn btn-success" style="position:sticky; bottom:0;position: -webkit-sticky;  position: -moz-sticky; position: -ms-sticky;  position: -o-sticky;" />
+111
                     {% endif %}
 
                     {% if now_level.folder is defined and now_level.folder is not empty %}<input type="hidden" name="dop_folder" value="{{ now_level.folder }}" />{% endif %}
@@ -363,5 +356,6 @@
             </div>
         </div>
     </div>
-
+    </div> 
+                    
 </form>

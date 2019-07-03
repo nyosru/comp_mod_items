@@ -21,8 +21,18 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 
 // проверяем секрет
 if (
+        (
         isset($_REQUEST['id']{0}) && isset($_REQUEST['s']{5}) &&
         \Nyos\nyos::checkSecret($_REQUEST['s'], $_REQUEST['id']) === true
+        ) 
+        ||
+        (
+        isset($_REQUEST['module']{0}) &&
+        isset($_REQUEST['dop_name']{0}) &&
+        isset($_REQUEST['item_id']{0}) &&
+        isset($_REQUEST['s']{5}) &&
+        \Nyos\nyos::checkSecret($_REQUEST['s'], $_REQUEST['module'] . $_REQUEST['dop_name'] . $_REQUEST['item_id']) === true
+        )
 ) {
     
 }
@@ -43,17 +53,14 @@ else {
 
 
 if (isset($_POST['action']) && $_POST['action'] == 'show_info_strings') {
-    
-    
+
+
     require_once '../../../../all/ajax.start.php';
-    require_once dirname(__FILE__).'/../class.php';
-    
+    require_once dirname(__FILE__) . '/../class.php';
+
     // \Nyos\mod\items::getItems( $db, $folder )
-    
-    \f\end2( 'окей', true, array( 'data' => 'новый статус ' . 'val' ) );
-    
-    
-    
+
+    \f\end2('окей', true, array('data' => 'новый статус ' . 'val'));
 }
 //
 elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
@@ -68,9 +75,9 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
 //    \f\pa($e);
 //    \f\pa($e1);
 //    exit;
-    
-     \f\db\db_edit2($db, 'mitems', $e, $e1);
-    
+
+    \f\db\db_edit2($db, 'mitems', $e, $e1);
+
 //$table = 'mitems';
 //    $polya = \f\db\pole_list($db, $table);
 //    \f\pa($polya);
@@ -78,7 +85,6 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
 //$table = 'mitems_dop';    
 //    $polya = \f\db\pole_list($db, $table);
 //    \f\pa($polya);
-    
     //$folder = \Nyos\nyos::getFolder($db);
 // папка для кеша данных
     //$dir_for_cash = $_SERVER['DOCUMENT_ROOT'] . '/9.site/' . $folder . '/';
@@ -93,6 +99,46 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
 
 // f\end2( 'новый статус ' . $status);
     f\end2('новый статус ' . $_POST['val']);
+}
+// edit dop поле
+elseif (isset($_POST['action']) && $_POST['action'] == 'edit_dop_pole') {
+
+//    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'db.2.php' );
+//    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'txt.2.php' );
+// $_SESSION['status1'] = true;
+// $status = '';
+
+    $e = array('id' => (int) $_POST['item_id']);
+
+    $ff = $db->prepare('DELETE FROM `mitems-dops` WHERE `id_item` = :id_item AND `name` = :name ');
+    $ff->execute(
+            array(
+                ':id_item' => $_POST['item_id'],
+                ':name' => $_POST['dop_name']
+            )
+    );
+
+
+    if (isset($_POST['new_val']{0})) {
+        $ff = $db->prepare('INSERT INTO `mitems-dops` ( `id_item`, `name`, `value` ) values ( :id, :name , :val ) ');
+        $ff->execute(array(
+            ':id' => $_POST['item_id'],
+            ':name' => $_POST['dop_name'],
+            ':val' => $_POST['new_val'],
+        ));
+    }
+
+    $dir_for_cash = DR . dir_site;
+
+    $list_cash = scandir($dir_for_cash);
+    foreach ($list_cash as $k => $v) {
+        if (strpos($v, 'cash.items.') !== false) {
+            unlink($dir_for_cash . $v);
+        }
+    }
+
+// f\end2( 'новый статус ' . $status);
+    f\end2('ок');
 }
 /**
  * получаем перменные 1 записи

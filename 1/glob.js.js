@@ -28,6 +28,7 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
         });
     });
 
+
     $('body').on('click', '.show_job_tab', function (event) {
 
         // alert('2323');

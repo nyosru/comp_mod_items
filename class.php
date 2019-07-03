@@ -782,12 +782,15 @@ class items {
         return f\end2('Окей, запись добавлена', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }
 
-    public static function clearCash(string $folder) {
+    public static function clearCash( $folder = null ) {
 
-        $s = scandir(DR . dir_site);
+        if( $folder === null )
+            $folder = \Nyos\Nyos::$folder_now;
+        
+        $s = scandir(DR . DS . 'sites' . DS . $folder . DS );
         foreach ($s as $k => $v) {
             if (strpos($v, 'items') !== false && strpos($v, 'cash') !== false) {
-                unlink(DR . dir_site . $v);
+                unlink( DR . DS . 'sites' . DS . $folder . DS . $v);
             }
         }
     }

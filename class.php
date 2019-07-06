@@ -917,7 +917,7 @@ WHERE module = :mod '
                 }
             }
 
-            \f\pa($in_db);
+            //\f\pa($in_db);
             // echo '<Br/>db\sql_insert_mnogo - ' .$new_id ;
             //$status = '';
             \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));

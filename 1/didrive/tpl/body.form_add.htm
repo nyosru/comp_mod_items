@@ -32,330 +32,348 @@
 
     <br clear='all' />
     <div style="xoverflow: auto; xborder: 1px solid gray;">
-    <div class="container-fluid">
-        <div class="grid" style="xborder:0; xoverflow:auto; ">
+        <div class="container-fluid">
+            <div class="grid" style="xborder:0; xoverflow:auto; ">
 
-            {% if now_level.head_skip is defined and now_level.head_skip == 'da' %}
-                <input type="hidden" name="head" value="{1|rand:99999}" />
-            {% else %}
-                <div class="row">
-
-                    <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right">
-                        <label for='i_head'>
-                            {% if now_level.head_name is defined and now_level.head_name|length > 1 %}
-                                {{ now_level.head_name }}
-                            {% else %}
-                                Заголовок записи
-                            {% endif %}
-                        </label>
-                    </div>
-                    <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
-                        <input id='i_head' type="text" name="head" class="form-control" 
-                               {% if edit_item is defined and list.data[get.edit_id]['head'] is defined %} value="{{ list.data[get.edit_id]['head']|escape }}" {% endif %}
-                               />
-                    </div>
-
-                </div>
-            {% endif %}
-
-            {% for k, v in now_level if v.name_rus is defined %}
-
-                {% if v.type is defined and v.type == 'head' %}
-
-                    <div class="row">
-                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
-                            <h4>{{ v.name_rus }}</h4>
-                        </div>
-                    </div>
-
+                {% if now_level.head_skip is defined and now_level.head_skip == 'da' %}
+                    <input type="hidden" name="head" value="{1|rand:99999}" />
                 {% else %}
-
                     <div class="row">
 
-                        <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right" >
-                            <label for='i_{{ k }}'>{{ v.name_rus }}</label>
+                        <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right">
+                            <label for='i_head'>
+                                {% if now_level.head_name is defined and now_level.head_name|length > 1 %}
+                                    {{ now_level.head_name }}
+                                {% else %}
+                                    Заголовок записи
+                                {% endif %}
+                            </label>
                         </div>
                         <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
+                            <input id='i_head' type="text" name="head" class="form-control" 
+                                   {% if edit_item is defined and list.data[get.edit_id]['head'] is defined %} value="{{ list.data[get.edit_id]['head']|escape }}" {% endif %}
+                                   />
+                        </div>
 
-                            {# { v.type } #}
+                    </div>
+                {% endif %}
 
-                            {% if v.type is defined and v.type == 'select' %}
+                {% for k, v in now_level if v.name_rus is defined %}
 
-                                {# формирумем массив для пропуска #}
-                                {% set skip = [] %}
-                                {% for k4,v4 in v if k4[:4] == 'skip' %}
-                                    {% set skip = skip|merge( { (v4): '1' } ) %}
-                                {% endfor %}
+                    {% if v.type is defined and v.type == 'head' %}
 
-                                <span>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                                <h4>{{ v.name_rus }}</h4>
+                            </div>
+                        </div>
 
-                                    <select id='i_{{ k }}' name="{{ k }}" class="form-control" />
+                    {% else %}
 
-                                    {% if v.obayz is not defined %}
-                                        <option value="">можете выбрать</option>
-                                    {% endif %}
+                        <div class="row">
 
-                                    {% if v_data[v.import_1_module]['data'] is defined %}
+                            <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right" >
+                                <label for='i_{{ k }}'>{{ v.name_rus }}</label>
+                            </div>
+                            <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
 
-                                        {% for k1, v1 in v_data[v.import_1_module]['data'] %} 
+                                {# { v.type } #}
 
-                                            {% if skip[v1.head] is not defined %}
+                                {% if v.type is defined and v.type == 'select' %}
 
-                                                <option value='{{ k1 }}' 
-                                                        {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined and list.data[get.edit_id]['dop'][k] == k1 %}
-                                                            selected="selected" 
-                                                        {% elseif get.var[k] is defined and get.var[k] == k1 %}
-                                                            selected="selected" 
-                                                        {% endif %} 
-                                                        >
-
-                                                    {# % if v.import_1_module_link_var is defined  
-                                                    and v1.dop[v.import_1_module_link_var] is defined 
-                                                    and v.import_2_module is defined and v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['head'] is defined % #} 
-
-                                                    {# % if v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['status'] == 'hide' } (скрыто) {% endif % #}
-
-                                                    {# { v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['head'] } #} 
-
-                                                    {{ v1.head }}
-                                                    {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
-
-                                                </option>
-                                            {% endif %}
-                                        {% endfor %}
-                                    {% endif %}
-
-                                    </select>
-
-                                    <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
-
-                                </span>
-
-
-                            {% elseif v.type is defined and v.type == 'list_user' %}
-
-                                {% set users = get_site_user(db) %}
-                                {# { pa(users) } #}
-
-                                <span>
-
-                                    <select id='i_{{ k }}' name="{{ k }}" class="form-control" />
-
-                                    {% if v.obayz is not defined %}
-                                        <option value="">можете выбрать</option>
-                                    {% endif %}
-
-                                    {% for k3, user in users %} 
-
-                                        <option value='{{ user.id }}' 
-                                                
-                                                {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined and list.data[get.edit_id]['dop'][k] == user.id %}
-                                                    selected="selected" 
-                                                {% elseif get.var[k] is defined and get.var[k] == user.id %}
-                                                    selected="selected" 
-                                                {% endif %} 
-                                                
-                                                >
-
-                                            {# % if v.import_1_module_link_var is defined  
-                                            and v1.dop[v.import_1_module_link_var] is defined 
-                                            and v.import_2_module is defined and v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['head'] is defined % #} 
-                                            {# % if v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['status'] == 'hide' } (скрыто) {% endif % #}
-                                            {# { v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['head'] } #} 
-
-
-
-                                            
-                                            {{ user.name }} {{ user.family }} {% if user.login is defined %}{{ user.login }}{% endif %} {{ user.soc_web_link }}
-                                            {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
-
-                                        </option>
-                                    {% endfor %}
-
-                                    </select>
-
-                                    <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
-
-                                </span>
-
-
-                            {% elseif v.type is defined and v.type == 'select_items' %}
-
-                                {# формирумем массив для пропуска #}
-                                {#                                
+                                    {# формирумем массив для пропуска #}
                                     {% set skip = [] %}
                                     {% for k4,v4 in v if k4[:4] == 'skip' %}
                                         {% set skip = skip|merge( { (v4): '1' } ) %}
                                     {% endfor %}
-                                #}
 
-                                <span>
+                                    <span>
 
-                                    <select id='i_{{ k }}' name="{{ k }}" class="form-control" />
+                                        <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
+                                            {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+                                            />
 
-                                    {#
-                                    {% if v.obayz is not defined %}
-                                        <option value="">можете выбрать</option>
-                                    {% endif %}
-                                    #}
-
-                                    {% for i in range(low=1, high=10, step=1) %}   
-                                        {% if v['item'~i] is defined %}
-
-                                            <option value='{{ v['item'~ i ~'val'] }}' 
-                                                    {# % if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined and list.data[get.edit_id]['dop'][k] == k1 %}
-                                                        selected="selected" 
-                                                    {% elseif get.var[k] is defined and get.var[k] == k1 %}
-                                                        selected="selected" 
-                                                    {% endif % #} 
-                                                    >
-                                                {{ v['item'~i] }}
-                                                {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
-                                            </option>
-
+                                        {% if v.obayz is not defined %}
+                                            <option value="">можете выбрать</option>
                                         {% endif %}
-                                    {% endfor %}
 
-                                    </select>
+                                        {% if v_data[v.import_1_module]['data'] is defined %}
 
-                                    {{ pa(list.data[get.edit_id]) }}
+                                            {% for k1, v1 in v_data[v.import_1_module]['data'] %} 
 
-                                    {#
-                                    <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
+                                                {% if skip[v1.head] is not defined %}
+
+                                                    <option value='{{ k1 }}' 
+                                                            {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined and list.data[get.edit_id]['dop'][k] == k1 %}
+                                                                selected="selected" 
+                                                            {% elseif get.var[k] is defined and get.var[k] == k1 %}
+                                                                selected="selected" 
+                                                            {% endif %} 
+                                                            >
+
+                                                        {# % if v.import_1_module_link_var is defined  
+                                                        and v1.dop[v.import_1_module_link_var] is defined 
+                                                        and v.import_2_module is defined and v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['head'] is defined % #} 
+
+                                                        {# % if v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['status'] == 'hide' } (скрыто) {% endif % #}
+
+                                                        {# { v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['head'] } #} 
+
+                                                        {{ v1.head }}
+                                                        {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
+
+                                                    </option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+
+                                        </select>
+
+                                        <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
+
+                                    </span>
+
+
+                                {% elseif v.type is defined and v.type == 'list_user' %}
+
+                                    {% set users = get_site_user(db) %}
+                                    {# { pa(users) } #}
+
+                                    <span>
+
+                                        <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
+                                            {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %} 
+                                            />
+
+                                        {% if v.obayz is not defined %}
+                                            <option value="">можете выбрать</option>
+                                        {% endif %}
+
+                                        {% for k3, user in users %} 
+
+                                            <option value='{{ user.id }}' 
+
+                                                    {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined and list.data[get.edit_id]['dop'][k] == user.id %}
+                                                        selected="selected" 
+                                                    {% elseif get.var[k] is defined and get.var[k] == user.id %}
+                                                        selected="selected" 
+                                                    {% endif %} 
+
+                                                    >
+
+                                                {# % if v.import_1_module_link_var is defined  
+                                                and v1.dop[v.import_1_module_link_var] is defined 
+                                                and v.import_2_module is defined and v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['head'] is defined % #} 
+                                                {# % if v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['status'] == 'hide' } (скрыто) {% endif % #}
+                                                {# { v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['head'] } #} 
+
+
+
+
+                                                {{ user.name }} {{ user.family }} {% if user.login is defined %}{{ user.login }}{% endif %} {{ user.soc_web_link }}
+                                                {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
+
+                                            </option>
+                                        {% endfor %}
+
+                                        </select>
+
+                                        <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
+
+                                    </span>
+
+
+                                {% elseif v.type is defined and v.type == 'select_items' %}
+
+                                    {# формирумем массив для пропуска #}
+                                    {#                                
+                                        {% set skip = [] %}
+                                        {% for k4,v4 in v if k4[:4] == 'skip' %}
+                                            {% set skip = skip|merge( { (v4): '1' } ) %}
+                                        {% endfor %}
                                     #}
-                                </span>
+
+                                    <span>
+
+                                        <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
+                                            {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+                                            />
+
+                                        {#
+                                        {% if v.obayz is not defined %}
+                                            <option value="">можете выбрать</option>
+                                        {% endif %}
+                                        #}
+
+                                        {% for i in range(low=1, high=10, step=1) %}   
+                                            {% if v['item'~i] is defined %}
+
+                                                <option value='{{ v['item'~ i ~'val'] }}' 
+                                                        {# % if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined and list.data[get.edit_id]['dop'][k] == k1 %}
+                                                            selected="selected" 
+                                                        {% elseif get.var[k] is defined and get.var[k] == k1 %}
+                                                            selected="selected" 
+                                                        {% endif % #} 
+                                                        >
+                                                    {{ v['item'~i] }}
+                                                    {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
+                                                </option>
+
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        </select>
+
+                                        {{ pa(list.data[get.edit_id]) }}
+
+                                        {#
+                                        <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
+                                        #}
+                                    </span>
 
 
 
-                            {% elseif v.type is defined and ( v.type == 'checkbox' or v.type == 'check' ) %}
+                                {% elseif v.type is defined and ( v.type == 'checkbox' or v.type == 'check' ) %}
 
 
 
-                                <input id='i_{{ k }}' type="checkbox" name="{{ k }}" value='da'
-                                       xvalue="{% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}{{ list.data[get.edit_id]['dop'][k] }}{% endif %}" 
-                                       xclass="form-control" 
+                                    <input id='i_{{ k }}' type="checkbox" name="{{ k }}" value='da'
+                                           xvalue="{% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}{{ list.data[get.edit_id]['dop'][k] }}{% endif %}" 
+                                           xclass="form-control" 
 
-                                       {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined and list.data[get.edit_id]['dop'][k] == 'da' %}
-                                           checked='checked'
-                                       {% endif %}
+                                           {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined and list.data[get.edit_id]['dop'][k] == 'da' %}
+                                               checked='checked'
+                                           {% endif %}
 
-                                       />
+                                        {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+                                           
+                                           />
 
 
 
-                            {% elseif v.type is defined and v.type == 'image' %}
+                                {% elseif v.type is defined and v.type == 'image' %}
 
-                                {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
+                                    {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
 
-                                    <a href="{{ sd }}module_items_image/{{ list.data[get.edit_id]['dop'][k] }}" target="_blank" >
-                                        <img style="float:left; padding: 0 10px;" src="/0.service/show.edit.image.php?q=80&w=150&uri=/module_items_image/{{ list.data[get.edit_id]['dop'][k] }}" />
-                                    </a>
+                                        <a href="{{ sd }}module_items_image/{{ list.data[get.edit_id]['dop'][k] }}" target="_blank" >
+                                            <img style="float:left; padding: 0 10px;" src="/0.service/show.edit.image.php?q=80&w=150&uri=/module_items_image/{{ list.data[get.edit_id]['dop'][k] }}" />
+                                        </a>
 
-                                    <input id='ii_{{ k }}' type="hidden" name="{{ k }}" value="{{ list.data[get.edit_id]['dop'][k] }}" />
+                                        <input id='ii_{{ k }}' type="hidden" name="{{ k }}" value="{{ list.data[get.edit_id]['dop'][k] }}" />
 
-                                    <label>
-                                        <input type="checkbox" name="{{ k }}_del" value="yes" /> удалить изображение
-                                    </label>
+                                        <label>
+                                            <input type="checkbox" name="{{ k }}_del" value="yes" /> удалить изображение
+                                        </label>
 
+                                        <br/>
+                                        для замены фото, выберите новое изображение<br/>
+
+                                    {% endif %}
+
+                                    <input id='i_{{ k }}' type="file" name="{{ k }}" value="" />
                                     <br/>
-                                    для замены фото, выберите новое изображение<br/>
+
+                                {% elseif v.type is defined and v.type == 'date' %}
+
+                                    <input id='i_{{ k }}' type="date" name="{{ k }}" 
+
+                                           {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
+                                               value="{{ list.data[get.edit_id]['dop'][k] }}" 
+                                           {% endif %}
+
+                                           {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+
+                                           class="form-control" />
+
+                                {% elseif v.type is defined and v.type == 'datetime' %}
+
+                                    <input id='i_{{ k }}' type="date" name="{{ k }}" 
+
+                                           {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
+                                               value="{{ list.data[get.edit_id]['dop'][k][:10] }}" 
+                                           {% endif %}
+
+                                           {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+
+                                           class="form-control" style="width: 200px;" />
+
+                                    <input id='i_{{ k }}_time' type="time" name="{{ k }}_time" 
+
+                                           {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
+                                               value="{{ list.data[get.edit_id]['dop'][k][11:8] }}" 
+                                           {% endif %}
+
+                                           {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+
+                                           class="form-control"  style="width: 200px;" />
+
+                                {% elseif v.type is defined and v.type == 'number' %}
+
+                                    <input id='i_{{ k }}' type="number" name="{{ k }}" 
+
+                                           {% if v.step is defined %} step="{{ v.step }}" {% endif %}
+                                           {% if v.min is defined %} min="{{ v.min }}" {% endif %}
+                                           {% if v.max is defined %} max="{{ v.max }}" {% endif %}
+
+                                           {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
+                                               value="{{ list.data[get.edit_id]['dop'][k] }}" 
+                                           {% endif %}
+
+                                           {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+
+                                           class="form-control" />
+
+
+                                {% elseif v.type is defined and v.type == 'textarea' %}
+
+                                    <textarea id='i_{{ k }}' type="number" name="{{ k }}" class="form-control" 
+                                              {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+                                              >{% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}{{ list.data[get.edit_id]['dop'][k]|escape }}{% endif %}</textarea>
+
+
+
+                                    {# иначе text string #}
+                                {% else %}
+
+                                    <input id='i_{{ k }}' type="text" name="{{ k }}" 
+                                           value="{% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}{{ list.data[get.edit_id]['dop'][k] }}{% endif %}" 
+                                           class="form-control" />
 
                                 {% endif %}
 
-                                <input id='i_{{ k }}' type="file" name="{{ k }}" value="" />
-                                <br/>
+                                {% if v.comment is defined %}
+                                    <small>{{ v.comment }}</small>
+                                {% endif %}
 
-                            {% elseif v.type is defined and v.type == 'date' %}
-
-                                <input id='i_{{ k }}' type="date" name="{{ k }}" 
-
-                                       {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
-                                           value="{{ list.data[get.edit_id]['dop'][k] }}" 
-                                       {% endif %}
-
-                                       class="form-control" />
-
-                            {% elseif v.type is defined and v.type == 'datetime' %}
-
-                                <input id='i_{{ k }}' type="date" name="{{ k }}" 
-
-                                       {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
-                                           value="{{ list.data[get.edit_id]['dop'][k] }}" 
-                                       {% endif %}
-
-                                       class="form-control" style="width: 200px;" />
-
-                                <input id='i_{{ k }}_time' type="time" name="{{ k }}_time" 
-
-                                       {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
-                                           value="{{ list.data[get.edit_id]['dop'][k] }}" 
-                                       {% endif %}
-
-                                       class="form-control"  style="width: 200px;" />
-
-                            {% elseif v.type is defined and v.type == 'number' %}
-
-                                <input id='i_{{ k }}' type="number" name="{{ k }}" 
-
-                                       {% if v.step is defined %} step="{{ v.step }}" {% endif %}
-                                       {% if v.min is defined %} min="{{ v.min }}" {% endif %}
-                                       {% if v.max is defined %} max="{{ v.max }}" {% endif %}
-
-                                       {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
-                                           value="{{ list.data[get.edit_id]['dop'][k] }}" 
-                                       {% endif %}
-
-                                       class="form-control" />
-
-
-                            {% elseif v.type is defined and v.type == 'textarea' %}
-
-                                <textarea id='i_{{ k }}' type="number" name="{{ k }}" class="form-control" >{% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}{{ list.data[get.edit_id]['dop'][k]|escape }}{% endif %}</textarea>
-
-
-
-                                {# иначе text string #}
-                            {% else %}
-
-                                <input id='i_{{ k }}' type="text" name="{{ k }}" 
-                                       value="{% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}{{ list.data[get.edit_id]['dop'][k] }}{% endif %}" 
-                                       class="form-control" />
-
-                            {% endif %}
-
-                            {% if v.comment is defined %}
-                                <small>{{ v.comment }}</small>
-                            {% endif %}
-
+                            </div>                    
                         </div>                    
-                    </div>                    
 
-                {% endif %}
-
-            {% endfor %}
-
-            <div class="row" >
-                <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right">
-                </div>
-                <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12" style="xposition:sticky; xbottom:0;  " >
-
-                    {% if edit_item is defined and list.data[get.edit_id]['id'] is defined %}
-
-                        <input type="hidden" name="save_id" value="{{ get.edit_id }}" />
-                        <input type="submit" name="save_edit" value="Сохранить" class="btn btn-warning"  />
-
-                    {% else %}
-
-                        <input type="submit" name="addnew" value="Добавить" class="btn btn-success" style="position:sticky; bottom:0;position: -webkit-sticky;  position: -moz-sticky; position: -ms-sticky;  position: -o-sticky;" />
-111
                     {% endif %}
 
-                    {% if now_level.folder is defined and now_level.folder is not empty %}<input type="hidden" name="dop_folder" value="{{ now_level.folder }}" />{% endif %}
+                {% endfor %}
 
+                <div class="row" >
+                    <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right">
+                    </div>
+                    <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12" style="xposition:sticky; xbottom:0;  " >
+
+                        {% if edit_item is defined and list.data[get.edit_id]['id'] is defined %}
+
+                            <input type="hidden" name="save_id" value="{{ get.edit_id }}" />
+                            <input type="submit" name="save_edit" value="Сохранить" class="btn btn-warning"  />
+
+                        {% else %}
+
+                            <input type="submit" name="addnew" value="Добавить" class="btn btn-success" style="position:sticky; bottom:0;position: -webkit-sticky;  position: -moz-sticky; position: -ms-sticky;  position: -o-sticky;" />
+
+                        {% endif %}
+
+                        {% if now_level.folder is defined and now_level.folder is not empty %}<input type="hidden" name="dop_folder" value="{{ now_level.folder }}" />{% endif %}
+
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     </div> 
-                    
+
 </form>

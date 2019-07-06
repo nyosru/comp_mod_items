@@ -108,6 +108,8 @@ elseif (isset($_REQUEST['save_id']) && is_numeric($_REQUEST['save_id']) && isset
     unset($d['addnew']);
     $d['files'] = $_FILES;
 
+    //\f\pa($d);
+    
     $r = \Nyos\mod\items::saveEdit($db, $_REQUEST['save_id'], $vv['folder'], $vv['now_level'], $d);
     if (isset($r['status']) && $r['status'] == 'ok') {
         $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . $r['html'];
@@ -128,7 +130,7 @@ $vv['krohi'][1] = array(
 \Nyos\mod\items::setSort( 'head', 'asc' );
 $vv['list'] = \Nyos\mod\items::getItems( $db, $vv['folder'], $vv['now_level']['cfg.level'], null);
 
-// \f\pa($vv['list']);
+//\f\pa($vv['list']);
 // \f\pa($vv['now_level']);
 // \f\pa($vv['list']);
 // \f\pa($_POST);

@@ -1,3 +1,9 @@
+сортировка
+
+\Nyos\mod\items::setSort( 'head', 'asc' );
+$vv['list'] = \Nyos\mod\items::getItems( $db, $vv['folder'], $vv['now_level']['cfg.level'], null);
+
+
 ajax изменение видимости записи
 
 <a href="#" class="btn3 edit_items_dop_values drop2_{{ k1 }}" 

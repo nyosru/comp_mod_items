@@ -691,14 +691,16 @@ class items {
                 $nn++;
             }
 
+            
+            
             $sql = 'UPDATE mitems 
-SET status = \'delete\'
-WHERE module = :mod '
+                    SET status = \'delete\'
+                    WHERE module = :mod '
                     .PHP_EOL.' AND status != \'delete2\' '
                     // .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
                     . $dopsql
                 .';';
-            \f\pa($sql);
+            //\f\pa($sql);
             $ff = $db->prepare($sql);
             $ff->execute($vars);
 

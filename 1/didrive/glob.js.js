@@ -138,7 +138,7 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
         });
 
 
-        return false;
+        //return false;
 
 
 

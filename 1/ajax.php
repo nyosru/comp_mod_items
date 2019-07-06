@@ -24,8 +24,7 @@ if (
         (
         isset($_REQUEST['id']{0}) && isset($_REQUEST['s']{5}) &&
         \Nyos\nyos::checkSecret($_REQUEST['s'], $_REQUEST['id']) === true
-        ) 
-        ||
+        ) ||
         (
         isset($_REQUEST['module']{0}) &&
         isset($_REQUEST['dop_name']{0}) &&
@@ -62,6 +61,9 @@ if (isset($_POST['action']) && $_POST['action'] == 'show_info_strings') {
 
     \f\end2('окей', true, array('data' => 'новый статус ' . 'val'));
 }
+/**
+ * изменение инфы в главном итемс
+ */
 //
 elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
 
@@ -100,6 +102,9 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
 // f\end2( 'новый статус ' . $status);
     f\end2('новый статус ' . $_POST['val']);
 }
+/**
+ * изменение инфы в дополнительных итемсах
+ */
 // edit dop поле
 elseif (isset($_POST['action']) && $_POST['action'] == 'edit_dop_pole') {
 

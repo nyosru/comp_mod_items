@@ -4,6 +4,34 @@
 $vv['list'] = \Nyos\mod\items::getItems( $db, $vv['folder'], $vv['now_level']['cfg.level'], null);
 
 
+
+
+    \Nyos\mod\items::$sql_itemsdop_add_where = ' ( 
+            ( 
+                midop.name != \'stagirovka_start\' 
+                OR
+                ( midop.name = \'stagirovka_start\' AND midop.value <= date(\'' . $date_finish . '\') )
+            )
+            OR
+            ( 
+                midop.name != \'fulljob_start\' 
+                OR
+                ( midop.name = \'fulljob_start\' AND midop.value <= date(\'' . $date_finish . '\') )
+            )
+            OR
+            ( 
+                midop.name != \'job_end\' 
+                OR
+                ( midop.name = \'job_end\' AND midop.value >= date(\'' . $date_start . '\') )
+            )
+        )
+        ';
+    $jobmans = \Nyos\mod\items::getItems($db, \Nyos\nyos::$folder_now, '070.jobman', 'show', null);
+
+
+
+
+
 ajax изменение видимости записи
 
 <a href="#" class="btn3 edit_items_dop_values drop2_{{ k1 }}" 

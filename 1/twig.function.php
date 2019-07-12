@@ -26,3 +26,11 @@ $function = new Twig_SimpleFunction('readItems2', function ( $db, $module, $stat
     //return \Nyos\Nyos::creatSecret($text);
  });
  $twig->addFunction($function);
+ 
+$function = new Twig_SimpleFunction('getItemsSimple', function ( $db, $module, $stat = null ) {
+     
+    $e = \Nyos\mod\items::getItemsSimple( $db, $module, $stat );
+    return $e;
+    //return \Nyos\Nyos::creatSecret($text);
+ });
+ $twig->addFunction($function);

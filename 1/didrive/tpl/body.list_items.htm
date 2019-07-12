@@ -126,13 +126,21 @@
 
 
                             <br/>
-                            {#
+                            
                             <label>
-                                Сортировка <span><input type="number" min="0" max="99" class="edit_pole edit_sort" 
-                                                        rel="{{ k1 }}" name="sort" s='{{ creatSecret(k1) }}' for_res="shows{{ k1 }}" 
-                                                        value="{$v1.sort}" /></span>
+                                Сортировка <span>
+                                    <input 
+                                        type="number" 
+                                        min="0" max="99" 
+                                        class="edit_pole edit_sort" 
+                                        rel="{{ k1 }}" 
+                                        name="sort" 
+                                        s='{{ creatSecret(k1) }}' for_res="shows{{ k1 }}" 
+                                        value="{$v1.sort}" 
+                                        />
+                                </span>
                             </label>
-                            #}
+                            
                             <a href="?level={{ get.level }}&edit_id={{ k1 }}" class="btn btn-xs btn-info">редактировать</a>
 
                         </td>

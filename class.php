@@ -22,13 +22,14 @@ class items {
     public static $sort_head = null;
 
     /**
-     * добавляем в выборку из главной таблицы " WHERE + $sql_add_where "
+     * добавляем в выборку из главной таблицы " WHERE + $sql_add_where " (getItemsSimple)
      * `mitems` mi 
      * @var string
      */
-    // public static $sql_items_add_where = null;
+    public static $sql_items_add_where = '';
+
     /**
-     * добавляем в выборку из дополнительной таблицы " WHERE + $sql_add_where "
+     * добавляем в выборку из дополнительной таблицы " WHERE + $sql_add_where " (getItems, getItemsSimple)
       midop.`name`,
       midop.`value`,
       midop.`value_text`
@@ -37,7 +38,7 @@ class items {
      * @var string
      */
     public static $sql_itemsdop_add_where = null;
-
+    public static $sql_itemsdop2_add_where = null;
     /**
      * массив переменных для запроса
      * @var type 
@@ -173,6 +174,7 @@ class items {
         $ff1 = 'SELECT 
                 midop.`id_item`, 
                 midop.`name`, 
+                
                 midop.`value`,
                 midop.`value_date`,
                 midop.`value_datetime`,
@@ -191,8 +193,12 @@ class items {
             ;';
         self::$sql_itemsdop_add_where = null;
 
+//        if( isset(self::$sql_itemsdop_add_where{3}) ){
+//            echo '<pre>';
 //        echo $ff1;
+//        echo '</pre>';
 //        echo '<br/><br/>';
+//        }
 
         $ff = $db->prepare($ff1);
 
@@ -220,6 +226,178 @@ class items {
                     )
                     );
         }
+
+        $out = array('data' => $re
+            , 'img_dir' => self::$dir_img_uri
+            , 'img_dir_dl' => self::$dir_img_uri_download
+        );
+
+//        if (is_dir($dir_for_cash)) {
+//            if (isset($module{1})) {
+//                file_put_contents($dir_for_cash . 'cash.items.' . \f\translit($module, 'uri2') . '.arr', serialize($out));
+//            } else {
+//                file_put_contents($dir_for_cash . 'cash' . \f\translit($module, 'uri2') . 'items.arr', serialize($out));
+//            }
+//        }
+
+        return f\end2('Достали список', 'ok', $out, 'array');
+    }
+
+    /**
+     * получаем данные из итемс хранилища
+     * @param type $db
+     * @param type $module
+     * @param type $stat
+     * @return type
+     */
+    public static function getItemsSimple($db, $module = null, $stat = 'show') {
+
+        $folder = \Nyos\nyos::$folder_now;
+
+//        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' ){
+//            echo $folder. '<Br/> 2 '.$module.'<br/> 3 '.$stat.'<Br/> 4 '.$limit;
+//        }
+
+        if (self::$dir_img_server === false) {
+            self::creatFolderImage($folder);
+        }
+
+//        $dir_for_cash = DR . dir_site;
+//        if (isset($module{1}) && file_exists($dir_for_cash . 'cash.items.' . $module . '.arr')) {
+//
+//            $out = unserialize(file_get_contents($dir_for_cash . 'cash.items.' . $module . '.arr'));
+//            return f\end2('Достали список', 'ok', $out, 'array');
+//        } elseif (file_exists($dir_for_cash . 'cash.items.arr')) {
+//
+//            $out = unserialize(file_get_contents($dir_for_cash . 'cash.items.arr'));
+//            return f\end2('Достали список', 'ok', $out, 'array');
+//        }
+
+
+        try {
+
+
+
+
+
+            $ff1 = 'SELECT 
+                mi.*,
+                midop.id dops_id, 
+                midop.`name`, 
+                midop.`value`,
+                midop.`value_date`,
+                midop.`value_datetime`,
+                midop.`value_text` 
+            FROM 
+                `mitems-dops` midop 
+                
+            INNER JOIN `mitems` mi ON mi.folder = :folder '
+                    . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
+                    . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
+                    . 'AND mi.`status` != \'delete2\' 
+                AND mi.id = midop.id_item
+                ' . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '' ) . '
+                ' . ( self::$sql_itemsdop2_add_where ?? '' ) .'
+            WHERE 
+                midop.status IS NULL 
+                ' . (!empty(self::$sql_itemsdop_add_where) ? ' AND ' . self::$sql_itemsdop_add_where : '' )
+                    . ';';
+                    
+//            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
+//                \f\pa($ff1);
+
+            self::$sql_itemsdop_add_where = null;
+
+//        if( isset(self::$sql_itemsdop_add_where{3}) ){
+//            echo '<pre>';
+//        echo $ff1;
+//        echo '</pre>';
+//        echo '<br/><br/>';
+//        }
+
+            $ff = $db->prepare($ff1);
+
+            $for_sql = self::$sql_itemsdop_add_where_array;
+            $for_sql[':folder'] = $folder;
+            self::$sql_itemsdop_add_where_array = [];
+
+            $ff->execute($for_sql);
+
+            // \f\pa($ff->fetchAll());
+
+            while ($r = $ff->fetch()) {
+
+//            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
+//                \f\pa($r);
+
+                if (!isset($re[$r['id']])) {
+                    $re[$r['id']] = array(
+                        'id' => $r['id'],
+                        'folder' => $r['folder'],
+                        'module' => $r['module'],
+                        'head' => $r['head'],
+                        'sort' => $r['sort'],
+                        'status' => $r['status'],
+                        'add_d' => $r['add_d'],
+                        'add_t' => $r['add_t']
+                    );
+                }
+
+                if (!isset($re[$r['id']]['dop']))
+                    $re[$r['id']]['dop'] = [];
+
+                $re[$r['id']]['dop'][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+            }
+
+
+
+            if (1 == 2) {
+
+                $f = 'SELECT * FROM `mitems` mi WHERE mi.folder = :folder '
+                        . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
+                        . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
+                        . 'AND mi.`status` != \'delete2\' '
+                        . 'ORDER BY '
+                        . ( self::$sort_head == 'desc' ? ' mi.head DESC, ' : '' )
+                        . ( self::$sort_head == 'asc' ? ' mi.head ASC, ' : '' )
+                        . ' mi.`sort` DESC, mi.`add_d` DESC, mi.`add_t` DESC '
+                        . ( isset($limit{1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '' )
+                        . ';';
+
+//            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
+//                echo '<br/>'.'<br/>'.$f;
+
+                $ff = $db->prepare($f);
+                $ff->execute(
+                        array(
+                            ':folder' => $folder
+                ));
+
+                //$re1 = $ff->fetchAll();
+                $re = [];
+
+                while ($v = $ff->fetch()) {
+                    // foreach ($re1 as $k => $v) {
+                    $re[$v['id']] = $v;
+                }
+            }
+            
+            
+        } catch (\PDOException $ex) {
+
+//            echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
+//            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+//            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+//            . PHP_EOL . $ex->getTraceAsString()
+//            . '</pre>';
+// не найдена таблица, создаём значит её
+            if (strpos($ex->getMessage(), 'no such table') !== false) {
+
+                self::creatTable($db);
+                // \f\redirect( '/' );
+            }
+        }
+
 
         $out = array('data' => $re
             , 'img_dir' => self::$dir_img_uri
@@ -681,78 +859,76 @@ class items {
             $vars = array(
                 ':mod' => $module_name,
             );
-            
+
             $dopsql = '';
             $nn = 1;
             foreach ($data_dops as $k => $v) {
-                $dopsql .= PHP_EOL.' AND id IN ( SELECT id_item FROM `mitems-dops` WHERE name = :k'.$nn.' AND value = :v'.$nn.' ) ';
-                $vars[':k'.$nn] = $k;
-                $vars[':v'.$nn] = $v;
+                $dopsql .= PHP_EOL . ' AND id IN ( SELECT id_item FROM `mitems-dops` WHERE name = :k' . $nn . ' AND value = :v' . $nn . ' ) ';
+                $vars[':k' . $nn] = $k;
+                $vars[':v' . $nn] = $v;
                 $nn++;
             }
 
-            
-            
             $sql = 'UPDATE mitems 
                     SET status = \'delete\'
                     WHERE module = :mod '
-                    .PHP_EOL.' AND status != \'delete2\' '
+                    . PHP_EOL . ' AND status != \'delete2\' '
                     // .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
                     . $dopsql
-                .';';
+                    . ';';
             //\f\pa($sql);
             $ff = $db->prepare($sql);
             $ff->execute($vars);
 
 
 
-/*
+            /*
 
-            $dopsql = '';
-            $nn = 1;
-            foreach ($data_dops as $k => $v) {
-                $dopsql .= ' INNER JOIN `mitems-dops` mid5' . $nn . ' ON mid5' . $nn . '.id_item = mi.id AND mid5' . $nn . '.name = \'' . addslashes($k) . '\' AND mid5' . $nn . '.value = \'' . addslashes($v) . '\' ';
-                $nn++;
-            }
+              $dopsql = '';
+              $nn = 1;
+              foreach ($data_dops as $k => $v) {
+              $dopsql .= ' INNER JOIN `mitems-dops` mid5' . $nn . ' ON mid5' . $nn . '.id_item = mi.id AND mid5' . $nn . '.name = \'' . addslashes($k) . '\' AND mid5' . $nn . '.value = \'' . addslashes($v) . '\' ';
+              $nn++;
+              }
 
-            $ff = $db->prepare('SELECT 
-                    mi.id
-                FROM 
-                    mitems mi
-                    
-                ' . $dopsql . '
-                
-                WHERE
-                    mi.module = :mod1 AND
-                    mi.status != \'delete2\' 
-                GROUP BY 
-                    mi.id
-                ');
+              $ff = $db->prepare('SELECT
+              mi.id
+              FROM
+              mitems mi
 
-            $ff->execute(array(
-                // ':id_user' => 'f34d6d84-5ecb-4a40-9b03-71d03cb730cb',
-                ':mod1' => $module_name,
-                    // ':date' => ' date(\'' . date('Y-m-d', $_SERVER['REQUEST_TIME'] - 3600*24*3 ) .'\') ',
-                    // ':dates' => $start_date //date( 'Y-m-d', ($_SERVER['REQUEST_TIME'] - 3600 * 24 * 14 ) )
-            ));
-            //$e3 = $ff->fetchAll();
+              ' . $dopsql . '
 
-            $sql2 = '';
-            while ($e = $ff->fetch()) {
+              WHERE
+              mi.module = :mod1 AND
+              mi.status != \'delete2\'
+              GROUP BY
+              mi.id
+              ');
 
-                $sql2 .= (!empty($sql2) ? ' OR ' : '' ) . ' `id` = \'' . $e['id'] . '\' ';
-            }
+              $ff->execute(array(
+              // ':id_user' => 'f34d6d84-5ecb-4a40-9b03-71d03cb730cb',
+              ':mod1' => $module_name,
+              // ':date' => ' date(\'' . date('Y-m-d', $_SERVER['REQUEST_TIME'] - 3600*24*3 ) .'\') ',
+              // ':dates' => $start_date //date( 'Y-m-d', ($_SERVER['REQUEST_TIME'] - 3600 * 24 * 14 ) )
+              ));
+              //$e3 = $ff->fetchAll();
 
-            //echo '<br/>';
-            $er = 'UPDATE mitems SET `status` = \'delete\' WHERE ' . $sql2;
-            //echo '<br/>';
-            $f = $db->prepare($er);
-            $f->execute();
+              $sql2 = '';
+              while ($e = $ff->fetch()) {
 
-            //self::clearCash();
-            //\f\pa($e);
- * 
- */
+              $sql2 .= (!empty($sql2) ? ' OR ' : '' ) . ' `id` = \'' . $e['id'] . '\' ';
+              }
+
+              //echo '<br/>';
+              $er = 'UPDATE mitems SET `status` = \'delete\' WHERE ' . $sql2;
+              //echo '<br/>';
+              $f = $db->prepare($er);
+              $f->execute();
+
+              //self::clearCash();
+              //\f\pa($e);
+             * 
+             */
         }
 
         return \f\end3('Окей');
@@ -773,6 +949,21 @@ class items {
         $cfg_mod = \Nyos\Nyos::$menu[$mod_name];
 
         return self::addNew($db, $folder, $cfg_mod, $data, $files, $add_all_dops);
+    }
+
+    public static function addNewSimples($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
+
+        $folder = \Nyos\Nyos::$folder_now;
+        $cfg_mod = \Nyos\Nyos::$menu[$mod_name];
+
+        $nn = 0;
+        
+        foreach( $data as $k => $v ){
+        self::addNew($db, $folder, $cfg_mod, $v);
+        $nn++;
+        }
+        
+        return $nn;
     }
 
     /**
@@ -825,17 +1016,9 @@ class items {
                     continue;
 
 //                echo '<hr><hr>';
-//
 //                \f\pa($k);
 //                \f\pa($v);
-//                echo '<br/>';
-//                echo $k;
-//                echo '<br/>';
-//                \f\pa($v);
-//                echo '<br/>';
-//                if( isset($data[$k]) )
 //                \f\pa($data[$k]);
-//                echo '<br/>';
                 //if (isset($data[$k]{0}) && isset($v['name_rus']{0})) {
                 // \f\pa($k);
                 // \f\pa($data[$k]);

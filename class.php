@@ -276,10 +276,6 @@ class items {
 
         try {
 
-
-
-
-
             $ff1 = 'SELECT 
                 mi.*,
                 midop.id dops_id, 
@@ -294,7 +290,7 @@ class items {
             INNER JOIN `mitems` mi ON mi.folder = :folder '
                     . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
                     . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
-                    . 'AND mi.`status` != \'delete2\' 
+                    . ' AND mi.`status` != \'delete2\' 
                 AND mi.id = midop.id_item
                 ' . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '' ) . '
                 ' . ( self::$sql_itemsdop2_add_where ?? '' ) .'
@@ -307,6 +303,8 @@ class items {
 //                \f\pa($ff1);
 
             self::$sql_itemsdop_add_where = null;
+            self::$sql_itemsdop2_add_where = null;
+            self::$sql_items_add_where = null;
 
 //        if( isset(self::$sql_itemsdop_add_where{3}) ){
 //            echo '<pre>';
@@ -399,7 +397,7 @@ class items {
         }
 
 
-        $out = array('data' => $re
+        $out = array('data' => $re ?? []
             , 'img_dir' => self::$dir_img_uri
             , 'img_dir_dl' => self::$dir_img_uri_download
         );

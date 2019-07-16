@@ -845,7 +845,7 @@ class items {
         return f\end2('Окей, запись добавлена', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }
 
-    public static function deleteItems($db, string $folder, string $module_name, array $data_dops, $id = null) {
+    public static function deleteItems($db, string $folder, string $module_name, $data_dops = [], $id = null) {
 
         if (!empty($id)) {
 
@@ -1106,6 +1106,7 @@ class items {
             // echo '<Br/>db\sql_insert_mnogo - ' .$new_id ;
             //$status = '';
             \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
+            // \f\pa($in_db,2,null,'items что пишем в базу');
             // db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
             //echo $status;
         }

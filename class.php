@@ -20,6 +20,7 @@ class items {
     public static $dir_img_uri = false;
     public static $dir_img_uri_download = false;
     public static $sort_head = null;
+    public static $sql_select_vars = null;
 
     /**
      * добавляем в выборку из главной таблицы " WHERE + $sql_add_where " (getItemsSimple)
@@ -39,11 +40,20 @@ class items {
      */
     public static $sql_itemsdop_add_where = null;
     public static $sql_itemsdop2_add_where = null;
+
+    /**
+     * показать запрос что выполняем (гет симпл)
+     * @var type 
+     */
+    public static $show_sql = false;
+
     /**
      * массив переменных для запроса
      * @var type 
      */
     public static $sql_itemsdop_add_where_array = [];
+    public static $sql_order = '';
+    public static $sql_limit = '';
 
     public static function setSort($a1, $a2) {
         if ($a1 == 'head' && ( $a2 == 'asc' || $a2 == 'desc' )) {
@@ -125,10 +135,11 @@ class items {
 
         try {
 
-            $f = 'SELECT * FROM `mitems` mi WHERE mi.folder = :folder '
+            $f = 'SELECT * FROM `mitems` mi WHERE '
+                    . ' mi.`status` != \'delete2\' '
+                    // . ' AND mi.folder = :folder '
                     . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
                     . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
-                    . 'AND mi.`status` != \'delete2\' '
                     . 'ORDER BY '
                     . ( self::$sort_head == 'desc' ? ' mi.head DESC, ' : '' )
                     . ( self::$sort_head == 'asc' ? ' mi.head ASC, ' : '' )
@@ -142,7 +153,7 @@ class items {
             $ff = $db->prepare($f);
             $ff->execute(
                     array(
-                        ':folder' => $folder
+                    // ':folder' => $folder
             ));
 
             //$re1 = $ff->fetchAll();
@@ -182,11 +193,13 @@ class items {
             FROM 
                 `mitems-dops` midop 
                 
-            INNER JOIN `mitems` mi ON mi.folder = :folder '
+            INNER JOIN `mitems` mi ON '
+                // .'mi.folder = :folder '
+                . ' mi.id = midop.id_item '
                 . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
                 . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
                 . 'AND mi.`status` != \'delete2\' 
-                AND mi.id = midop.id_item
+                
             WHERE 
                 midop.status IS NULL 
                 ' . ( isset(self::$sql_itemsdop_add_where{3}) ? ' AND ' . self::$sql_itemsdop_add_where : '' ) . '                
@@ -203,7 +216,7 @@ class items {
         $ff = $db->prepare($ff1);
 
         $for_sql = self::$sql_itemsdop_add_where_array;
-        $for_sql[':folder'] = $folder;
+        // $for_sql[':folder'] = $folder;
         self::$sql_itemsdop_add_where_array = [];
 
         $ff->execute($for_sql);
@@ -283,28 +296,41 @@ class items {
                 midop.`value`,
                 midop.`value_date`,
                 midop.`value_datetime`,
-                midop.`value_text` 
+                midop.`value_text` '
+                    . ' ' . ( self::$sql_select_vars ?? '' )
+                    . '
             FROM 
                 `mitems-dops` midop 
                 
-            INNER JOIN `mitems` mi ON mi.folder = :folder '
-                    . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
-                    . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
-                    . ' AND mi.`status` != \'delete2\' 
-                AND mi.id = midop.id_item
-                ' . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '' ) . '
-                ' . ( self::$sql_itemsdop2_add_where ?? '' ) .'
+            INNER JOIN `mitems` mi ON '
+                    // .' mi.folder = :folder '
+                    . ' mi.id = midop.id_item ' . PHP_EOL
+                    // . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' ). PHP_EOL
+                    . ' AND mi.`module` = :module ' . PHP_EOL
+                    . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' ) . PHP_EOL
+                    . ' AND mi.`status` != \'delete2\' '
+                    . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '' ) . PHP_EOL
+                    . ( self::$sql_itemsdop2_add_where ?? '' ) . '
             WHERE 
                 midop.status IS NULL 
                 ' . (!empty(self::$sql_itemsdop_add_where) ? ' AND ' . self::$sql_itemsdop_add_where : '' )
+                    . ' ' . ( self::$sql_order ?? '' )
+                    . ' ' . ( self::$sql_limit ?? '' )
                     . ';';
-                    
-//            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
-//                \f\pa($ff1);
 
+//            if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+//                \f\pa($ff1);
+//            }
+            if (self::$show_sql === true) {
+                \f\pa($ff1);
+            }
+
+            self::$sql_select_vars = null;
             self::$sql_itemsdop_add_where = null;
             self::$sql_itemsdop2_add_where = null;
             self::$sql_items_add_where = null;
+            self::$sql_limit = '';
+            self::$sql_order = '';
 
 //        if( isset(self::$sql_itemsdop_add_where{3}) ){
 //            echo '<pre>';
@@ -316,13 +342,22 @@ class items {
             $ff = $db->prepare($ff1);
 
             $for_sql = self::$sql_itemsdop_add_where_array;
-            $for_sql[':folder'] = $folder;
+            // $for_sql[':folder'] = $folder;
+            $for_sql[':module'] = ( isset($module{1}) ) ? $module : '';
             self::$sql_itemsdop_add_where_array = [];
+
+            if (self::$show_sql === true) {
+                \f\pa($for_sql);
+            }
+
 
             $ff->execute($for_sql);
 
+//            if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+//                \f\pa($for_sql);
+//            }
             // \f\pa($ff->fetchAll());
-
+            $nn = 0;
             while ($r = $ff->fetch()) {
 
 //            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
@@ -331,7 +366,7 @@ class items {
                 if (!isset($re[$r['id']])) {
                     $re[$r['id']] = array(
                         'id' => $r['id'],
-                        'folder' => $r['folder'],
+                        //'folder' => $r['folder'],
                         'module' => $r['module'],
                         'head' => $r['head'],
                         'sort' => $r['sort'],
@@ -345,9 +380,8 @@ class items {
                     $re[$r['id']]['dop'] = [];
 
                 $re[$r['id']]['dop'][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                $nn++;
             }
-
-
 
             if (1 == 2) {
 
@@ -379,8 +413,66 @@ class items {
                     $re[$v['id']] = $v;
                 }
             }
-            
-            
+
+            if ($nn == 0) {
+
+
+                $ff1 = 'SELECT 
+                        mi.* '
+                        . ' ' . ( self::$sql_select_vars ?? '' )
+                        . '
+                    FROM 
+                        `mitems` mi
+                    WHERE '
+                        // .' mi.folder = :folder '
+                        . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
+                        . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
+                        . ' AND mi.`status` != \'delete2\' 
+                        ' . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '' ) . '
+                        ' . ( self::$sql_itemsdop2_add_where ?? '' ) . '
+                        ' . (!empty(self::$sql_itemsdop_add_where) ? ' AND ' . self::$sql_itemsdop_add_where : '' )
+                        . ' ' . ( self::$sql_order ?? '' )
+                        . ' ' . ( self::$sql_limit ?? '' )
+                        . ';';
+
+//                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+//                    \f\pa($ff1);
+//                }
+
+                self::$sql_select_vars = null;
+                self::$sql_itemsdop_add_where = null;
+                self::$sql_itemsdop2_add_where = null;
+                self::$sql_items_add_where = null;
+                self::$sql_limit = '';
+                self::$sql_order = '';
+
+//        if( isset(self::$sql_itemsdop_add_where{3}) ){
+//            echo '<pre>';
+//        echo $ff1;
+//        echo '</pre>';
+//        echo '<br/><br/>';
+//        }
+
+                $ff = $db->prepare($ff1);
+
+                $for_sql = self::$sql_itemsdop_add_where_array;
+                //$for_sql[':folder'] = $folder;
+                self::$sql_itemsdop_add_where_array = [];
+
+                if (self::$show_sql === true) {
+                    \f\pa($for_sql);
+                }
+
+                $ff->execute($for_sql);
+
+//                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+//                    \f\pa($for_sql);
+//                }
+
+                while ($r = $ff->fetch()) {
+                    $re[$r['id']] = $r;
+                }
+            }
         } catch (\PDOException $ex) {
 
 //            echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
@@ -409,6 +501,8 @@ class items {
 //                file_put_contents($dir_for_cash . 'cash' . \f\translit($module, 'uri2') . 'items.arr', serialize($out));
 //            }
 //        }
+
+        self::$show_sql = false;
 
         return f\end2('Достали список', 'ok', $out, 'array');
     }
@@ -955,12 +1049,12 @@ class items {
         $cfg_mod = \Nyos\Nyos::$menu[$mod_name];
 
         $nn = 0;
-        
-        foreach( $data as $k => $v ){
-        self::addNew($db, $folder, $cfg_mod, $v);
-        $nn++;
+
+        foreach ($data as $k => $v) {
+            self::addNew($db, $folder, $cfg_mod, $v);
+            $nn++;
         }
-        
+
         return $nn;
     }
 

@@ -1,3 +1,32 @@
+сылка с параметрами для добавления записи
+
+https://yapdomik.uralweb.info/i.didrive.php?level=sale_point_oborot&showonly=1&edit__sale_point=1&edit__date=2019-05-01
+
+
+выбор с доп параметрами
+
+
+    \Nyos\mod\items::$sql_itemsdop_add_where_array = array(
+        ':dt1' => date('Y-m-d 05:00:01', strtotime($_REQUEST['date']) )
+        ,
+        ':dt2' => date('Y-m-d 23:50:01', strtotime($_REQUEST['date']) )
+    );
+    \Nyos\mod\items::$sql_itemsdop2_add_where = '
+        INNER JOIN `mitems-dops` md1 
+            ON 
+                md1.id_item = mi.id 
+                AND md1.name = \'start\'
+                AND md1.value_datetime >= :dt1
+                AND md1.value_datetime <= :dt2
+        ';
+    $checki = \Nyos\mod\items::getItemsSimple($db, '050.chekin_checkout', 'show' );
+    \f\pa($checki);
+
+
+
+
+
+
 сортировка
 
 \Nyos\mod\items::setSort( 'head', 'asc' );

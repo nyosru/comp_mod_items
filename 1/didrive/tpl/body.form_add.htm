@@ -108,6 +108,8 @@
                                                                 selected="selected" 
                                                             {% elseif get.var[k] is defined and get.var[k] == k1 %}
                                                                 selected="selected" 
+                                                            {% elseif get['edit__'~k] is defined and get['edit__'~k] == k1 %}
+                                                                selected="selected" 
                                                             {% endif %} 
                                                             >
 
@@ -279,6 +281,8 @@
 
                                            {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
                                                value="{{ list.data[get.edit_id]['dop'][k] }}" 
+                                           {% elseif get['edit__'~k] is defined %}
+                                               value="{{ get['edit__'~k] }}" 
                                            {% endif %}
 
                                            {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}

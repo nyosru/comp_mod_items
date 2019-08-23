@@ -42,9 +42,7 @@
                 </thead>
                 <tbody>
 
-
                     {% for k1, v1 in list.data if v1.module == get.level %}
-
                         {# if isset($smarty.get.filtr) }
                         {$skip = true}
                         {foreach $smarty.get.filtr as $k0 => $v0 }
@@ -74,17 +72,12 @@
                                 </td>
                             </tr>
 
-
                         {% else %}
-
-
 
                             <tr id='item_id_{{ v1.id }}' {# % if v1.status == 'delete' %} style="display:none" {% endif % #} >
 
                                 <td class="va-top" >{{ v1.id }}</td>
-
                                 <td class="va-top">
-
 
                                     {% if v1.head is defined  %}
 
@@ -159,6 +152,12 @@
                                             <a href="{{ sd }}{{ item_dir_img_uri_download() }}{{ list.data[k1]['dop'][k] }}" target="_blank" >
                                                 <img src='{{ sd }}{{ item_dir_img_uri_download() }}{{ list.data[k1]['dop'][k] }}' style='max-width: 150px;' />
                                             </a>
+                                        {% endif %}
+
+                                    {% elseif v.type is defined and v.type == 'textarea_html' %}
+
+                                        {% if list.data[k1]['dop'][k] is not empty %}
+                                            {{ list.data[k1]['dop'][k][0:50]|raw }} ...
                                         {% endif %}
 
                                     {% elseif v.type is defined and v.type == 'select' %}

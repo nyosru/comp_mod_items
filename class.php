@@ -21,6 +21,8 @@ class items {
     public static $dir_img_uri_download = false;
     public static $sort_head = null;
     public static $sql_select_vars = null;
+    public static $cash = [];
+    public static $now_mod = null;
 
     /**
      * добавляем в выборку из главной таблицы " WHERE + $sql_add_where " (getItemsSimple)
@@ -265,6 +267,17 @@ class items {
      */
     public static function getItemsSimple($db, $module = null, $stat = 'show') {
 
+        $save_cash = false;
+
+        if (empty(self::$sql_select_vars) && empty(self::$sql_itemsdop_add_where) && empty(self::$sql_itemsdop2_add_where) && empty(self::$sql_items_add_where) && empty(self::$sql_limit) && empty(self::$sql_order)) {
+
+            if (!empty(self::$cash[$module][$stat])) {
+                return self::$cash[$module][$stat];
+            } else {
+                $save_cash = true;
+            }
+        }
+
         $folder = \Nyos\nyos::$folder_now;
 
 //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' ){
@@ -297,7 +310,7 @@ class items {
                 midop.`value_date`,
                 midop.`value_datetime`,
                 midop.`value_text` '
-                    . ' ' . ( self::$sql_select_vars ?? '' )
+                    . ( self::$sql_select_vars ?? '' )
                     . '
             FROM 
                 `mitems-dops` midop 
@@ -306,10 +319,11 @@ class items {
                     // .' mi.folder = :folder '
                     . ' mi.id = midop.id_item ' . PHP_EOL
                     // . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' ). PHP_EOL
-                    . ' AND mi.`module` = :module ' . PHP_EOL
-                    . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' ) . PHP_EOL
-                    . ' AND mi.`status` != \'delete2\' '
-                    . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '' ) . PHP_EOL
+                    . ' AND mi.`module` = :module '
+                    . (!empty($stat) ? PHP_EOL . ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
+                    . PHP_EOL . ' AND mi.`status` != \'delete2\' '
+                    . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '' )
+                    . PHP_EOL
                     . ( self::$sql_itemsdop2_add_where ?? '' ) . '
             WHERE 
                 midop.status IS NULL 
@@ -350,7 +364,6 @@ class items {
                 \f\pa($for_sql);
             }
 
-
             $ff->execute($for_sql);
 
 //            if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
@@ -363,17 +376,22 @@ class items {
 //            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
 //                \f\pa($r);
 
+                if (self::$show_sql === true) {
+                    \f\pa($r);
+                }
+
                 if (!isset($re[$r['id']])) {
-                    $re[$r['id']] = array(
-                        'id' => $r['id'],
-                        //'folder' => $r['folder'],
-                        'module' => $r['module'],
-                        'head' => $r['head'],
-                        'sort' => $r['sort'],
-                        'status' => $r['status'],
-                        'add_d' => $r['add_d'],
-                        'add_t' => $r['add_t']
-                    );
+                    $re[$r['id']] = $r;
+//                    $re[$r['id']] = array(
+//                        'id' => $r['id'],
+//                        //'folder' => $r['folder'],
+//                        'module' => $r['module'],
+//                        'head' => $r['head'],
+//                        'sort' => $r['sort'],
+//                        'status' => $r['status'],
+//                        'add_d' => $r['add_d'],
+//                        'add_t' => $r['add_t']
+//                    );
                 }
 
                 if (!isset($re[$r['id']]['dop']))
@@ -383,17 +401,31 @@ class items {
                 $nn++;
             }
 
-            if (1 == 2) {
+            if (1 == 1) {
 
-                $f = 'SELECT * FROM `mitems` mi WHERE mi.folder = :folder '
+
+                $sql_dop = '';
+
+                if (!empty($re)) {
+                    foreach ($re as $k => $v) {
+                        $sql_dop .= ' AND mi.id != \'' . $k . '\' ';
+                    }
+                }
+
+                $f = 'SELECT mi.* FROM `mitems` mi '
+                        //. ' INNER JOIN '
+                        // . ' LEFT JOIN `mitems-dops` mi2 ON mi.id = mi2.id_item '
+                        . 'WHERE '
+                        // . ' mi.folder = :folder '
+                        . 'mi.`status` != \'delete2\' '
+                        . $sql_dop
                         . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
                         . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
-                        . 'AND mi.`status` != \'delete2\' '
                         . 'ORDER BY '
                         . ( self::$sort_head == 'desc' ? ' mi.head DESC, ' : '' )
                         . ( self::$sort_head == 'asc' ? ' mi.head ASC, ' : '' )
                         . ' mi.`sort` DESC, mi.`add_d` DESC, mi.`add_t` DESC '
-                        . ( isset($limit{1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '' )
+                        // . ( isset($limit{1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '' )
                         . ';';
 
 //            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
@@ -401,21 +433,35 @@ class items {
 
                 $ff = $db->prepare($f);
                 $ff->execute(
-                        array(
-                            ':folder' => $folder
-                ));
-
-                //$re1 = $ff->fetchAll();
-                $re = [];
+                //array( ':folder' => $folder )
+                );
 
                 while ($v = $ff->fetch()) {
-                    // foreach ($re1 as $k => $v) {
+
                     $re[$v['id']] = $v;
                 }
             }
 
-            if ($nn == 0) {
+            if (self::$show_sql === true) {
+                echo 'записей ' . $nn;
+            }
 
+
+
+
+
+
+
+
+            if (1 == 2 || $nn == 0) {
+
+                $sql_dop = '';
+
+                if (!empty($re)) {
+                    foreach ($re as $k => $v) {
+                        $sql_dop .= (!empty($sql_dop) ? ' AND ' : '' ) . ' mi.id != \'' . $k . '\' ';
+                    }
+                }
 
                 $ff1 = 'SELECT 
                         mi.* '
@@ -424,11 +470,12 @@ class items {
                     FROM 
                         `mitems` mi
                     WHERE '
+                        . ' mi.`status` != \'delete2\' '
+                        . $sql_dop
                         // .' mi.folder = :folder '
                         . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
                         . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
-                        . ' AND mi.`status` != \'delete2\' 
-                        ' . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '' ) . '
+                        . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '' ) . '
                         ' . ( self::$sql_itemsdop2_add_where ?? '' ) . '
                         ' . (!empty(self::$sql_itemsdop_add_where) ? ' AND ' . self::$sql_itemsdop_add_where : '' )
                         . ' ' . ( self::$sql_order ?? '' )
@@ -438,6 +485,7 @@ class items {
 //                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
 //                    \f\pa($ff1);
 //                }
+
 
                 self::$sql_select_vars = null;
                 self::$sql_itemsdop_add_where = null;
@@ -466,8 +514,9 @@ class items {
                 $ff->execute($for_sql);
 
 //                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
-//                    \f\pa($for_sql);
-//                }
+                if (self::$show_sql === true) {
+                    \f\pa($for_sql);
+                }
 
                 while ($r = $ff->fetch()) {
                     $re[$r['id']] = $r;
@@ -488,11 +537,13 @@ class items {
             }
         }
 
-
         $out = array('data' => $re ?? []
             , 'img_dir' => self::$dir_img_uri
             , 'img_dir_dl' => self::$dir_img_uri_download
         );
+
+        if ($save_cash === true)
+            self::$cash[$module][$stat] = $out;
 
 //        if (is_dir($dir_for_cash)) {
 //            if (isset($module{1})) {
@@ -1038,9 +1089,14 @@ class items {
     public static function addNewSimple($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
         $folder = \Nyos\Nyos::$folder_now;
-        $cfg_mod = \Nyos\Nyos::$menu[$mod_name];
+        $cfg_mod = \Nyos\Nyos::$menu[$mod_name] ?? $mod_name;
 
-        return self::addNew($db, $folder, $cfg_mod, $data, $files, $add_all_dops);
+        try {
+
+            return $e = self::addNew($db, $folder, $cfg_mod, $data, $files, $add_all_dops);
+        } catch (\PDOException $ex) {
+            return false;
+        }
     }
 
     public static function addNewSimples($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
@@ -1067,7 +1123,7 @@ class items {
      * @param array $data
      * @return type
      */
-    public static function addNew($db, string $folder, array $cfg_mod, array $data, $files = array(), $add_all_dops = false) {
+    public static function addNew($db, string $folder, $cfg_mod, array $data, $files = array(), $add_all_dops = false) {
 
         if (empty(self::$dir_img_server)) {
             self::creatFolderImage($folder);
@@ -1086,13 +1142,20 @@ class items {
 
             // echo '<Br/>'.__FILE__.' '.__LINE__;
 
-            $new_id = \f\db\db2_insert($db, 'mitems', array(
-                'folder' => $folder
-                , 'module' => $cfg_mod['cfg.level']
+            $arin = array(
+                'module' => ( $cfg_mod['cfg.level'] ?? $cfg_mod )
                 , 'head' => $data['head']
                 , 'add_d' => date('Y-m-d', $_SERVER['REQUEST_TIME'])
                 , 'add_t' => date('H:i:s', $_SERVER['REQUEST_TIME'])
-                    ), 'da', 'last_id');
+            );
+
+            if (!empty($folder))
+                $arin['folder'] = $folder;
+
+            if (!empty($data['status']))
+                $arin['status'] = $data['status'];
+
+            $new_id = \f\db\db2_insert($db, 'mitems', $arin, 'da', 'last_id');
 
             // echo 'новый id '.$new_id;
 
@@ -1100,6 +1163,7 @@ class items {
 
             // \f\pa($cfg_mod,2,null,'$cfg_mod');
 
+            if( isset($cfg_mod) && is_array($cfg_mod) && sizeof($cfg_mod) > 0 )
             foreach ($cfg_mod as $k => $v) {
 
                 // \f\pa($v,2,null,'$cfg_mod $v');

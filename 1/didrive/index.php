@@ -125,10 +125,8 @@ $vv['krohi'][1] = array(
     'uri' => $vv['now_level']['cfg.level']
 );
 
-
-
-\Nyos\mod\items::setSort( 'head', 'asc' );
-$vv['list'] = \Nyos\mod\items::getItems( $db, $vv['folder'], $vv['now_level']['cfg.level'], null);
+//\Nyos\mod\items::setSort( 'head', 'asc' );
+//$vv['list'] = \Nyos\mod\items::getItems( $db, $vv['folder'], $vv['now_level']['cfg.level'], null);
 
 //\f\pa($vv['list']);
 // \f\pa($vv['now_level']);
@@ -136,6 +134,14 @@ $vv['list'] = \Nyos\mod\items::getItems( $db, $vv['folder'], $vv['now_level']['c
 // \f\pa($_POST);
 
 foreach( $vv['now_level'] as $k => $v ){
+    
+    
+    //\f\pa($v);
+    
+    if( isset($v['type']) && $v['type'] == 'textarea_html' ){
+    $vv['ckeditor_in'][$k] = array( 'type' => 'mini.img' );
+    }
+
     
 //    echo PHP_EOL.$k;
 //    \f\pa($v);

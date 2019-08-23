@@ -17,6 +17,8 @@
 
 {% endif %}
 
+{% set run_cfg_edit = false %}
+
 <form 
 
     action="?level={{ get.level }}&rand={{ random() }}{% if get.showonly is defined %}&goto_start=da{% endif %}" 
@@ -90,8 +92,8 @@
                                     <span>
 
                                         <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
-                                            {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
-                                            />
+                                                {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+                                                />
 
                                         {% if v.obayz is not defined %}
                                             <option value="">можете выбрать</option>
@@ -144,8 +146,8 @@
                                     <span>
 
                                         <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
-                                            {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %} 
-                                            />
+                                                {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %} 
+                                                />
 
                                         {% if v.obayz is not defined %}
                                             <option value="">можете выбрать</option>
@@ -198,8 +200,8 @@
                                     <span>
 
                                         <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
-                                            {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
-                                            />
+                                                {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+                                                />
 
                                         {#
                                         {% if v.obayz is not defined %}
@@ -247,8 +249,8 @@
                                                checked='checked'
                                            {% endif %}
 
-                                        {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
-                                           
+                                           {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+
                                            />
 
 
@@ -335,6 +337,11 @@
                                               >{% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}{{ list.data[get.edit_id]['dop'][k]|escape }}{% endif %}</textarea>
 
 
+                                {% elseif v.type is defined and v.type == 'textarea_html' %}
+
+                                    <textarea id='i_{{ k }}' type="number" name="{{ k }}"  class="form-control" 
+                                              {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+                                              >{% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}{{ list.data[get.edit_id]['dop'][k]|escape }}{% endif %}</textarea>
 
                                     {# иначе text string #}
                                 {% else %}

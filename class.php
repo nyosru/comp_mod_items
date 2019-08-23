@@ -1223,6 +1223,7 @@ class items {
                         'name' => $v['var_in'] . '_translit',
                         'value_text' => \f\translit($data[$v['var_in']], 'uri2')
                     );
+                    
                 }
             }
 

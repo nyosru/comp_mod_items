@@ -11,6 +11,7 @@ $function = new Twig_SimpleFunction('add_items_on_modal', function ( $module, $d
         \f\pa(\Nyos\nyos::$menu[$module], 2);
     }
 
+    
     \f\pa(\Nyos\nyos::$menu, 2);
 
     // $e = \Nyos\mod\items::getItems( $db, \Nyos\nyos::$folder_now, $module, $stat, null );

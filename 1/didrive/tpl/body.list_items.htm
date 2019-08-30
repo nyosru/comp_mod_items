@@ -90,6 +90,14 @@
                                                 $('#head{{ v1.id }}').show('slow');">{{ v1.head }}</span>
                                     {% endif %}
 
+
+                                    {% if list.data[k1]['dop']['head_translit'] is defined %}
+                                        <sup title="dop[head_translit]" >{{ list.data[k1]['dop']['head_translit'] }}</sup>
+                                    {% endif %}
+                                    
+                                    {#{ pa(v1) }#}
+                                    
+                                    
                                     <span><input type='text' id='head{{ k1 }}' value="{{ v1.head|escape }}" name="head" style="display:none;width: 100%;" 
                                                  class='edit_pole form-control' folder='{{ folder }}'
                                                  rel="{{ k1 }}" s='{{ v1.id }}' 
@@ -144,7 +152,6 @@
                             {% for k, v in now_level if v.name_rus is defined and ( v.skip_didr_list is not defined or ( v.skip_didr_list is defined and v.skip_didr_list != 'da' ) ) %}
 
                                 <td class="va-top">
-
 
                                     {% if v.type is defined and v.type == 'image' %}
 

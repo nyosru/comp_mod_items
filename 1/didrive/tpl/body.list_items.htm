@@ -90,6 +90,14 @@
                                                 $('#head{{ v1.id }}').show('slow');">{{ v1.head }}</span>
                                     {% endif %}
 
+
+                                    {% if list.data[k1]['dop']['head_translit'] is defined %}
+                                        <sup title="dop[head_translit]" >{{ list.data[k1]['dop']['head_translit'] }}</sup>
+                                    {% endif %}
+                                    
+                                    {#{ pa(v1) }#}
+                                    
+                                    
                                     <span><input type='text' id='head{{ k1 }}' value="{{ v1.head|escape }}" name="head" style="display:none;width: 100%;" 
                                                  class='edit_pole form-control' folder='{{ folder }}'
                                                  rel="{{ k1 }}" s='{{ v1.id }}' 

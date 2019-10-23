@@ -19,7 +19,6 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 }
 
 
-
 // проверяем секрет
 if (
         (

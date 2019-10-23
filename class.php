@@ -1223,7 +1223,6 @@ class items {
                         'name' => $v['var_in'] . '_translit',
                         'value_text' => \f\translit($data[$v['var_in']], 'uri2')
                     );
-                    
                 }
             }
 
@@ -1292,13 +1291,10 @@ class items {
         if (self::$dir_img_server === false) {
             self::creatFolderImage($folder);
         }
-        
         if (self::$dir_img_server === false) {
             return f\end2('Ошибка, папка для файлов не может быть создана', 'error', array('file' => __FILE__, 'line' => __LINE__), 'array');
         }
 
-        //\f\pa($data);
-        
         if (isset($data['head']{0})) {
 
             \f\db\db_edit2($db, 'mitems', array('id' => $id_item), array('head' => $data['head']), false, 1, 'da');
@@ -1318,7 +1314,7 @@ class items {
             $in_db = [];
 
             if (isset($cfg_mod['head_translit'])) {
-                $in_db[] = [ 'name' => 'head_translit', 'value' => \f\translit($data['head'], 'uri2') ];
+                $in_db['head_translit'] = \f\translit($data['head'], 'uri2');
             }
 
             //\f\pa($cfg_mod,2,null,'$cfg_mod');
@@ -1431,7 +1427,7 @@ class items {
 //                    $in[] = array('name' => $k, 'value' => $v);
 //                    
 //                }
-            //\f\pa($in_db,2,null,'$in_db');
+            // \f\pa($in_db,2,null,'$in_db');
 
             \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $id_item));
 

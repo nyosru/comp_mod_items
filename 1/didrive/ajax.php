@@ -16,7 +16,6 @@ require( $_SERVER['DOCUMENT_ROOT'] . '/all/ajax.start.php' );
 //    scanNewData($db);
 //    //cron_scan_new_datafile();
 //}
-
 // проверяем секрет
 if (
         (

@@ -13,7 +13,6 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
 //  }
 //}
 
-
     $('body .select_edit_item_dop').change(function (event) {
         // alert('Элемент foo был изменен.');
 

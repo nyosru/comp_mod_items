@@ -13,6 +13,7 @@ $tt = \Nyos\mod\items::itemsPage( $db, $vv['folder'], $_GET['level'], 10, 2 );
 
 // \f\pa($vv['now_mod']);
 
+
 if( isset($_GET['delete_item']) && is_numeric($_GET['delete_item']) && isset($_GET['s']) && $_GET['s'] == md5('s'.$_GET['delete_item']) ){
 
     //$_SESSION['status1'] = true;
@@ -59,6 +60,7 @@ if( isset($vv['now_mod']['datain_name_file']) ){
 $vv['tpl_body'] = dir_site_module_nowlev_tpl.'body.htm';
 
 // $vv['tpl_body'] = \f\like_tpl('body', null, dir_site_module_nowlev_tpl, DR );
+
 // $vv['tpl_0body'] = \f\like_tpl('body', $vv['dir_module_tpl'], $vv['dir_site_tpl']);
 
 /*

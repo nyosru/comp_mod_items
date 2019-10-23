@@ -277,6 +277,38 @@
                                     <input id='i_{{ k }}' type="file" name="{{ k }}" value="" />
                                     <br/>
 
+                                {% elseif v.type is defined and v.type == 'file' %}
+
+                                    {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}
+
+                                        {#
+                                        <a href="{{ sd }}module_items_image/{{ list.data[get.edit_id]['dop'][k] }}" target="_blank" >
+                                            <img style="float:left; padding: 0 10px;" src="/0.service/show.edit.image.php?q=80&w=150&uri=/module_items_image/{{ list.data[get.edit_id]['dop'][k] }}" />
+                                        </a>
+                                        #}
+                                        
+                                        <a href="{{ list.img_dir }}{{ list.data[get.edit_id]['dop'][k] }}" target="_blank" >
+                                        {{ list.data[get.edit_id]['dop'][k] }}
+                                        </a>
+                                        
+                                        <br/>
+                                        <br/>
+
+                                        <input id='ii_{{ k }}' type="hidden" name="{{ k }}" value="{{ list.data[get.edit_id]['dop'][k] }}" />
+
+                                        <label>
+                                            <input type="checkbox" name="{{ k }}_del" value="yes" /> удалить файл
+                                        </label>
+
+                                        <br/>
+                                        <br/>
+                                        <b>для замены файла, выберите новый</b><br/>
+
+                                    {% endif %}
+
+                                    <input id='i_{{ k }}' type="file" name="{{ k }}" value="" />
+                                    <br/>
+
                                 {% elseif v.type is defined and v.type == 'date' %}
 
                                     <input id='i_{{ k }}' type="date" name="{{ k }}" 
@@ -378,6 +410,7 @@
                             <input type="submit" name="addnew" value="Добавить" class="btn btn-success" style="position:sticky; bottom:0;position: -webkit-sticky;  position: -moz-sticky; position: -ms-sticky;  position: -o-sticky;" />
 
                         {% endif %}
+
                         {% if now_level.folder is defined and now_level.folder is not empty %}<input type="hidden" name="dop_folder" value="{{ now_level.folder }}" />{% endif %}
 
                     </div>

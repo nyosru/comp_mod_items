@@ -19,7 +19,6 @@ $().ready(function () {
 //            return false;
 //        }
 
-
         $.ajax({
 
             type: 'POST',

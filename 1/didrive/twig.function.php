@@ -40,3 +40,26 @@ $function = new Twig_SimpleFunction('get_site_user', function ( $db, $folder = '
 $twig->addFunction($function);
 
 
+
+
+$function = new Twig_SimpleFunction('items__getUsersDi', function ( $db, $and_access = false ) {
+
+    // echo '123123';
+    // $return = \Nyos\mod\lk::getUsers($db, $folder );
+    // $return = \Nyos\Mod\Lk::getUsers($db, null, 'moder' );
+    $return = \Nyos\Mod\Lk::getUsers($db);
+
+    if ($and_access === true) {
+        $access = \Nyos\mod\AdminAccess::getModerAccess($db);
+        //\f\pa($access);
+
+        foreach ($access as $k => $v) {
+            if (!empty($return[$k])) {
+                $return[$k]['access'] = $v;
+            }
+        }
+    }
+
+    return $return;
+});
+$twig->addFunction($function);

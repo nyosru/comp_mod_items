@@ -187,6 +187,57 @@
                                     </span>
 
 
+                                {% elseif v.type is defined and v.type == 'list_user_didrive_moder' %}
+
+                                    {#% set users = get_site_user(db) %#}
+                                    {#{ folder }#}
+                                    {% set users = items__getUsersDi(db) %}
+                                    {#{ pa(users) }#}
+
+                                    <span>
+
+                                        <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
+                                                {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %} 
+                                                />
+
+                                        {% if v.obayz is not defined %}
+                                            <option value="">можете выбрать</option>
+                                        {% endif %}
+
+                                        {% for k3, user in users %} 
+
+                                            <option value='{{ user.id }}' 
+
+                                                    {% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined and list.data[get.edit_id]['dop'][k] == user.id %}
+                                                        selected="selected" 
+                                                    {% elseif get.var[k] is defined and get.var[k] == user.id %}
+                                                        selected="selected" 
+                                                    {% endif %} 
+
+                                                    >
+
+                                                {# % if v.import_1_module_link_var is defined  
+                                                and v1.dop[v.import_1_module_link_var] is defined 
+                                                and v.import_2_module is defined and v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['head'] is defined % #} 
+                                                {# % if v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['status'] == 'hide' } (скрыто) {% endif % #}
+                                                {# { v_data[v.import_2_module]['data'][  v1.dop[v.import_1_module_link_var]  ]['head'] } #} 
+
+
+
+
+                                                {{ user.name }} {{ user.family }} {% if user.login is defined %}{{ user.login }}{% endif %} {{ user.soc_web_link }}
+                                                {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
+
+                                            </option>
+                                        {% endfor %}
+
+                                        </select>
+
+                                        <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
+
+                                    </span>
+
+
                                 {% elseif v.type is defined and v.type == 'select_items' %}
 
                                     {# формирумем массив для пропуска #}

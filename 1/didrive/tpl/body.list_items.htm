@@ -139,13 +139,13 @@
 
                             </td>
 
-
-
                             {% for k, v in now_level if v.name_rus is defined and ( v.skip_didr_list is not defined or ( v.skip_didr_list is defined and v.skip_didr_list != 'da' ) ) %}
 
                                 <td class="va-top">
 
 
+                                    {#{ pa(v) }#}
+                                    
                                     {% if v.type is defined and v.type == 'image' %}
 
                                         {% if list.data[k1]['dop'][k] is not empty %}
@@ -153,6 +153,30 @@
                                                 <img src='{{ sd }}{{ item_dir_img_uri_download() }}{{ list.data[k1]['dop'][k] }}' style='max-width: 150px;' />
                                             </a>
                                         {% endif %}
+
+                                    {% elseif v.type is defined and v.type == 'list_user_didrive_moder' %}
+
+                                        {% if users is not defined %}
+                                        {% set users = items__getUsersDi(db) %}
+                                        {#{ pa(users) }#}
+                                        {% endif %}
+                                        
+                                        {% if list.data[k1]['dop'][k] is not empty and users[list.data[k1]['dop'][k]] is defined %}
+
+                                            {{ users[list.data[k1]['dop'][k]]['name'] }}
+                                            {{ users[list.data[k1]['dop'][k]]['family'] }}
+                                            <sup style='color:gray;'>{{ list.data[k1]['dop'][k] }}</sup>
+
+                                            <br/>
+                                            {{ users[list.data[k1]['dop'][k]]['soc_web'] }}
+                                            {{ users[list.data[k1]['dop'][k]]['soc_web_link'] }}
+                                            # {{ users[list.data[k1]['dop'][k]]['soc_web_id'] }}
+                                            
+                                            {#{ pa(users[list.data[k1]['dop'][k]]) }}
+                                            {{ pa(users[list.data[k1]['dop'][k]]) }#}
+                                            
+                                        {% endif %}
+
 
                                     {% elseif v.type is defined and v.type == 'textarea_html' %}
 

@@ -39,9 +39,6 @@ $function = new Twig_SimpleFunction('get_site_user', function ( $db, $folder = '
 });
 $twig->addFunction($function);
 
-
-
-
 $function = new Twig_SimpleFunction('items__getUsersDi', function ( $db, $and_access = false ) {
 
     // echo '123123';

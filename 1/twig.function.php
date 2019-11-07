@@ -12,6 +12,10 @@ $function = new Twig_SimpleFunction('items__readItems', function ( $db, $module,
         \Nyos\mod\items::$sql_order = ' ORDER BY midop.id ASC ';
     } elseif ($sort == 'date_desc') {
         \Nyos\mod\items::$sql_order = ' ORDER BY midop.id DESC ';
+    } elseif ($sort == 'sort_asc') {
+        \Nyos\mod\items::$sql_order = ' ORDER BY mi.sort ASC ';
+    } elseif ($sort == 'sort_desc') {
+        \Nyos\mod\items::$sql_order = ' ORDER BY mi.sort DESC ';
     }
 
     $e = \Nyos\mod\items::getItemsSimple($db, $module, $stat);

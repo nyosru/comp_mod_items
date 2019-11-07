@@ -119,22 +119,22 @@
                                 </span>
 
                                 <br/>
-                                {#
-                                                            
-                                                            <label>
-                                                                Сортировка <span>
-                                                                    <input 
-                                                                        type="number" 
-                                                                        min="0" max="99" 
-                                                                        class="edit_pole edit_sort" 
-                                                                        rel="{{ k1 }}" 
-                                                                        name="sort" 
-                                                                        s='{{ creatSecret(k1) }}' for_res="shows{{ k1 }}" 
-                                                                        value="{$v1.sort}" 
-                                                                        />
-                                                                </span>
-                                                            </label>
-                                  #}                          
+
+                                <label>
+                                    Сортировка <span>
+                                        <input 
+                                            type="number" 
+                                            min="0" max="99" 
+                                            class="edit_pole edit_sort" 
+                                            rel="{{ k1 }}" 
+                                            name="sort" 
+                                            s='{{ creatSecret(k1) }}' for_res="shows{{ k1 }}" 
+                                            value="{{ v1.sort }}" 
+                                            />
+                                    </span>
+                                            
+                                </label>
+
                                 <a href="?level={{ get.level }}&edit_id={{ k1 }}" class="btn btn-xs btn-info">редактировать</a>
 
                             </td>
@@ -145,7 +145,7 @@
 
 
                                     {#{ pa(v) }#}
-                                    
+
                                     {% if v.type is defined and v.type == 'image' %}
 
                                         {% if list.data[k1]['dop'][k] is not empty %}
@@ -157,31 +157,36 @@
                                     {% elseif v.type is defined and v.type == 'list_user_didrive_moder' %}
 
                                         {% if users is not defined %}
-                                        {% set users = items__getUsersDi(db) %}
-                                        {#{ pa(users) }#}
+                                            {% set users = items__getUsersDi(db) %}
+                                            {#{ pa(users) }#}
                                         {% endif %}
-                                        
+
                                         {% if list.data[k1]['dop'][k] is not empty and users[list.data[k1]['dop'][k]] is defined %}
 
+                                            {{ users[list.data[k1]['dop'][k]]['login'] }}
                                             {{ users[list.data[k1]['dop'][k]]['name'] }}
                                             {{ users[list.data[k1]['dop'][k]]['family'] }}
                                             <sup style='color:gray;'>{{ list.data[k1]['dop'][k] }}</sup>
 
                                             <br/>
                                             {{ users[list.data[k1]['dop'][k]]['soc_web'] }}
-                                            {{ users[list.data[k1]['dop'][k]]['soc_web_link'] }}
+
+                                            <a href="{{ users[list.data[k1]['dop'][k]]['soc_web_link'] }}" target="_blank" >
+                                                {{ users[list.data[k1]['dop'][k]]['soc_web_link'][0:30] }}
+                                            </a>
+
                                             # {{ users[list.data[k1]['dop'][k]]['soc_web_id'] }}
-                                            
+
                                             {#{ pa(users[list.data[k1]['dop'][k]]) }}
                                             {{ pa(users[list.data[k1]['dop'][k]]) }#}
-                                            
+
                                         {% endif %}
 
 
                                     {% elseif v.type is defined and v.type == 'textarea_html' %}
 
                                         {% if list.data[k1]['dop'][k] is not empty %}
-                                            {{ list.data[k1]['dop'][k][0:50]|raw }} ...
+                                            {{ list.data[k1]['dop'][k]|e[0:100]|raw }} ...
                                         {% endif %}
 
                                     {% elseif v.type is defined and v.type == 'select' %}
@@ -210,12 +215,15 @@
                                         {% endfor %}
 
                                         {% if show == 0 %}
+                                            {#
                                             значение в списке не определено
                                             <sup>{{ list.data[k1]['dop'][k] }}</sup>
+                                            #}
+                                            {{ list.data[k1]['dop'][k] }}
                                         {% endif %}
 
-
                                         {# если нет выбранного типа для данных #}
+
                                     {% else %}
 
                                         {{ list.data[k1]['dop'][k] }}

@@ -251,7 +251,13 @@
                                     <span>
 
                                         <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
-                                                {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+                                                
+                                                {% if v.config_noedit is defined and v.config_noedit == 'da' %} 
+                                                    readonly 
+                                                {% else %}
+                                                    {% if v.obayz is defined and v.obayz == 'da' %} required="required" {% endif %}
+                                                {% endif %}
+                                                
                                                 />
 
                                         {#
@@ -263,7 +269,7 @@
                                         {% for i in range(low=1, high=10, step=1) %}   
                                             {% if v['item'~i] is defined %}
 
-                                                <option value='{{ v['item'~ i ~'val'] }}' 
+                                                <option {% if v['item'~ i ~'val'] is defined %} value='{{ v['item'~ i ~'val'] }}' {% endif %}
                                                         {# % if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined and list.data[get.edit_id]['dop'][k] == k1 %}
                                                             selected="selected" 
                                                         {% elseif get.var[k] is defined and get.var[k] == k1 %}
@@ -279,7 +285,7 @@
 
                                         </select>
 
-                                        {{ pa(list.data[get.edit_id]) }}
+                                        {#{ pa(list.data[get.edit_id]) }#}
 
                                         {#
                                         <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
@@ -337,11 +343,11 @@
                                             <img style="float:left; padding: 0 10px;" src="/0.service/show.edit.image.php?q=80&w=150&uri=/module_items_image/{{ list.data[get.edit_id]['dop'][k] }}" />
                                         </a>
                                         #}
-                                        
+
                                         <a href="{{ list.img_dir }}{{ list.data[get.edit_id]['dop'][k] }}" target="_blank" >
-                                        {{ list.data[get.edit_id]['dop'][k] }}
+                                            {{ list.data[get.edit_id]['dop'][k] }}
                                         </a>
-                                        
+
                                         <br/>
                                         <br/>
 

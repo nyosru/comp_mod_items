@@ -1163,71 +1163,70 @@ class items {
 
             // \f\pa($cfg_mod,2,null,'$cfg_mod');
 
-            if( isset($cfg_mod) && is_array($cfg_mod) && sizeof($cfg_mod) > 0 )
-            foreach ($cfg_mod as $k => $v) {
+            if (isset($cfg_mod) && is_array($cfg_mod) && sizeof($cfg_mod) > 0)
+                foreach ($cfg_mod as $k => $v) {
 
-                // \f\pa($v,2,null,'$cfg_mod $v');
+                    // \f\pa($v,2,null,'$cfg_mod $v');
 
-                if ($add_all_dops === false && empty($v['type']))
-                    continue;
+                    if ($add_all_dops === false && empty($v['type']))
+                        continue;
 
 //                echo '<hr><hr>';
 //                \f\pa($k);
 //                \f\pa($v);
 //                \f\pa($data[$k]);
-                //if (isset($data[$k]{0}) && isset($v['name_rus']{0})) {
-                // \f\pa($k);
-                // \f\pa($data[$k]);
-                //if ( isset($data[$k]{0})) {
-                if (!empty($data[$k]) || !empty($v['default'])) {
+                    //if (isset($data[$k]{0}) && isset($v['name_rus']{0})) {
+                    // \f\pa($k);
+                    // \f\pa($data[$k]);
+                    //if ( isset($data[$k]{0})) {
+                    if (!empty($data[$k]) || !empty($v['default'])) {
 
-                    // echo '<br>' . __LINE__;
+                        // echo '<br>' . __LINE__;
 
-                    if ($v['type'] == 'textarea' || $v['type'] == 'textarea_html') {
+                        if ($v['type'] == 'textarea' || $v['type'] == 'textarea_html') {
+
+                            $in_db[] = array(
+                                'name' => $k,
+                                'value_text' => $data[$k] ?? $v['default']
+                            );
+                        } elseif ($v['type'] == 'datetime') {
+
+                            $in_db[] = array(
+                                'name' => $k,
+                                'value_datetime' => date('Y-m-d H:i:s', isset($data[$k]{1}) ?
+                                        strtotime($data[$k] . ' ' . ( isset($data[$k . '_time']) ? $data[$k . '_time'] : '' )) :
+                                        ( (!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : $v['default'] )
+                                )
+                            );
+                        } elseif ($v['type'] == 'date') {
+
+                            $in_db[] = array(
+                                'name' => $k,
+                                'value_date' => date('Y-m-d', isset($data[$k]{2}) ? strtotime($data[$k]) : ( (!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : null ))
+                            );
+                        } elseif ($v['type'] == 'number') {
+
+                            $in_db[] = array(
+                                'name' => $k,
+                                'value' => $data[$k] ?? $v['default']
+                            );
+                        } else {
+
+                            $in_db[] = array(
+                                'name' => $k,
+                                'value' => $data[$k] ?? $v['default']
+                            );
+                        }
+                    } elseif ($v['type'] == 'translit' && isset($v['var_in']{0}) && isset($data[$v['var_in']]{0})) {
 
                         $in_db[] = array(
-                            'name' => $k,
-                            'value_text' => $data[$k] ?? $v['default']
-                        );
-                    } elseif ($v['type'] == 'datetime') {
-
-                        $in_db[] = array(
-                            'name' => $k,
-                            'value_datetime' => date('Y-m-d H:i:s', isset($data[$k]{1}) ?
-                                    strtotime($data[$k] . ' ' . ( isset($data[$k . '_time']) ? $data[$k . '_time'] : '' )) :
-                                    ( (!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : '' )
-                            )
-                        );
-                    } elseif ($v['type'] == 'date') {
-
-                        $in_db[] = array(
-                            'name' => $k,
-                            'value_date' => date('Y-m-d', isset($data[$k]{2}) ? strtotime($data[$k]) : ( (!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : null ))
-                        );
-                    } elseif ($v['type'] == 'number') {
-
-                        $in_db[] = array(
-                            'name' => $k,
-                            'value' => $data[$k] ?? $v['default']
-                        );
-                    } else {
-
-                        $in_db[] = array(
-                            'name' => $k,
-                            'value' => $data[$k] ?? $v['default']
+                            'name' => $v['var_in'] . '_translit',
+                            'value_text' => \f\translit($data[$v['var_in']], 'uri2')
                         );
                     }
-                } elseif ($v['type'] == 'translit' && isset($v['var_in']{0}) && isset($data[$v['var_in']]{0})) {
-
-                    $in_db[] = array(
-                        'name' => $v['var_in'] . '_translit',
-                        'value_text' => \f\translit($data[$v['var_in']], 'uri2')
-                    );
                 }
-            }
 
             if (isset($files) && sizeof($files) > 0) {
-
 
                 //echo '<br/>#'.__LINE__;
                 $nn = 1;

@@ -259,13 +259,142 @@ class items {
     }
 
     /**
+     * получем данные по одному итему
+     * @param type $db
+     * @param int $id
+     * @return type
+     */
+    public static function getItemSimple($db, int $id) {
+
+        try {
+
+            $ff1 = 'SELECT 
+                mi.*,
+                midop.id dops_id, 
+                midop.`name`, 
+                midop.`value`,
+                midop.`value_date`,
+                midop.`value_datetime`,
+                midop.`value_text`,
+                midop.`status` 
+            FROM 
+                `mitems-dops` midop 
+                
+            INNER JOIN `mitems` mi ON '
+                    // .' mi.folder = :folder '
+                    // . ' mi.id = midop.id_item '
+                    . ' mi.id = :id '
+                    . ' AND '
+                    . ' ( mi.id = dops_id OR mi.id = midop.id ) '
+
+//            ' WHERE 
+//                midop.status IS NULL '
+                    . ' LIMIT 10 '
+                    . ' ;';
+
+//            $ff1 = 'SELECT 
+//                mi.*
+//            FROM 
+//                `mitems` mi WHERE
+//                    mi.id = :id '
+//            . ' ;';
+
+            if (self::$show_sql === true) {
+                \f\pa($ff1);
+            }
+
+            $ff = $db->prepare($ff1);
+
+            $for_sql = [];
+            $for_sql[':id'] = $id;
+
+            if (self::$show_sql === true) {
+                \f\pa($for_sql);
+            }
+
+            $ff->execute($for_sql);
+
+            // \f\pa($ff->fetchAll(),'','','all');
+
+            $nn = 0;
+            while ($r = $ff->fetch()) {
+
+                if (self::$show_sql === true) {
+                    \f\pa($r);
+                }
+
+                if (empty($re))
+                    $re = $r;
+
+                if (!isset($re['dop']))
+                    $re['dop'] = [];
+
+                $re['dop'][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                $nn++;
+            }
+
+            if ($nn == 0) {
+
+                $ff1 = 'SELECT 
+                mi.*
+            FROM 
+                `mitems` mi '
+                        . ' WHERE '
+                        . ' mi.id = :id '
+                        . ' LIMIT 1 '
+                        . ' ;';
+
+                if (self::$show_sql === true) {
+                    \f\pa($ff1);
+                }
+
+                $ff = $db->prepare($ff1);
+
+                $for_sql = [];
+                $for_sql[':id'] = $id;
+
+                if (self::$show_sql === true) {
+                    \f\pa($for_sql);
+                }
+
+                $ff->execute($for_sql);
+
+                $re = $ff->fetch();
+            }
+
+            if (self::$show_sql === true) {
+                echo 'записей ' . $nn;
+            }
+
+            return \f\end3('Достали данные', true, $re, 'array');
+        }
+        //
+        catch (\PDOException $ex) {
+
+            echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
+            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+            . PHP_EOL . $ex->getTraceAsString()
+            . '</pre>';
+// не найдена таблица, создаём значит её
+            if (strpos($ex->getMessage(), 'no such table') !== false) {
+
+                self::creatTable($db);
+                // \f\redirect( '/' );
+            }
+
+            return \f\end3('ошибка', false);
+        }
+    }
+
+    /**
      * получаем данные из итемс хранилища
      * @param type $db
      * @param type $module
      * @param type $stat
      * @return type
      */
-    public static function getItemsSimple($db, $module = null, $stat = 'show') {
+    public static function getItemsSimple($db, $module = null, $stat = 'show', $sort = null) {
 
         $save_cash = false;
 
@@ -283,6 +412,16 @@ class items {
 //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' ){
 //            echo $folder. '<Br/> 2 '.$module.'<br/> 3 '.$stat.'<Br/> 4 '.$limit;
 //        }
+
+
+        if (empty(self::$sql_order) && $sort == 'sort') {
+            self::$sql_order = ' ORDER BY mi.sort ASC ';
+        }
+
+
+
+
+
 
         if (self::$dir_img_server === false) {
             self::creatFolderImage($folder);
@@ -522,7 +661,9 @@ class items {
                     $re[$r['id']] = $r;
                 }
             }
-        } catch (\PDOException $ex) {
+        }
+        //
+        catch (\PDOException $ex) {
 
 //            echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
 //            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
@@ -1284,19 +1425,41 @@ class items {
         }
     }
 
+    /**
+     * редактируем 1 итем
+     * @param type $db
+     * @param type $id_item
+     * @param type $folder
+     * @param type $cfg_mod
+     * @param type $data
+     * @return type
+     */
     public static function saveEdit($db, $id_item, $folder, $cfg_mod, $data) {
 
 
-        if (self::$dir_img_server === false) {
+        if (self::$dir_img_server === false)
             self::creatFolderImage($folder);
-        }
-        if (self::$dir_img_server === false) {
+        
+        if (self::$dir_img_server === false)
             return f\end2('Ошибка, папка для файлов не может быть создана', 'error', array('file' => __FILE__, 'line' => __LINE__), 'array');
+
+
+        // \f\pa($cfg_mod, '', '', '$cfg_mod');
+
+        // \f\pa($data, '', '', '$data');
+
+        $data_old = self::getItemSimple($db, $id_item);
+        // \f\pa($data_old, '', '', '$data_old');
+
+        if (isset($data['head']{0}) && $data_old['data']['head'] != $data['head']) {
+
+            // echo '<br/>' . __FILE__ . ' ' . __LINE__;
+            \f\db\db_edit2($db, 'mitems', array('id' => $id_item), array('head' => $data['head']), false, 1, 'da');
         }
 
-        if (isset($data['head']{0})) {
+        // die();
 
-            \f\db\db_edit2($db, 'mitems', array('id' => $id_item), array('head' => $data['head']), false, 1, 'da');
+        if (!empty($data['head']{0})) {
 
             /*
               $new_id = db\db2_insert($db, 'mitems', array(
@@ -1313,7 +1476,10 @@ class items {
             $in_db = [];
 
             if (isset($cfg_mod['head_translit'])) {
-                $in_db['head_translit'] = \f\translit($data['head'], 'uri2');
+                $in_db[] = [
+                    'name' => 'head_translit',
+                    'value' => \f\translit($data['head'], 'uri2')
+                ];
             }
 
             //\f\pa($cfg_mod,2,null,'$cfg_mod');
@@ -1426,14 +1592,17 @@ class items {
 //                    $in[] = array('name' => $k, 'value' => $v);
 //                    
 //                }
-            // \f\pa($in_db,2,null,'$in_db');
+            // \f\pa($in_db, 2, null, '$in_db');
 
-            \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $id_item));
+            // \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $id_item));
+
+            \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, ['id_item' => $id_item]);
 
             self::clearCash($folder);
         }
+        // die();
 
-        return f\end2('Изменения сохранены', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
+        return \f\end2('Изменения сохранены', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }
 
 }

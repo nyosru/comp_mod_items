@@ -269,7 +269,18 @@
                                         {% for i in range(low=1, high=10, step=1) %}   
                                             {% if v['item'~i] is defined %}
 
-                                                <option {% if v['item'~ i ~'val'] is defined %} value='{{ v['item'~ i ~'val'] }}' {% endif %}
+                                                <option 
+                                                    
+                                                    {% if v['item'~ i ~'val'] is defined %} value='{{ v['item'~ i ~'val'] }}' {% endif %}
+                                                    
+                                                    {% if v['item'~ i ~'val'] is defined and list.data[get.edit_id]['dop'][k] is defined 
+                                                        and v['item'~ i ~'val'] == list.data[get.edit_id]['dop'][k] %} 
+                                                        selected="selected"
+                                                    {% elseif v['item'~ i ] is defined and list.data[get.edit_id]['dop'][k] is defined 
+                                                        and v['item'~ i] == list.data[get.edit_id]['dop'][k] %} 
+                                                        selected="selected"
+                                                    {% endif %}
+                                                                                                
                                                         {# % if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined and list.data[get.edit_id]['dop'][k] == k1 %}
                                                             selected="selected" 
                                                         {% elseif get.var[k] is defined and get.var[k] == k1 %}
@@ -428,7 +439,7 @@
 
                                 {% elseif v.type is defined and v.type == 'textarea_html' %}
 
-                                    <textarea id='i_{{ k }}' type="number" name="{{ k }}"  class="form-control" 
+                                    <textarea id='i_{{ k }}' xtype="number" name="{{ k }}"  class="form-control" 
                                               {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
                                               >{% if edit_item is defined and list.data[get.edit_id]['dop'][k] is defined %}{{ list.data[get.edit_id]['dop'][k]|escape }}{% endif %}</textarea>
 

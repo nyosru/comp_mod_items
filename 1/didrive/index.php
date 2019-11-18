@@ -108,12 +108,15 @@ elseif (isset($_REQUEST['save_id']) && is_numeric($_REQUEST['save_id']) && isset
     unset($d['addnew']);
     $d['files'] = $_FILES;
 
-    //\f\pa($d);
+    // \f\pa($d);
     
+    // \Nyos\mod\items::$show_sql = true;
     $r = \Nyos\mod\items::saveEdit($db, $_REQUEST['save_id'], $vv['folder'], $vv['now_level'], $d);
+    
     if (isset($r['status']) && $r['status'] == 'ok') {
         $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . $r['html'];
     }
+    
 }
 elseif( isset($_GET['refresh_cash']) && $_GET['refresh_cash'] == 'da' ){
     \Nyos\mod\items::clearCash($vv['folder']);
@@ -134,27 +137,26 @@ $vv['krohi'][1] = array(
 // \f\pa($_POST);
 
 foreach( $vv['now_level'] as $k => $v ){
-    
-    
+
     //\f\pa($v);
-    
+
     if( isset($v['type']) && $v['type'] == 'textarea_html' ){
-    $vv['ckeditor_in'][$k] = array( 'type' => 'mini.img' );
+    // $vv['ckeditor_in'][$k] = array( 'type' => 'mini.img' );
+    $vv['ckeditor_in'][$k] = [];
     }
 
-    
 //    echo PHP_EOL.$k;
 //    \f\pa($v);
 //    echo PHP_EOL;
-    
+
     if( isset( $v['import_1_module'] ) ){
         $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::getItems($db, $vv['folder'], $v['import_1_module']);
     }
-    
+
     if( isset( $v['import_2_module'] ) ){
         $vv['v_data'][$v['import_2_module']] = Nyos\mod\items::getItems($db, $vv['folder'], $v['import_2_module']);
     }
-    
+
 }
 
 // \f\pa($vv['v_data']);

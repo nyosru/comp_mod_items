@@ -23,6 +23,9 @@ class items {
     public static $sql_select_vars = null;
     public static $cash = [];
     public static $now_mod = null;
+    // если true то возвращаем из get simple только dop
+    // public static $get_data_simple = true;
+    public static $get_data_simple = null;
 
     /**
      * добавляем в выборку из главной таблицы " WHERE + $sql_add_where " (getItemsSimple)
@@ -401,7 +404,19 @@ class items {
         if (empty(self::$sql_select_vars) && empty(self::$sql_itemsdop_add_where) && empty(self::$sql_itemsdop2_add_where) && empty(self::$sql_items_add_where) && empty(self::$sql_limit) && empty(self::$sql_order)) {
 
             if (!empty(self::$cash[$module][$stat])) {
-                return self::$cash[$module][$stat];
+
+                if (self::$get_data_simple === true) {
+
+                    $ret = [];
+                    foreach (self::$cash[$module][$stat]['data'] as $k => $v) {
+                        $v['dop']['_id'] = $v['id'];
+                        $ret[] = $v['dop'];
+                    }
+                    self::$get_data_simple = null;
+                    return \f\end2('Достали список, простой', 'ok', $ret, 'array');
+                } else {
+                    return self::$cash[$module][$stat];
+                }
             } else {
                 $save_cash = true;
             }
@@ -417,11 +432,6 @@ class items {
         if (empty(self::$sql_order) && $sort == 'sort') {
             self::$sql_order = ' ORDER BY mi.sort ASC ';
         }
-
-
-
-
-
 
         if (self::$dir_img_server === false) {
             self::creatFolderImage($folder);
@@ -696,7 +706,18 @@ class items {
 
         self::$show_sql = false;
 
-        return f\end2('Достали список', 'ok', $out, 'array');
+        if (self::$get_data_simple === true) {
+
+            $ret = [];
+            foreach ($out['data'] as $k => $v) {
+                $v['dop']['_id'] = $v['id'];
+                $ret[] = $v['dop'];
+            }
+            self::$get_data_simple = null;
+            return \f\end2('Достали список, простой', 'ok', $ret, 'array');
+        } else {
+            return \f\end2('Достали список', 'ok', $out, 'array');
+        }
     }
 
     public static function getItems_old190605($db, string $folder, $module = null, $stat = 'show', $limit = 50) {
@@ -1439,13 +1460,12 @@ class items {
 
         if (self::$dir_img_server === false)
             self::creatFolderImage($folder);
-        
+
         if (self::$dir_img_server === false)
             return f\end2('Ошибка, папка для файлов не может быть создана', 'error', array('file' => __FILE__, 'line' => __LINE__), 'array');
 
 
         // \f\pa($cfg_mod, '', '', '$cfg_mod');
-
         // \f\pa($data, '', '', '$data');
 
         $data_old = self::getItemSimple($db, $id_item);
@@ -1593,7 +1613,6 @@ class items {
 //                    
 //                }
             // \f\pa($in_db, 2, null, '$in_db');
-
             // \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $id_item));
 
             \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, ['id_item' => $id_item]);

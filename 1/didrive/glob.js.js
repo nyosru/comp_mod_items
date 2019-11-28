@@ -281,9 +281,14 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
     // }
 
 
+
+
+
+
+
     $('body').on('click', '.edit_items_dop_values', function (event) {
 
-        // alert('2323');
+        //alert('2323');
 //        $(this).removeClass("show_job_tab");
 //        $(this).addClass("show_job_tab2");
 //        var $uri_query = '';
@@ -310,7 +315,7 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
                     hidethis = 1;
                 } else if (this.name == 'show_id') {
                     showid = '#' + this.value;
-                } else if (this.name == 'comit_answer') {
+                } else if (this.name == 'comit_answer2') {
                     answer = this.value;
                 } else if (this.name == 'msg_to_success') {
                     msg_to_success = this.value;
@@ -327,6 +332,10 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
             }
 
         });
+
+
+
+
 
         if (answer != 0) {
             if (!confirm(answer)) {

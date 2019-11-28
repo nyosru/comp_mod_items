@@ -13,6 +13,18 @@ if (!defined('IN_NYOS_PROJECT'))
     <a href="http://www.nyos.ru" target="_blank">Только отдельные услуги: Дизайн, вёрстка и программирование сайтов.</a>');
 
 //echo __FILE__;
+// выборка item simple
+//\Nyos\mod\items::$where2 = ' AND ( midop.name = \'date\' AND midop.value_date '
+//        . ' BETWEEN \''.date('Y-m-d',strtotime($d_start)).'\' '
+//        . ' AND \''.date('Y-m-d',strtotime($d_finish)).'\' ) ';
+//$oborots = \Nyos\mod\items::getItemsSimple2($db, $module_oborot);
+
+
+
+
+
+
+
 
 class items {
 
@@ -26,6 +38,14 @@ class items {
     // если true то возвращаем из get simple только dop
     // public static $get_data_simple = true;
     public static $get_data_simple = null;
+    public static $where = [];
+    public static $where2 = '';
+
+    /**
+     * использовать старый стиль
+     * @var type
+     */
+    public static $style_old = null;
 
     /**
      * добавляем в выборку из главной таблицы " WHERE + $sql_add_where " (getItemsSimple)
@@ -116,6 +136,28 @@ class items {
      * @return type
      */
     public static function getItems($db, string $folder, $module = null, $stat = 'show', $limit = 50) {
+
+
+        $r = self::getItemsSimple3($db, $module, $stat);
+
+        $r2 = [
+            // 'img_dir' => '/sites/'.\Nyos\Nyos::$folder_now.'/download/module_items_image/',
+            'img_dir' => '/sites/' . $folder . '/download/module_items_image/',
+            'img_dir_dl' => 'module_items_image/'
+        ];
+
+        foreach ($r as $k => $v) {
+            $v['dop'] = $v;
+            $r2['data'][$k] = $v;
+        }
+
+        // return $r2;
+        return \f\end2('Достали список', 'ok', $r2, 'array');
+
+
+
+
+
 
 
 //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' ){
@@ -392,12 +434,21 @@ class items {
 
     /**
      * получаем данные из итемс хранилища
+     * старая версия (новая опубликована 1911270941
      * @param type $db
      * @param type $module
      * @param type $stat
      * @return type
      */
     public static function getItemsSimple($db, $module = null, $stat = 'show', $sort = null) {
+
+        $show_memory = false;
+//        $show_memory = true;
+        if ($show_memory === true) {
+            $sm = 0;
+            $sm = memory_get_usage();
+//            echo '<br/>s1s ' . round(( $sm2 - $sm ) / 1024, 3);
+        }
 
         $save_cash = false;
 
@@ -410,6 +461,7 @@ class items {
                     $ret = [];
                     foreach (self::$cash[$module][$stat]['data'] as $k => $v) {
                         $v['dop']['_id'] = $v['id'];
+                        $v['dop']['_head'] = $v['head'];
                         $ret[] = $v['dop'];
                     }
                     self::$get_data_simple = null;
@@ -425,12 +477,16 @@ class items {
         $folder = \Nyos\nyos::$folder_now;
 
 //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' ){
-//            echo $folder. '<Br/> 2 '.$module.'<br/> 3 '.$stat.'<Br/> 4 '.$limit;
+//                                                                                                                                                                                                                            echo $folder. '<Br/> 2 '.$module.'<br/> 3 '.$stat.'<Br/> 4 '.$limit;
 //        }
 
 
         if (empty(self::$sql_order) && $sort == 'sort') {
             self::$sql_order = ' ORDER BY mi.sort ASC ';
+        } elseif (empty(self::$sql_order) && $sort == 'asc_date') {
+            self::$sql_order = ' ORDER BY mi.add_d ASC, mi.add_t ASC ';
+        } elseif (empty(self::$sql_order) && $sort == 'desc_id') {
+            self::$sql_order = ' ORDER BY mi.id DESC ';
         }
 
         if (self::$dir_img_server === false) {
@@ -447,6 +503,18 @@ class items {
 //            $out = unserialize(file_get_contents($dir_for_cash . 'cash.items.arr'));
 //            return f\end2('Достали список', 'ok', $out, 'array');
 //        }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         try {
@@ -710,14 +778,673 @@ class items {
 
             $ret = [];
             foreach ($out['data'] as $k => $v) {
+                $v['dop']['_head'] = $v['head'];
                 $v['dop']['_id'] = $v['id'];
-                $ret[] = $v['dop'];
+                $ret[$v['id']] = $v['dop'];
             }
             self::$get_data_simple = null;
+
+
+
+
+            if ($show_memory === true) {
+                $sm2 = 0;
+                $sm2 = memory_get_usage();
+//            echo '<br/>s1s ' . round(( $sm2 - $sm ) / 1024, 3);
+            }
+
+
+
             return \f\end2('Достали список, простой', 'ok', $ret, 'array');
         } else {
             return \f\end2('Достали список', 'ok', $out, 'array');
         }
+    }
+
+    /**
+     * новая версия от 191127 0941
+     * @param type $db
+     * @param type $module
+     * @param type $stat
+     * @param type $sort
+     * @return type
+     */
+    public static function getItemsSimple2($db, $module = null, $stat = 'show', $sort = null) {
+
+        // echo ' память ';
+
+        if ($module == '070.jobman' || $module == '061.dolgnost')
+            $file_cash = DR . dir_site_sd . 'getItemsSimple2_' . $module . '_' . $stat . (!empty($sort) ? md5($sort) : '' ) . '.cash.json';
+
+//        echo '<Br/>'.$file_cash;
+
+        /**
+         * читаем кеш контент
+         */
+        if (1 == 2 && isset($file_cash) && file_exists($file_cash)) {
+            return json_decode(file_get_contents($file_cash), true);
+        }
+
+        $cash = $module . $stat . (!empty($sort) ? md5($sort) : '' );
+
+        if (!empty(self::$cash['itemsimple'][$cash]))
+            return self::$cash['itemsimple'][$cash];
+
+        $show_memory = false;
+        $show_memory = true;
+
+        if ($show_memory === true) {
+            $sm = 0;
+            $sm = memory_get_usage();
+//            echo '<br/>s1s ' . round(( $sm2 - $sm ) / 1024, 3);
+        }
+
+        $folder = \Nyos\nyos::$folder_now;
+
+        if (self::$dir_img_server === false) {
+            self::creatFolderImage($folder);
+        }
+
+        \f\timer::start(47);
+
+        // $ff1 = ' ( SELECT 
+        $ff1 = ' SELECT 
+                mi.id,
+                mi.head,
+                mi.sort,
+                mi.status,
+
+                midop.id dops_id, 
+                midop.`name`, 
+                midop.`value`,
+                midop.`value_date`,
+                midop.`value_datetime`,
+                midop.`value_text` 
+
+            FROM 
+                `mitems` mi
+
+            LEFT JOIN `mitems-dops` midop ON '
+                . ' mi.id = midop.id_item '
+                . ' AND midop.status IS NULL '
+                . ' WHERE '
+                . ' mi.`module` = :module '
+                . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '' )
+                . ( self::$where2 ?? '' )
+                . self::$sql_order ?? '';
+
+
+//            \f\pa($ff1);
+
+        self::$where2 = '';
+
+        $ff = $db->prepare($ff1);
+
+        $for_sql = [];
+        $for_sql[':module'] = $module ?? '';
+
+        $ff->execute($for_sql);
+
+        // \f\pa( $ff->fetchAll(), '', '', 'все');
+        // die;
+        // while( \f\pa($ff->fetchAll(), '', '', 'все');
+
+        $re = [];
+        $sql = '';
+
+        while ($r = $ff->fetch()) {
+
+
+            if (empty($re[$r['id']])) {
+
+                $re[$r['id']] = [
+                    'id' => $r['id'],
+                    'head' => $r['head'],
+                    'sort' => $r['sort'],
+                    'status' => $r['status']
+                ];
+
+                // \f\pa($r);
+                // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
+                // $sql .= (!empty($sql) ? ',' : '' ) . $r['id'];
+            }
+
+            $re[$r['id']][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+        }
+
+        // echo '<br/>timer: ' . \f\timer::stop('str', 47);
+
+        if ($sort == 'sort_asc') {
+            usort($re, "\\f\\sort_ar_sort");
+        }
+
+        // \f\pa($re);
+
+        if (!empty(self::$sql_order))
+            self::$sql_order = '';
+
+        /**
+         * пишем кеш контент
+         */
+        if (!empty($file_cash)) {
+            file_put_contents($file_cash, json_encode($re));
+        }
+
+        return $re;
+        return self::$cash['itemsimple'][$cash] = $re;
+
+
+        /*
+          $re2 = [];
+          foreach ($re as $k => $v) {
+          if (isset($v['id']))
+          $re2[$v['id']] = $k;
+          }
+
+          // \f\pa($re);
+          // \f\pa($sql);
+          // die();
+          // $ff1 = ' ( SELECT
+          $ff1 = ' SELECT
+
+          midop.id_item id,
+          midop.id dops_id,
+          midop.`name`,
+          midop.`value`,
+          midop.`value_date`,
+          midop.`value_datetime`,
+          midop.`value_text` '
+          . ( self::$sql_select_vars ?? '' )
+          . '
+
+          FROM `mitems-dops` midop '
+          . ' WHERE '
+          . ' midop.id_item IN (' . $sql . ') '
+          . ' AND midop.status IS NULL '
+
+          ;
+
+          //            \f\pa($ff1);
+
+          $ff = $db->prepare($ff1);
+
+          $for_sql = [];
+          $ff->execute($for_sql);
+
+          // while( \f\pa($ff->fetchAll(), '', '', 'все');
+          // $re = [];
+
+          while ($r = $ff->fetch()) {
+
+          if (empty($re[( $re2[$r['id']] ?? $r['id'] )]))
+          $re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
+
+          if (!empty($r['name']))
+          $re[( $re2[$r['id']] ?? $r['id'] )][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+          }
+
+
+
+          if ($sort == 'sort_asc') {
+          usort($re, "\\f\\sort_ar_sort");
+          }
+
+
+          if ($show_memory === true) {
+          $sm2 = 0;
+          $sm2 = memory_get_usage();
+          echo '<br/>s' . __LINE__ . 's > ' . round(( $sm2 - $sm ) / 1024, 2) . ' Kb = ';
+          }
+
+          // \f\pa($re);
+
+          return self::$cash['itemsimple'][$cash] = $re;
+
+          //return \f\end2('Достали список, простой', 'ok', $re, 'array');
+          // return \f\end3('Достали список, простой', true, $re);
+         * 
+         */
+    }
+
+    /**
+     * новая версия от 191128 0823
+     * @param type $db
+     * @param type $module
+     * @param type $stat
+     * @param type $sort
+     * @return type
+     */
+    public static function getItemsSimple3($db, $module = null, $stat = 'show', $sort = null) {
+
+
+
+        // echo '<br/>-- ' . $cash_var;
+        //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
+        //            echo '<br/>a - '.$module;
+        //        
+        //        if ( 1 == 1 || $module == '050.chekin_checkout') {
+
+        /**
+         * запускаем мемкеш и тащим если есть кеш
+         */
+        if (1 == 1) {
+
+            $cash_var = $module . '.' . $stat . '.' . $sort;
+
+            //Создаём новый объект. Также можно писать и в процедурном стиле
+            $memcache_obj = new \Memcache;
+            //Соединяемся с нашим сервером
+            $memcache_obj->connect('127.0.0.1', 11211) or die("Could not connect");
+            //Попытаемся получить объект с ключом our_var
+            $var_key = @$memcache_obj->get($cash_var);
+            if (!empty($var_key)) {
+
+//                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+//                    echo '<Br/>есть рез';
+//                }
+
+                $memcache_obj->close();
+                //Если объект закэширован, выводим его значение
+                return $var_key;
+                return json_decode($var_key);
+            }
+//    else
+//    {
+//        //Если в кэше нет объекта с ключом our_var, создадим его
+//        //Объект our_var будет храниться 5 секунд и не будет сжат
+//        $memcache_obj->set('our_var', date('G:i:s'), false, 5);
+//         //Выведем закэшированные данные
+//        echo $memcache_obj->get('our_var');
+//    }
+//    //Закрываем соединение с сервером Memcached
+//    $memcache_obj->close();        
+        }
+
+        if (1 == 1) {
+
+//        echo '<br/><br/>' . __FUNCTION__ . '<Br/>';
+//        echo '<br/>' . $module;
+            // echo ' память ';
+//        if ($module == '070.jobman' || $module == '061.dolgnost')
+//            $file_cash = DR . dir_site_sd . 'getItemsSimple2_' . $module . '_' . $stat . (!empty($sort) ? md5($sort) : '' ) . '.cash.json';
+//        echo '<Br/>'.$file_cash;
+
+            /**
+             * читаем кеш контент
+             */
+//        if (1 == 2 && isset($file_cash) && file_exists($file_cash)) {
+//            return json_decode(file_get_contents($file_cash), true);
+//        }
+//        $cash = $module . $stat . (!empty($sort) ? md5($sort) : '' );
+//        if (!empty(self::$cash['itemsimple'][$cash]))
+//            return self::$cash['itemsimple'][$cash];
+//        $show_memory = false;
+            // $show_memory = true;
+//
+            if (isset($show_memory) && $show_memory === true) {
+
+                echo '<hr>mod - ' . $module . '<br/>';
+
+                $sm = 0;
+                $sm = memory_get_usage();
+//            echo '<br/>s1s ' . round(( $sm2 - $sm ) / 1024, 3);
+
+                \f\timer::start(123);
+            }
+
+            $folder = \Nyos\nyos::$folder_now;
+
+            if (self::$dir_img_server === false) {
+                self::creatFolderImage($folder);
+            }
+
+//        \f\timer::start(47);
+            // $ff1 = ' ( SELECT 
+            $ff1 = ' SELECT 
+                mi.id,
+                mi.head,
+                mi.sort,
+                mi.status
+
+            FROM 
+            
+                `mitems` mi
+
+            WHERE '
+                    . ' mi.`module` = :module '
+                    . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '' )
+                    . ( self::$where2 ?? '' )
+                    . self::$sql_order ?? '';
+
+//            \f\pa($ff1);
+
+            self::$where2 = '';
+
+            $ff = $db->prepare($ff1);
+
+            $for_sql = [':module' => ( $module ?? '' )];
+            $ff->execute($for_sql);
+
+            // \f\pa( $ff->fetchAll(), '', '', 'все');
+            // die;
+            // while( \f\pa($ff->fetchAll(), '', '', 'все');
+
+            $re = [];
+            $sql = '';
+
+            while ($r = $ff->fetch()) {
+
+                if (empty($re[$r['id']])) {
+
+                    //\f\pa($r);
+
+
+
+                    $re[$r['id']] = [
+                        'id' => $r['id'],
+                        'head' => $r['head'],
+                        'sort' => $r['sort'],
+                        'status' => $r['status']
+                    ];
+
+                    // \f\pa($r);
+                    // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
+                    $sql .= (!empty($sql) ? ',' : '' ) . $r['id'];
+                }
+
+//            $re[$r['id']][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+            }
+
+//        echo '<br/>timer: ' . \f\timer::stop('str', 47);
+//        if ($sort == 'sort_asc') {
+//            usort($re, "\\f\\sort_ar_sort");
+//        }
+            // \f\pa($re);
+
+            if (!empty(self::$sql_order))
+                self::$sql_order = '';
+
+            /**
+             * пишем кеш контент
+             */
+//        if (!empty($file_cash)) {
+//            file_put_contents($file_cash, json_encode($re));
+//        }
+//        return $re;
+//        return self::$cash['itemsimple'][$cash] = $re;
+
+
+            /*
+              $re2 = [];
+              foreach ($re as $k => $v) {
+              if (isset($v['id']))
+              $re2[$v['id']] = $k;
+              }
+
+              // \f\pa($re);
+              // \f\pa($sql);
+              // die();
+              // $ff1 = ' ( SELECT
+             * */
+            $ff1 = ' SELECT
+
+          midop.id_item id, '
+                    // .' midop.id dops_id, '
+                    . ' midop.`name`,
+          midop.`value`,
+          midop.`value_date`,
+          midop.`value_datetime`,
+          midop.`value_text` '
+                    . ( self::$sql_select_vars ?? '' )
+                    . '
+
+          FROM `mitems-dops` midop '
+                    . ' WHERE '
+                    . ' midop.id_item IN (' . $sql . ') '
+                    . ' AND midop.status IS NULL '
+
+            ;
+
+            //            \f\pa($ff1);
+
+            $ff = $db->prepare($ff1);
+
+//        $for_sql = [];
+//        $ff->execute($for_sql);
+            $ff->execute();
+
+            // while( \f\pa($ff->fetchAll(), '', '', 'все');
+            // $re = [];
+
+            while ($r = $ff->fetch()) {
+
+                if (empty($re[( $re2[$r['id']] ?? $r['id'] )])) {
+                    //$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
+                    $re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'start2' => 'ok'];
+                }
+
+                if (!empty($r['name'])) {
+                    $re[( $re2[$r['id']] ?? $r['id'] )][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                }
+            }
+
+            if ($sort == 'sort_asc') {
+                usort($re, "\\f\\sort_ar_sort");
+            }
+
+            if (isset($show_memory) && $show_memory === true) {
+                $sm2 = 0;
+                $sm2 = memory_get_usage();
+                echo '<br/>'
+                . 's' . __LINE__ . 's > ' . round(( $sm2 - $sm ) / 1024, 2) . ' Kb = '
+                . '<br/>'
+                . 'timer:' . \f\timer::stop('str', 123) . ' - ';
+            }
+        }
+
+        // \f\pa($re);
+
+        if (self::$style_old === true) {
+
+            return ['data' => $re];
+        } else {
+
+            
+            /**
+             * если в начале запустили мемкеш то сохраняем результат
+             */
+            if ( isset($memcache_obj) ?? !empty($cash_var) ) {
+
+//            $var_key = @$memcache_obj->get($cash_var);
+//
+//            if (!empty($var_key)) {
+//                $memcache_obj->close();
+//                //Если объект закэширован, выводим его значение
+//                return $var_key;
+//            }
+//        //Если в кэше нет объекта с ключом our_var, создадим его
+//        //Объект our_var будет храниться 5 секунд и не будет сжат
+                //$memcache_obj->set( $cash_var, $re , false, 3600 );
+                $memcache_obj->set($cash_var, $re, false, 3600);
+//         //Выведем закэшированные данные
+                // $memcache_obj->get('our_var');
+// 
+//    //Закрываем соединение с сервером Memcached
+                $memcache_obj->close();
+//        
+            }
+
+            return $re;
+        }
+
+        /*
+          return self::$cash['itemsimple'][$cash] = $re;
+
+          //return \f\end2('Достали список, простой', 'ok', $re, 'array');
+          // return \f\end3('Достали список, простой', true, $re);
+         *
+         */
+    }
+
+    public static function getItemsSimple3_old($db, $module = null, $stat = 'show', $sort = null) {
+
+//        $show_memory = true;
+
+        if (isset($show_memory) && $show_memory === true) {
+            $sm = 0;
+            $sm = memory_get_usage();
+//            echo '<br/>s1s ' . round(( $sm2 - $sm ) / 1024, 3);
+            \f\timer::start(123);
+        }
+
+        $folder = \Nyos\nyos::$folder_now;
+
+        if (self::$dir_img_server === false) {
+            self::creatFolderImage($folder);
+        }
+
+        $ff1 = ' SELECT 
+                mi.id,
+                mi.head,
+                mi.sort,
+                mi.status
+
+            FROM 
+            
+                `mitems` mi
+
+            WHERE '
+                . ' mi.`module` = :module '
+                . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '' )
+                . ( self::$where2 ?? '' )
+                . self::$sql_order ?? '';
+
+//            \f\pa($ff1);
+
+        self::$where2 = '';
+
+        $ff = $db->prepare($ff1);
+
+        $for_sql = [':module' => ( $module ?? '' )];
+        $ff->execute($for_sql);
+
+        // \f\pa( $ff->fetchAll(), '', '', 'все');
+
+        $re = [];
+        $sql = '';
+
+        while ($r = $ff->fetch()) {
+
+//            if (empty($re[$r['id']])) {
+            //\f\pa($r);
+
+            $re[$r['id']] = [
+                'id' => $r['id'],
+                'head' => $r['head'],
+                'sort' => $r['sort'],
+                'status' => $r['status']
+            ];
+
+            // \f\pa($r);
+            // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
+            $sql .= (!empty($sql) ? ',' : '' ) . $r['id'];
+            //          }
+//            $re[$r['id']][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+        }
+
+//        echo '<br/>timer: ' . \f\timer::stop('str', 47);
+//        if ($sort == 'sort_asc') {
+//            usort($re, "\\f\\sort_ar_sort");
+//        }
+        // \f\pa($re);
+
+        if (!empty(self::$sql_order))
+            self::$sql_order = '';
+
+        /**
+         * пишем кеш контент
+         */
+//        if (!empty($file_cash)) {
+//            file_put_contents($file_cash, json_encode($re));
+//        }
+//        return $re;
+//        return self::$cash['itemsimple'][$cash] = $re;
+
+        /*
+          $re2 = [];
+          foreach ($re as $k => $v) {
+          if (isset($v['id']))
+          $re2[$v['id']] = $k;
+          }
+
+          // \f\pa($re);
+          // \f\pa($sql);
+          // die();
+          // $ff1 = ' ( SELECT
+         * */
+        $ff1 = ' SELECT
+
+          midop.id_item id, '
+                // .' midop.id dops_id, '
+                . ' midop.`name`,
+          midop.`value`,
+          midop.`value_date`,
+          midop.`value_datetime`,
+          midop.`value_text` '
+                . ( self::$sql_select_vars ?? '' )
+                . '
+
+          FROM `mitems-dops` midop '
+                . ' WHERE '
+                . ' midop.id_item IN (' . $sql . ') '
+                . ' AND midop.status IS NULL '
+        ;
+
+        //            \f\pa($ff1);
+
+        $ff = $db->prepare($ff1);
+
+//        $for_sql = [];
+//        $ff->execute($for_sql);
+        $ff->execute();
+
+        // while( \f\pa($ff->fetchAll(), '', '', 'все');
+        // $re = [];
+
+        while ($r = $ff->fetch()) {
+
+            if (empty($re[( $re2[$r['id']] ?? $r['id'] )])) {
+                //$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
+                $re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'start2' => 'ok'];
+            }
+
+            if (!empty($r['name']))
+                $re[( $re2[$r['id']] ?? $r['id'] )]['dop'][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+        }
+
+        if ($sort == 'sort_asc') {
+            usort($re, "\\f\\sort_ar_sort");
+        }
+
+        if (isset($show_memory) && $show_memory === true) {
+            $sm2 = 0;
+            $sm2 = memory_get_usage();
+            echo '<br/>'
+            . 's' . __LINE__ . 's > ' . round(( $sm2 - $sm ) / 1024, 2) . ' Kb = '
+            . '<br/>'
+            . 'timer:' . \f\timer::stop('str', 123) . ' - ';
+        }
+
+        // \f\pa($re);
+
+        return $re;
+        /*
+          return self::$cash['itemsimple'][$cash] = $re;
+
+          //return \f\end2('Достали список, простой', 'ok', $re, 'array');
+          // return \f\end3('Достали список, простой', true, $re);
+         *
+         */
     }
 
     public static function getItems_old190605($db, string $folder, $module = null, $stat = 'show', $limit = 50) {
@@ -1390,6 +2117,45 @@ class items {
 
             if (isset($files) && sizeof($files) > 0) {
 
+                $nn = 0;
+
+                foreach ($files as $k0 => $v0) {
+
+                    if (isset($v0['name']) && sizeof($v0['name']) > 1) {
+
+                        foreach ($v0['name'] as $k1 => $v1) {
+
+//                            \f\pa($k1);
+//                            \f\pa($v1);
+
+                            if (!empty($v1) && isset($cfg_mod[$k1])) {
+
+                                $nn++;
+
+                                // echo '<br/>' . __LINE__;
+
+                                $new_name = $k1 . '_' . $nn . '_' . substr(\f\translit($v1, 'uri2'), 0, 50) . '_' . rand(10, 99) . '.' . \f\get_file_ext($v1);
+
+                                if (!function_exists('\Nyos\nyos_image::autoJpgRotate') && file_exists(DR . '/vendor/didrive/base/Nyos_image.php'))
+                                    require_once DR . '/vendor/didrive/base/Nyos_image.php';
+
+                                $e = \Nyos\nyos_image::autoJpgRotate($v['tmp_name'], self::$dir_img_server . $new_name);
+
+                                if (!file_exists(self::$dir_img_server . $new_name)) {
+                                    copy($v0['tmp_name'][$k1], self::$dir_img_server . $new_name);
+                                }
+
+                                $in_db[] = array(
+                                    'name' => $k1,
+                                    'value' => $new_name
+                                );
+                            }
+                        }
+                    }
+                }
+            } else {
+
+                // \f\pa($files);
                 //echo '<br/>#'.__LINE__;
                 $nn = 1;
 

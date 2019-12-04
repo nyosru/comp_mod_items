@@ -31,15 +31,25 @@ class items {
     public static $dir_img_server = false;
     public static $dir_img_uri = false;
     public static $dir_img_uri_download = false;
-    public static $sort_head = null;
-    public static $sql_select_vars = null;
-    public static $cash = [];
-    public static $now_mod = null;
     // если true то возвращаем из get simple только dop
     // public static $get_data_simple = true;
+    public static $sort_head = null;
+    public static $sql_select_vars = null;
+    public static $now_mod = null;
     public static $get_data_simple = null;
+    public static $cash = [];
+    // эти поля должны быть на выходе в допах
+    public static $need_polya_vars = [];
     public static $where = [];
     public static $where2 = '';
+    public static $where2dop = '';
+
+    /**
+     * переменная для добавления inner join в первой выборке из списка итемов
+     * ( detitemsimple3 )
+     * @var строка
+     */
+    public static $join_where = '';
 
     /**
      * использовать старый стиль
@@ -1017,6 +1027,12 @@ class items {
     public static function getItemsSimple3($db, $module = null, $stat = 'show', $sort = null) {
 
 
+        if (empty(self::$where2dop) && empty(self::$need_polya_vars)) {
+            $save_cash = true;
+        } else {
+            $save_cash = false;
+        }
+
 
         // echo '<br/>-- ' . $cash_var;
         //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
@@ -1024,40 +1040,57 @@ class items {
         //        
         //        if ( 1 == 1 || $module == '050.chekin_checkout') {
 
+
+
         /**
          * запускаем мемкеш и тащим если есть кеш
          */
-        if (1 == 1) {
+        $memcache = false;
+        if (1 == 2) {
+            $memcache = true;
 
-            $cash_var = $module . '.' . $stat . '.' . $sort;
+            if (isset($memcache) && $memcache === true && $save_cash === true) {
+                if (1 == 1 && class_exists('memcache')) {
 
-            //Создаём новый объект. Также можно писать и в процедурном стиле
-            $memcache_obj = new \Memcache;
-            //Соединяемся с нашим сервером
-            $memcache_obj->connect('127.0.0.1', 11211) or die("Could not connect");
-            //Попытаемся получить объект с ключом our_var
-            $var_key = @$memcache_obj->get($cash_var);
-            if (!empty($var_key)) {
+                    $cash_var = $module . '__' . $stat . '__' . $sort;
+                    // echo '<br/>'.$cash_var;
 
-//                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
-//                    echo '<Br/>есть рез';
-//                }
+                    $memcache_obj = new \Memcache;
+                    //Соединяемся с нашим сервером
+                    $memcache_obj->connect('127.0.0.1', 11211) or die("Could not connect");
 
-                $memcache_obj->close();
-                //Если объект закэширован, выводим его значение
-                return $var_key;
-                return json_decode($var_key);
+                    //Попытаемся получить объект с ключом our_var
+                    $var_key = @$memcache_obj->get($cash_var);
+
+                    if (!empty($var_key)) {
+
+                        //                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+                        //                    echo '<Br/>есть рез';
+                        //                }
+
+                        $memcache_obj->close();
+                        //Если объект закэширован, выводим его значение
+
+                        if (self::$style_old === true) {
+                            return ['data' => $var_key];
+                        } else {
+                            return $var_key;
+                        }
+
+                        // return json_decode($var_key);
+                    }
+                    //    else
+                    //    {
+                    //        //Если в кэше нет объекта с ключом our_var, создадим его
+                    //        //Объект our_var будет храниться 5 секунд и не будет сжат
+                    //        $memcache_obj->set('our_var', date('G:i:s'), false, 5);
+                    //         //Выведем закэшированные данные
+                    //        echo $memcache_obj->get('our_var');
+                    //    }
+                    //    //Закрываем соединение с сервером Memcached
+                    //    $memcache_obj->close();        
+                }
             }
-//    else
-//    {
-//        //Если в кэше нет объекта с ключом our_var, создадим его
-//        //Объект our_var будет храниться 5 секунд и не будет сжат
-//        $memcache_obj->set('our_var', date('G:i:s'), false, 5);
-//         //Выведем закэшированные данные
-//        echo $memcache_obj->get('our_var');
-//    }
-//    //Закрываем соединение с сервером Memcached
-//    $memcache_obj->close();        
         }
 
         if (1 == 1) {
@@ -1100,15 +1133,54 @@ class items {
 
 //        \f\timer::start(47);
             // $ff1 = ' ( SELECT 
+//            if (!empty(self::$need_polya_vars)) {
+//                $sql_dop1 = '';
+//                
+//                    foreach( self::$need_polya_vars as $kk ){
+//                        if( !isset($v[$kk]) ){
+//                            
+//                            $sql_dop1 = ' INNER JOIN ';
+//                            
+//                            // $skip = true;
+//                            // break;
+//                        }
+//                        
+//                    }
+//
+//            }else{
+//                $sql_dop1 = '';
+//            }
+
+            if ($sort == 'date_asc') {
+                self::$sql_order = ' ORDER BY midop.id ASC ';
+            }
+            //
+            elseif ($sort == 'date__desc') {
+                self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
+            }
+            //
+            elseif ($sort == 'add_date__desc') {
+                self::$sql_order = ' ORDER BY mi.add_d DESC ';
+            }
+            //
+            elseif ($sort == 'sort_asc') {
+                self::$sql_order = ' ORDER BY mi.sort ASC ';
+            }
+            //
+            elseif ($sort == 'sort_desc') {
+                self::$sql_order = ' ORDER BY mi.sort DESC ';
+            }
+
+
             $ff1 = ' SELECT 
                 mi.id,
                 mi.head,
                 mi.sort,
                 mi.status
-
             FROM 
-            
                 `mitems` mi
+
+            ' . ( self::$join_where ?? '' ) . '
 
             WHERE '
                     . ' mi.`module` = :module '
@@ -1118,7 +1190,7 @@ class items {
 
 //            \f\pa($ff1);
 
-            self::$where2 = '';
+            self::$join_where = self::$where2 = '';
 
             $ff = $db->prepare($ff1);
 
@@ -1137,8 +1209,6 @@ class items {
                 if (empty($re[$r['id']])) {
 
                     //\f\pa($r);
-
-
 
                     $re[$r['id']] = [
                         'id' => $r['id'],
@@ -1164,9 +1234,11 @@ class items {
             if (!empty(self::$sql_order))
                 self::$sql_order = '';
 
-            /**
-             * пишем кеш контент
-             */
+            if (!empty($sql)) {
+
+                /**
+                 * пишем кеш контент
+                 */
 //        if (!empty($file_cash)) {
 //            file_put_contents($file_cash, json_encode($re));
 //        }
@@ -1174,106 +1246,138 @@ class items {
 //        return self::$cash['itemsimple'][$cash] = $re;
 
 
-            /*
-              $re2 = [];
-              foreach ($re as $k => $v) {
-              if (isset($v['id']))
-              $re2[$v['id']] = $k;
-              }
+                /*
+                  $re2 = [];
+                  foreach ($re as $k => $v) {
+                  if (isset($v['id']))
+                  $re2[$v['id']] = $k;
+                  }
 
-              // \f\pa($re);
-              // \f\pa($sql);
-              // die();
-              // $ff1 = ' ( SELECT
-             * */
-            $ff1 = ' SELECT
+                  // \f\pa($re);
+                  // \f\pa($sql);
+                  // die();
+                  // $ff1 = ' ( SELECT
+                 * */
+                $ff1 = ' SELECT
 
-          midop.id_item id, '
-                    // .' midop.id dops_id, '
-                    . ' midop.`name`,
-          midop.`value`,
-          midop.`value_date`,
-          midop.`value_datetime`,
-          midop.`value_text` '
-                    . ( self::$sql_select_vars ?? '' )
-                    . '
+                midop.id_item id, '
+                        // .' midop.id dops_id, '
+                        . ' midop.`name`,
+                midop.`value`,
+                midop.`value_date`,
+                midop.`value_datetime`,
+                midop.`value_text` '
+                        . ( self::$sql_select_vars ?? '' )
+                        . '
+            FROM `mitems-dops` midop '
+                        . ' WHERE '
+                        . ' midop.id_item IN (' . $sql . ') '
+                        . ' AND midop.status IS NULL '
+                        . ( self::$where2dop ?? '' )
 
-          FROM `mitems-dops` midop '
-                    . ' WHERE '
-                    . ' midop.id_item IN (' . $sql . ') '
-                    . ' AND midop.status IS NULL '
+                ;
 
-            ;
+                //            \f\pa($ff1);
 
-            //            \f\pa($ff1);
-
-            $ff = $db->prepare($ff1);
+                $ff = $db->prepare($ff1);
 
 //        $for_sql = [];
 //        $ff->execute($for_sql);
-            $ff->execute();
+                $ff->execute();
 
-            // while( \f\pa($ff->fetchAll(), '', '', 'все');
-            // $re = [];
+                // while( \f\pa($ff->fetchAll(), '', '', 'все');
+                // $re = [];
 
-            while ($r = $ff->fetch()) {
+                while ($r = $ff->fetch()) {
 
-                if (empty($re[( $re2[$r['id']] ?? $r['id'] )])) {
-                    //$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
-                    $re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'start2' => 'ok'];
+                    if (empty($re[( $re2[$r['id']] ?? $r['id'] )])) {
+                        //$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
+                        $re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'start2' => 'ok'];
+                    }
+
+                    if (!empty($r['name'])) {
+                        if (self::$style_old === true) {
+                            $re[( $re2[$r['id']] ?? $r['id'] )]['dop'][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                        } else {
+                            $re[( $re2[$r['id']] ?? $r['id'] )][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                        }
+                    }
                 }
 
-                if (!empty($r['name'])) {
-                    $re[( $re2[$r['id']] ?? $r['id'] )][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                if (!empty(self::$need_polya_vars)) {
+
+                    $re2 = [];
+
+                    foreach ($re as $k => $v) {
+
+                        $skip = false;
+
+                        foreach (self::$need_polya_vars as $kk) {
+
+                            if (!isset($v[$kk])) {
+                                $skip = true;
+                                break;
+                            }
+                        }
+
+                        if ($skip == true) {
+                            //$re2[$k] = $v;
+                            unset($re[$k]);
+                        }
+                    }
+
+//                $re = $re2;
+//                unset($re2);
                 }
-            }
 
-            if ($sort == 'sort_asc') {
-                usort($re, "\\f\\sort_ar_sort");
-            }
+                if ($sort == 'sort_asc') {
+                    usort($re, "\\f\\sort_ar_sort");
+                }
 
-            if (isset($show_memory) && $show_memory === true) {
-                $sm2 = 0;
-                $sm2 = memory_get_usage();
-                echo '<br/>'
-                . 's' . __LINE__ . 's > ' . round(( $sm2 - $sm ) / 1024, 2) . ' Kb = '
-                . '<br/>'
-                . 'timer:' . \f\timer::stop('str', 123) . ' - ';
+                if (isset($show_memory) && $show_memory === true) {
+                    $sm2 = 0;
+                    $sm2 = memory_get_usage();
+                    echo '<br/>'
+                    . 's' . __LINE__ . 's > ' . round(( $sm2 - $sm ) / 1024, 2) . ' Kb = '
+                    . '<br/>'
+                    . 'timer:' . \f\timer::stop('str', 123) . ' - ';
+                }
             }
         }
 
         // \f\pa($re);
 
-        if (self::$style_old === true) {
 
+
+
+
+
+        /**
+         * если в начале запустили мемкеш то сохраняем результат
+         */
+//        if (isset($memcache) && $memcache === true) {
+//            if (isset($memcache_obj) && !empty($cash_var)) {
+//
+//                //Выведем закэшированные данные
+//                $memcache_obj->set($cash_var, $re, false, 3600 * 24);
+//                //Закрываем соединение с сервером Memcached
+//                $memcache_obj->close();
+//            }
+//        }
+
+
+
+        /**
+         * трем переменные
+         */
+        self::$where2dop = '';
+        self::$need_polya_vars = [];
+
+
+        if (self::$style_old === true) {
+            self::$style_old = false;
             return ['data' => $re];
         } else {
-
-            
-            /**
-             * если в начале запустили мемкеш то сохраняем результат
-             */
-            if ( isset($memcache_obj) ?? !empty($cash_var) ) {
-
-//            $var_key = @$memcache_obj->get($cash_var);
-//
-//            if (!empty($var_key)) {
-//                $memcache_obj->close();
-//                //Если объект закэширован, выводим его значение
-//                return $var_key;
-//            }
-//        //Если в кэше нет объекта с ключом our_var, создадим его
-//        //Объект our_var будет храниться 5 секунд и не будет сжат
-                //$memcache_obj->set( $cash_var, $re , false, 3600 );
-                $memcache_obj->set($cash_var, $re, false, 3600);
-//         //Выведем закэшированные данные
-                // $memcache_obj->get('our_var');
-// 
-//    //Закрываем соединение с сервером Memcached
-                $memcache_obj->close();
-//        
-            }
-
             return $re;
         }
 

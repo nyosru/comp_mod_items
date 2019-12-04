@@ -19,7 +19,6 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 }
 
 
-
 // проверяем секрет
 if (
         (
@@ -100,6 +99,8 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
         }
     }
 
+    // \f\Cash::deleteKeyPoFilter( )
+    
 // f\end2( 'новый статус ' . $status);
     f\end2('новый статус ' . $_POST['val']);
 }

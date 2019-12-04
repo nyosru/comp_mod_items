@@ -8,6 +8,7 @@
 {$head_cat1 = $now_mod[$k]['import_1_module']}
 
     {if $head_cat1 !== null }
+
     {$v_data[$head_cat1] = \Nyos\mod\items::getItems($db, $folder, $now_mod[$k]['import_1_module'], null )}
 
     {$head2_id = null}

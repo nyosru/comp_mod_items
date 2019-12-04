@@ -9,6 +9,7 @@ $().ready(function () {
         //alert( $val );
 
         //var $pole = 'sort';
+        var $level = $(this).attr('level');
         var $pole = $(this).attr('name');
         // var $val = $(this).attr('rev');
         var $id = $(this).attr('rel');
@@ -19,13 +20,12 @@ $().ready(function () {
 //            return false;
 //        }
 
-
         $.ajax({
 
             type: 'POST',
             url: '/vendor/didrive_mod/items/1/ajax.php',
             dataType: 'json',
-            data: "action=edit_pole&pole=" + $pole + "&id=" + $id + "&val=" + $val + "&s=" + $s,
+            data: "action=edit_pole&pole=" + $pole + "&id=" + $id + "&val=" + $val + "&s=" + $s + "&level="+$level,
             // сoбытиe дo oтпрaвки
             beforeSend: function ($data) {
                 // $div_res.html('<img src="/img/load.gif" alt="" border="" />');

@@ -18,7 +18,6 @@ define('IN_NYOS_PROJECT', true);
 // require( $_SERVER['DOCUMENT_ROOT'] . '/0.all/class/nyos.2.php' );
 // require( $_SERVER['DOCUMENT_ROOT'] . '/0.all/f/ajax.php' );
 
-
 require( $_SERVER['DOCUMENT_ROOT'] . '/0.site/0.cfg.start.php');
 require( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'class' . DS . 'mysql.php' );
 require( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'db.connector.php' );

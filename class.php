@@ -340,7 +340,7 @@ class items {
                     // . ' mi.id = midop.id_item '
                     . ' mi.id = :id '
                     . ' AND '
-                    . ' ( mi.id = dops_id OR mi.id = midop.id ) '
+                    . ' mi.id = midop.id '
 
 //            ' WHERE 
 //                midop.status IS NULL '
@@ -2334,14 +2334,26 @@ class items {
         if (self::$dir_img_server === false)
             return f\end2('Ошибка, папка для файлов не может быть создана', 'error', array('file' => __FILE__, 'line' => __LINE__), 'array');
 
-
+// \f\pa($data,2);
+// \f\pa($cfg_mod,2);
         // \f\pa($cfg_mod, '', '', '$cfg_mod');
         // \f\pa($data, '', '', '$data');
-
-        $data_old = self::getItemSimple($db, $id_item);
+        //$data_old = self::getItemSimple($db, $id_item);
+        
+        
+        // echo $cfg_mod['cfg.level'];
+        
+//        \f\CalcMemory::start(778);
+//        \f\timer::start(778);
+        
+        self::$where2 = ' AND mi.id = \''.(int) $id_item.'\' ';
+        $data_old = self::getItemsSimple3($db, $cfg_mod['cfg.level']);
         // \f\pa($data_old, '', '', '$data_old');
 
-        if (isset($data['head']{0}) && $data_old['data']['head'] != $data['head']) {
+//        echo 'tt'.\f\timer::stop( 'str', 778 );
+//        echo 'tt'. \f\CalcMemory::stop( 778 );
+        
+        if (isset($data['head']{0}) && $data_old[$id_item]['head'] != $data['head']) {
 
             // echo '<br/>' . __FILE__ . ' ' . __LINE__;
             \f\db\db_edit2($db, 'mitems', array('id' => $id_item), array('head' => $data['head']), false, 1, 'da');

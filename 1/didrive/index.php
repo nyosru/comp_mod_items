@@ -34,6 +34,13 @@
 //    }
 //}
 
+
+
+
+
+
+//\f\pa($_REQUEST);
+
 /**
  * добавление записи
  */
@@ -125,9 +132,8 @@ elseif (isset($_POST['delete_item_id']{1})) {
 
     // echo $status;
 }
-/**
- * сохранение редактирования
- */ elseif (isset($_REQUEST['save_id']) && is_numeric($_REQUEST['save_id']) && isset($_REQUEST['save_edit'])) {
+// сохранение редактирования
+ elseif (isset($_REQUEST['save_id']) && is_numeric($_REQUEST['save_id']) && isset($_REQUEST['save_edit'])) {
 
     $d = $_POST;
     unset($d['addnew']);
@@ -140,6 +146,7 @@ elseif (isset($_POST['delete_item_id']{1})) {
     if (isset($r['status']) && $r['status'] == 'ok') {
         $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . $r['html'];
     }
+    
 } elseif (isset($_GET['refresh_cash']) && $_GET['refresh_cash'] == 'da') {
     \Nyos\mod\items::clearCash($vv['folder']);
 }

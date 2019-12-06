@@ -33,12 +33,16 @@
     {% endif %}    
 
     <br clear='all' />
+    
+    {#{ pa(list[get.edit_id]) }#}
+    
+    <br clear='all' />
     <div style="xoverflow: auto; xborder: 1px solid gray;">
         <div class="container-fluid">
             <div class="grid" style="xborder:0; xoverflow:auto; ">
 
                 {% if now_level.head_skip is defined and now_level.head_skip == 'da' %}
-                    <input type="hidden" name="head" value="{1|rand:99999}" />
+                    <input type="hidden" name="head" value="1" />
                 {% else %}
                     <div class="row">
 
@@ -467,7 +471,7 @@
 
                         {% if edit_item is defined and list[get.edit_id]['id'] is defined %}
 
-                            <input type="hidden" name="save_id" value="{{ get.edit_id }}" />
+                            <input type="hidden" name="save_id" value="{{ list[get.edit_id]['id'] }}" />
                             <input type="submit" name="save_edit" value="Сохранить" class="btn btn-warning"  />
 
                         {% else %}

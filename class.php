@@ -1022,6 +1022,7 @@ class items {
      * @param type $module
      * @param type $stat
      * @param type $sort
+     * date_asc sort_asc
      * @return type
      */
     public static function getItemsSimple3($db, $module = null, $stat = 'show', $sort = null) {
@@ -1151,11 +1152,12 @@ class items {
 //                $sql_dop1 = '';
 //            }
 
-            if ($sort == 'date_asc') {
-                self::$sql_order = ' ORDER BY midop.id ASC ';
-            }
-            //
-            elseif ($sort == 'date__desc') {
+//            if ($sort == 'date_asc') {
+//                self::$sql_order = ' ORDER BY midop.id ASC ';
+//            }
+//            //
+//            else
+            if ($sort == 'date__desc') {
                 self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
             }
             //
@@ -1332,6 +1334,9 @@ class items {
 
                 if ($sort == 'sort_asc') {
                     usort($re, "\\f\\sort_ar_sort");
+                }
+                elseif ($sort == 'date_asc') {
+                    usort($re, "\\f\\sort_ar_date");
                 }
 
                 if (isset($show_memory) && $show_memory === true) {

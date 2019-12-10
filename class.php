@@ -43,6 +43,11 @@ class items {
     public static $where = [];
     public static $where2 = '';
     public static $where2dop = '';
+    /**
+     * массив переменных для вставки в первый sql 
+     * @var type 
+     */
+    public static $var_ar_for_1sql = [];
 
     /**
      * переменная для добавления inner join в первой выборке из списка итемов
@@ -1151,7 +1156,6 @@ class items {
 //            }else{
 //                $sql_dop1 = '';
 //            }
-
 //            if ($sort == 'date_asc') {
 //                self::$sql_order = ' ORDER BY midop.id ASC ';
 //            }
@@ -1190,15 +1194,17 @@ class items {
                     . ( self::$where2 ?? '' )
                     . self::$sql_order ?? '';
 
-//            \f\pa($ff1);
+            // \f\pa($ff1);
 
             self::$join_where = self::$where2 = '';
 
             $ff = $db->prepare($ff1);
 
-            $for_sql = [':module' => ( $module ?? '' )];
-            $ff->execute($for_sql);
+            self::$var_ar_for_1sql[':module'] = ( $module ?? '' );
+            $ff->execute(self::$var_ar_for_1sql);
 
+            self::$var_ar_for_1sql = [];
+            
             // \f\pa( $ff->fetchAll(), '', '', 'все');
             // die;
             // while( \f\pa($ff->fetchAll(), '', '', 'все');
@@ -1334,8 +1340,7 @@ class items {
 
                 if ($sort == 'sort_asc') {
                     usort($re, "\\f\\sort_ar_sort");
-                }
-                elseif ($sort == 'date_asc') {
+                } elseif ($sort == 'date_asc') {
                     usort($re, "\\f\\sort_ar_date");
                 }
 
@@ -2224,45 +2229,50 @@ class items {
                     }
                 }
 
-            if (isset($files) && sizeof($files) > 0) {
+//            \f\pa($files, 2, '', 'files');
+            // \f\pa($cfg_mod);
+            // если много файлов
+            if (isset($files['name']) && sizeof($files['name']) > 0) {
 
                 $nn = 0;
+                foreach ($files['name'] as $k0 => $v0) {
 
-                foreach ($files as $k0 => $v0) {
+//                    \f\pa($k0);
+//                    \f\pa($v0);
+                    // \f\pa($k1);
+                    // \f\pa($v1);
 
-                    if (isset($v0['name']) && sizeof($v0['name']) > 1) {
+                    if ( !empty($v0) && isset($files['error'][$k0]) && $files['error'][$k0] == 0 && isset($cfg_mod[$k0] ) ) {
 
-                        foreach ($v0['name'] as $k1 => $v1) {
+                        $nn++;
+                        // echo '<br/>' . __LINE__;
+                        $new_name = $k0 . '_' . $nn . '_' . substr(\f\translit($v0, 'uri2'), 0, 30) . '_' . rand(10, 99) . '.' . \f\get_file_ext($v0);
 
-//                            \f\pa($k1);
-//                            \f\pa($v1);
+//                                if ( !function_exists('\Nyos\nyos_image::autoJpgRotate') && file_exists(DR . '/vendor/didrive/base/Nyos_image.php') )
+//                                    require_once DR . '/vendor/didrive/base/Nyos_image.php';
 
-                            if (!empty($v1) && isset($cfg_mod[$k1])) {
+                        $save_file = self::$dir_img_server . $new_name;
 
-                                $nn++;
+                        // echo '<Br/>111: ' . $save_file;
 
-                                // echo '<br/>' . __LINE__;
+                        if (!file_exists($save_file)) {
 
-                                $new_name = $k1 . '_' . $nn . '_' . substr(\f\translit($v1, 'uri2'), 0, 50) . '_' . rand(10, 99) . '.' . \f\get_file_ext($v1);
+                            $e = \Nyos\nyos_image::autoJpgRotate($files['tmp_name'][$k0], $save_file);
 
-                                if (!function_exists('\Nyos\nyos_image::autoJpgRotate') && file_exists(DR . '/vendor/didrive/base/Nyos_image.php'))
-                                    require_once DR . '/vendor/didrive/base/Nyos_image.php';
+                            if (!file_exists($save_file))
+                                copy($files['tmp_name'][$k0], $save_file);
 
-                                $e = \Nyos\nyos_image::autoJpgRotate($v['tmp_name'], self::$dir_img_server . $new_name);
-
-                                if (!file_exists(self::$dir_img_server . $new_name)) {
-                                    copy($v0['tmp_name'][$k1], self::$dir_img_server . $new_name);
-                                }
-
+                            if (file_exists($save_file))
                                 $in_db[] = array(
-                                    'name' => $k1,
+                                    'name' => $k0,
                                     'value' => $new_name
                                 );
-                            }
                         }
                     }
                 }
-            } else {
+            }
+            // если один файл
+            else {
 
                 // \f\pa($files);
                 //echo '<br/>#'.__LINE__;
@@ -2294,7 +2304,8 @@ class items {
                 }
             }
 
-            //\f\pa($in_db);
+            // \f\pa($in_db);
+
             // echo '<Br/>db\sql_insert_mnogo - ' .$new_id ;
             //$status = '';
             \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
@@ -2303,7 +2314,9 @@ class items {
             //echo $status;
         }
 
-        self::clearCash($folder);
+        // отключил 191208
+        if (1 == 2)
+            self::clearCash($folder);
 
         return \f\end2('Окей, запись добавлена', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }
@@ -2344,20 +2357,16 @@ class items {
         // \f\pa($cfg_mod, '', '', '$cfg_mod');
         // \f\pa($data, '', '', '$data');
         //$data_old = self::getItemSimple($db, $id_item);
-        
-        
         // echo $cfg_mod['cfg.level'];
-        
 //        \f\CalcMemory::start(778);
 //        \f\timer::start(778);
-        
-        self::$where2 = ' AND mi.id = \''.(int) $id_item.'\' ';
+
+        self::$where2 = ' AND mi.id = \'' . (int) $id_item . '\' ';
         $data_old = self::getItemsSimple3($db, $cfg_mod['cfg.level']);
         // \f\pa($data_old, '', '', '$data_old');
-
 //        echo 'tt'.\f\timer::stop( 'str', 778 );
 //        echo 'tt'. \f\CalcMemory::stop( 778 );
-        
+
         if (isset($data['head']{0}) && $data_old[$id_item]['head'] != $data['head']) {
 
             // echo '<br/>' . __FILE__ . ' ' . __LINE__;

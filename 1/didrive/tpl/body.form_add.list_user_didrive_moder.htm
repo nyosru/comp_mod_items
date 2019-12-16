@@ -1,0 +1,38 @@
+{% spaceless %}
+
+    {#% set users = get_site_user(db) %#}
+    {#{ folder }#}
+    {% set users = items__getUsersDi(db) %}
+    {#{ pa(users) }#}
+
+    <span>
+
+        <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
+                {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %} 
+                >
+
+            {% if v.obayz is not defined %}
+                <option value="">можете выбрать</option>
+            {% endif %}
+
+            {% for k3, user in users %} 
+
+                <option value='{{ user.id }}' 
+                        {% if ( edit_item is defined and list[edit_item][k] is defined and list[edit_item][k] == user.id ) or ( get.var[k] is defined and get.var[k] == user.id ) %} selected="selected" {% endif %} >
+
+                    {{ user.name }} {{ user.family }} 
+                    {% if user.login is defined %}
+                        {{ user.login }}
+                    {% endif %} 
+                    {{ user.soc_web_link }}
+
+                </option>
+            {% endfor %}
+
+        </select>
+
+        <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
+
+    </span>
+
+{% endspaceless %}

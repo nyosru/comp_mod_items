@@ -1,0 +1,60 @@
+{% spaceless %}
+
+    {# формирумем массив для пропуска #}
+    {#                                
+        {% set skip = [] %}
+        {% for k4,v4 in v if k4[:4] == 'skip' %}
+            {% set skip = skip|merge( { (v4): '1' } ) %}
+        {% endfor %}
+    #}
+
+    <span>
+
+        <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
+                {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% else %} {% if v.obayz is defined and v.obayz == 'da' %} required="required" {% endif %} {% endif %}
+                >
+
+            {#
+            {% if v.obayz is not defined %}
+                <option value="">можете выбрать</option>
+            {% endif %}
+            #}
+
+            {% for i in range(low=1, high=10, step=1) if v['item'~i] is defined %}
+
+                <option 
+
+                    {% if v['item'~ i ~'val'] is defined %} value='{{ v['item'~ i ~'val'] }}' {% endif %}
+
+                    {% if v['item'~ i ~'val'] is defined and list[edit_item][k] is defined 
+                                                        and v['item'~ i ~'val'] == list[edit_item][k] %} 
+                    selected="selected"
+                    {% elseif v['item'~ i ] is defined and list[edit_item][k] is defined 
+                                                        and v['item'~ i] == list[edit_item][k] %} 
+                    selected="selected"
+                    {% endif %}
+
+                        {# % if edit_item is defined and list[edit_item][k] is defined and list[edit_item][k] == k1 %}
+                            selected="selected" 
+                        {% elseif get.var[k] is defined and get.var[k] == k1 %}
+                            selected="selected" 
+                        {% endif % #} 
+                        >
+
+                        {{ v['item'~i] }}
+                        {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
+
+                    </option>
+
+                    {% endfor %}
+
+                    </select>
+
+                    {#{ pa(list[edit_item]) }#}
+                    {#
+                    <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
+                    #}
+
+                </span>
+
+                {% endspaceless %}

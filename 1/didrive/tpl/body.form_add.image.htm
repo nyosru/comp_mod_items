@@ -1,0 +1,23 @@
+{% spaceless %}
+
+    {% if edit_item is defined and list[edit_item][k] is defined %}
+
+        <a href="{{ sd }}module_items_image/{{ list[edit_item][k] }}" target="_blank" >
+            <img style="float:left; padding: 0 10px;" src="/0.service/show.edit.image.php?q=80&w=150&uri=/module_items_image/{{ list[edit_item][k] }}" />
+        </a>
+
+        <input id='ii_{{ k }}' type="hidden" name="{{ k }}" value="{{ list[edit_item][k] }}" />
+
+        <label>
+            <input type="checkbox" name="{{ k }}_del" value="yes" /> удалить изображение
+        </label>
+
+        <br/>
+        для замены фото, выберите новое изображение<br/>
+
+    {% endif %}
+
+    <input id='i_{{ k }}' type="file" name="{{ k }}" value="" />
+    <br/>
+    
+{% endspaceless %}

@@ -3,6 +3,27 @@
 /**
   определение функций для TWIG
  */
+
+$function = new Twig_SimpleFunction('items__get_file_didrive_tpls', function () {
+
+    $e = scandir( dirname(__FILE__).'/tpl/' );
+    
+    $re = [];
+    foreach( $e as $k => $v ){
+        $re[$v] = 1;
+    }
+    
+    return $re;
+});
+$twig->addFunction($function);
+
+
+
+
+
+
+
+
 $function = new Twig_SimpleFunction('add_items_on_modal', function ( $module, $data = [], $default = [], $skip = [] ) {
 
     global $db;

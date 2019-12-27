@@ -1,0 +1,57 @@
+{% spaceless %}
+
+{# формирумем массив для пропуска #}
+{% set skip = [] %}
+{% for k4,v4 in v if k4[:4] == 'skip' %}
+    {% set skip = skip|merge( { (v4): '1' } ) %}
+{% endfor %}
+
+<span>
+
+    <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
+            {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+            />
+
+    {% if v.obayz is not defined %}
+        <option value="">можете выбрать</option>
+    {% endif %}
+
+    {% if v_data[v.import_1_module] is defined %}
+
+        {% for k1, v1 in v_data[v.import_1_module] %} 
+
+            {% if skip[v1.head] is not defined %}
+
+                <option value='{{ k1 }}' 
+                        {% if edit_item is defined and list[edit_item][k] is defined and list[edit_item][k] == k1 %}
+                            selected="selected" 
+                        {% elseif get.var[k] is defined and get.var[k] == k1 %}
+                            selected="selected" 
+                        {% elseif get['edit__'~k] is defined and get['edit__'~k] == k1 %}
+                            selected="selected" 
+                        {% endif %} 
+                        >
+
+                    {# % if v.import_1_module_link_var is defined  
+                    and v1.dop[v.import_1_module_link_var] is defined 
+                    and v.import_2_module is defined and v_data[v.import_2_module][  v1.dop[v.import_1_module_link_var]  ]['head'] is defined % #} 
+
+                    {# % if v_data[v.import_2_module][  v1.dop[v.import_1_module_link_var]  ]['status'] == 'hide' } (скрыто) {% endif % #}
+
+                    {# { v_data[v.import_2_module][  v1.dop[v.import_1_module_link_var]  ]['head'] } #} 
+
+                    {{ v1.head }}
+                    {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
+
+                </option>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+</select>
+
+<small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
+
+</span>
+
+{% endspaceless %}

@@ -1,0 +1,7 @@
+{% spaceless %}
+
+    <textarea id='i_{{ k }}' xtype="number" name="{{ k }}"  class="form-control" 
+              {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+              >{% if edit_item is defined and list[edit_item][k] is defined %}{{ list[edit_item][k]|escape }}{% endif %}</textarea>
+
+{% endspaceless %}

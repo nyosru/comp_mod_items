@@ -1,28 +1,35 @@
-{#{ get.level }#}
+{% spaceless %}
 
-{#% set list = items__readItems( db, get.level, null, 'sort_asc' ) %#}
-{% set list = items__get( db, get.level, null, 'sort_asc' ) %}
-{#{ pa(items) }#}
+    {#{ get.level }#}
 
-<div class="container-fluid">
-    <div class="grid">
+    {#% set list = items__readItems( db, get.level, null, 'sort_asc' ) %#}
+    {% set list = items__get( db, get.level, null, 'sort_asc' ) %}
+    {#{ pa(list) }#}
 
-        {# list #}
-        {# если редактирование, то показываем форму редактирования #}
-        
-            {% if get.edit_id is defined and list[get.edit_id] is defined %}
+    <div class="container-fluid">
+        <div class="grid">
 
-                {% include dir_mod_now_mod_ditpl~'body.form_add.htm' %}
+            {# list #}
+            {# если редактирование, то показываем форму редактирования #}
 
-            {% else %}
 
-                {% include dir_mod_now_mod_ditpl~'body.form_add.htm' %}
-                
+            {#% set edit_item = 'x' %#}
+
+            {#% if get.edit_id is defined and list[get.edit_id] is defined %#}
+
+
+
+            {% include dir_mod_now_mod_ditpl~'body.form_add.htm' %}
+
+            {% if edit_item is not defined %}
+
                 {% if get.showonly is not defined %}
-                {% include dir_mod_now_mod_ditpl~'body.list_items.htm' %}
+                    {% include dir_mod_now_mod_ditpl~'body.list_items.htm' %}
                 {% endif %}
 
             {% endif %}
-        
+
+        </div>
     </div>
-</div>
+
+{% endspaceless %}

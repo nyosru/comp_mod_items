@@ -20,6 +20,11 @@ if (!defined('IN_NYOS_PROJECT'))
 //$oborots = \Nyos\mod\items::getItemsSimple2($db, $module_oborot);
 
 
+//        \Nyos\mod\items::$join_where = ' INNER JOIN `mitems-dops` mid '
+//                . ' ON mid.id_item = mi.id '
+//                . ' AND mid.name = \'start\' '
+//                . ' AND mid.value_datetime >= \'' . $date . ' 08:00:00\' '
+//                . ' AND mid.value_datetime <= \'' . date('Y-m-d 03:00:00', strtotime($date . ' +1day')) . '\' ';
 
 
 
@@ -43,6 +48,17 @@ class items {
     public static $where = [];
     public static $where2 = '';
     public static $where2dop = '';
+    /**
+     * что добавляем в селект в выборке итемов ( itemgetsimple3 )
+     * @var строка
+     */
+    public static $select_var1 = '';
+
+    /**
+     * массив переменных для вставки в первый sql 
+     * @var type 
+     */
+    public static $var_ar_for_1sql = [];
 
     /**
      * переменная для добавления inner join в первой выборке из списка итемов
@@ -340,7 +356,7 @@ class items {
                     // . ' mi.id = midop.id_item '
                     . ' mi.id = :id '
                     . ' AND '
-                    . ' ( mi.id = dops_id OR mi.id = midop.id ) '
+                    . ' mi.id = midop.id '
 
 //            ' WHERE 
 //                midop.status IS NULL '
@@ -1022,89 +1038,94 @@ class items {
      * @param type $module
      * @param type $stat
      * @param type $sort
+     * date_asc sort_asc
      * @return type
      */
     public static function getItemsSimple3($db, $module = null, $stat = 'show', $sort = null) {
 
-
-        if (empty(self::$where2dop) && empty(self::$need_polya_vars)) {
-            $save_cash = true;
-        } else {
-            $save_cash = false;
-        }
+        // echo '<br/>'.__FUNCTION__.' '.$module;
+        
+        try {
 
 
-        // echo '<br/>-- ' . $cash_var;
-        //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
-        //            echo '<br/>a - '.$module;
-        //        
-        //        if ( 1 == 1 || $module == '050.chekin_checkout') {
+            if (empty(self::$where2dop) && empty(self::$need_polya_vars)) {
+                $save_cash = true;
+            } else {
+                $save_cash = false;
+            }
+
+
+            // echo '<br/>-- ' . $cash_var;
+            //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
+            //            echo '<br/>a - '.$module;
+            //        
+            //        if ( 1 == 1 || $module == '050.chekin_checkout') {
 
 
 
-        /**
-         * запускаем мемкеш и тащим если есть кеш
-         */
-        $memcache = false;
-        if (1 == 2) {
-            $memcache = true;
+            /**
+             * запускаем мемкеш и тащим если есть кеш
+             */
+            $memcache = false;
+            if (1 == 2) {
+                $memcache = true;
 
-            if (isset($memcache) && $memcache === true && $save_cash === true) {
-                if (1 == 1 && class_exists('memcache')) {
+                if (isset($memcache) && $memcache === true && $save_cash === true) {
+                    if (1 == 1 && class_exists('memcache')) {
 
-                    $cash_var = $module . '__' . $stat . '__' . $sort;
-                    // echo '<br/>'.$cash_var;
+                        $cash_var = $module . '__' . $stat . '__' . $sort;
+                        // echo '<br/>'.$cash_var;
 
-                    $memcache_obj = new \Memcache;
-                    //Соединяемся с нашим сервером
-                    $memcache_obj->connect('127.0.0.1', 11211) or die("Could not connect");
+                        $memcache_obj = new \Memcache;
+                        //Соединяемся с нашим сервером
+                        $memcache_obj->connect('127.0.0.1', 11211) or die("Could not connect");
 
-                    //Попытаемся получить объект с ключом our_var
-                    $var_key = @$memcache_obj->get($cash_var);
+                        //Попытаемся получить объект с ключом our_var
+                        $var_key = @$memcache_obj->get($cash_var);
 
-                    if (!empty($var_key)) {
+                        if (!empty($var_key)) {
 
-                        //                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
-                        //                    echo '<Br/>есть рез';
-                        //                }
+                            //                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+                            //                    echo '<Br/>есть рез';
+                            //                }
 
-                        $memcache_obj->close();
-                        //Если объект закэширован, выводим его значение
+                            $memcache_obj->close();
+                            //Если объект закэширован, выводим его значение
 
-                        if (self::$style_old === true) {
-                            return ['data' => $var_key];
-                        } else {
-                            return $var_key;
+                            if (self::$style_old === true) {
+                                return ['data' => $var_key];
+                            } else {
+                                return $var_key;
+                            }
+
+                            // return json_decode($var_key);
                         }
-
-                        // return json_decode($var_key);
+                        //    else
+                        //    {
+                        //        //Если в кэше нет объекта с ключом our_var, создадим его
+                        //        //Объект our_var будет храниться 5 секунд и не будет сжат
+                        //        $memcache_obj->set('our_var', date('G:i:s'), false, 5);
+                        //         //Выведем закэшированные данные
+                        //        echo $memcache_obj->get('our_var');
+                        //    }
+                        //    //Закрываем соединение с сервером Memcached
+                        //    $memcache_obj->close();        
                     }
-                    //    else
-                    //    {
-                    //        //Если в кэше нет объекта с ключом our_var, создадим его
-                    //        //Объект our_var будет храниться 5 секунд и не будет сжат
-                    //        $memcache_obj->set('our_var', date('G:i:s'), false, 5);
-                    //         //Выведем закэшированные данные
-                    //        echo $memcache_obj->get('our_var');
-                    //    }
-                    //    //Закрываем соединение с сервером Memcached
-                    //    $memcache_obj->close();        
                 }
             }
-        }
 
-        if (1 == 1) {
+            if (1 == 1) {
 
 //        echo '<br/><br/>' . __FUNCTION__ . '<Br/>';
 //        echo '<br/>' . $module;
-            // echo ' память ';
+                // echo ' память ';
 //        if ($module == '070.jobman' || $module == '061.dolgnost')
 //            $file_cash = DR . dir_site_sd . 'getItemsSimple2_' . $module . '_' . $stat . (!empty($sort) ? md5($sort) : '' ) . '.cash.json';
 //        echo '<Br/>'.$file_cash;
 
-            /**
-             * читаем кеш контент
-             */
+                /**
+                 * читаем кеш контент
+                 */
 //        if (1 == 2 && isset($file_cash) && file_exists($file_cash)) {
 //            return json_decode(file_get_contents($file_cash), true);
 //        }
@@ -1112,27 +1133,27 @@ class items {
 //        if (!empty(self::$cash['itemsimple'][$cash]))
 //            return self::$cash['itemsimple'][$cash];
 //        $show_memory = false;
-            // $show_memory = true;
+                // $show_memory = true;
 //
-            if (isset($show_memory) && $show_memory === true) {
+                if (isset($show_memory) && $show_memory === true) {
 
-                echo '<hr>mod - ' . $module . '<br/>';
+                    echo '<hr>mod - ' . $module . '<br/>';
 
-                $sm = 0;
-                $sm = memory_get_usage();
+                    $sm = 0;
+                    $sm = memory_get_usage();
 //            echo '<br/>s1s ' . round(( $sm2 - $sm ) / 1024, 3);
 
-                \f\timer::start(123);
-            }
+                    \f\timer::start(123);
+                }
 
-            $folder = \Nyos\nyos::$folder_now;
+                $folder = \Nyos\nyos::$folder_now;
 
-            if (self::$dir_img_server === false) {
-                self::creatFolderImage($folder);
-            }
+                if (self::$dir_img_server === false) {
+                    self::creatFolderImage($folder);
+                }
 
 //        \f\timer::start(47);
-            // $ff1 = ' ( SELECT 
+                // $ff1 = ' ( SELECT 
 //            if (!empty(self::$need_polya_vars)) {
 //                $sql_dop1 = '';
 //                
@@ -1150,95 +1171,113 @@ class items {
 //            }else{
 //                $sql_dop1 = '';
 //            }
+//            if ($sort == 'date_asc') {
+//                self::$sql_order = ' ORDER BY midop.id ASC ';
+//            }
+//            //
+//            else
+                if ($sort == 'date__desc') {
+                    self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
+                }
+                //
+                elseif ($sort == 'add__asc') {
+                    self::$sql_order = ' ORDER BY mi.add_d ASC, mi.add_t ASC ';
+                }
+                //
+                elseif ($sort == 'add__desc') {
+                    self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
+                }
+                //
+                elseif ($sort == 'add_date__desc') {
+                    self::$sql_order = ' ORDER BY mi.add_d DESC ';
+                }
+                //
+                elseif ($sort == 'sort_asc') {
+                    self::$sql_order = ' ORDER BY mi.sort ASC ';
+                }
+                //
+                elseif ($sort == 'sort_desc') {
+                    self::$sql_order = ' ORDER BY mi.sort DESC ';
+                }
 
-            if ($sort == 'date_asc') {
-                self::$sql_order = ' ORDER BY midop.id ASC ';
-            }
-            //
-            elseif ($sort == 'date__desc') {
-                self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
-            }
-            //
-            elseif ($sort == 'add_date__desc') {
-                self::$sql_order = ' ORDER BY mi.add_d DESC ';
-            }
-            //
-            elseif ($sort == 'sort_asc') {
-                self::$sql_order = ' ORDER BY mi.sort ASC ';
-            }
-            //
-            elseif ($sort == 'sort_desc') {
-                self::$sql_order = ' ORDER BY mi.sort DESC ';
-            }
 
-
-            $ff1 = ' SELECT 
+                $ff1 = ' SELECT 
                 mi.id,
                 mi.head,
                 mi.sort,
                 mi.status
+                '. self::$select_var1 .'
             FROM 
-                `mitems` mi
+                `mitems` mi ' 
+            . ( self::$join_where ?? '' ) 
+            . ' WHERE '
+                . ' mi.`module` = :module '
+                . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '' )
+                . ( self::$where2 ?? '' )
+                . self::$sql_order ?? '';
 
-            ' . ( self::$join_where ?? '' ) . '
+                if( self::$show_sql === true )
+                \f\pa($ff1);
 
-            WHERE '
-                    . ' mi.`module` = :module '
-                    . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '' )
-                    . ( self::$where2 ?? '' )
-                    . self::$sql_order ?? '';
+                self::$join_where = self::$where2 = '';
 
-//            \f\pa($ff1);
+                $ff = $db->prepare($ff1);
 
-            self::$join_where = self::$where2 = '';
+                
+                self::$var_ar_for_1sql[':module'] = ( $module ?? '' );
+                $ff->execute(self::$var_ar_for_1sql);
 
-            $ff = $db->prepare($ff1);
+                if( self::$show_sql === true )
+                    \f\pa(self::$var_ar_for_1sql);
+                
+                
+                self::$var_ar_for_1sql = [];
+                self::$select_var1 = '';
+                
+                // \f\pa( $ff->fetchAll(), '', '', 'все');
+                // die;
+                // while( \f\pa($ff->fetchAll(), '', '', 'все');
 
-            $for_sql = [':module' => ( $module ?? '' )];
-            $ff->execute($for_sql);
+                $re = [];
+                $sql = '';
 
-            // \f\pa( $ff->fetchAll(), '', '', 'все');
-            // die;
-            // while( \f\pa($ff->fetchAll(), '', '', 'все');
+                while ($r = $ff->fetch()) {
 
-            $re = [];
-            $sql = '';
+                    if (empty($re[$r['id']])) {
 
-            while ($r = $ff->fetch()) {
+                        // \f\pa($r);
 
-                if (empty($re[$r['id']])) {
+//                        $re[$r['id']] = [
+//                            'id' => $r['id'],
+//                            'head' => $r['head'],
+//                            'sort' => $r['sort'],
+//                            'status' => $r['status']
+//                        ];
 
-                    //\f\pa($r);
+                        $re[$r['id']] = $r;
 
-                    $re[$r['id']] = [
-                        'id' => $r['id'],
-                        'head' => $r['head'],
-                        'sort' => $r['sort'],
-                        'status' => $r['status']
-                    ];
-
-                    // \f\pa($r);
-                    // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
-                    $sql .= (!empty($sql) ? ',' : '' ) . $r['id'];
-                }
+                        // \f\pa($r);
+                        // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
+                        $sql .= (!empty($sql) ? ',' : '' ) . $r['id'];
+                    }
 
 //            $re[$r['id']][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
-            }
+                }
 
 //        echo '<br/>timer: ' . \f\timer::stop('str', 47);
 //        if ($sort == 'sort_asc') {
 //            usort($re, "\\f\\sort_ar_sort");
 //        }
-            // \f\pa($re);
+                // \f\pa($re);
 
-            if (!empty(self::$sql_order))
-                self::$sql_order = '';
+                if (!empty(self::$sql_order))
+                    self::$sql_order = '';
 
-            if (!empty($sql)) {
+                if (!empty($sql)) {
 
-                /**
-                 * пишем кеш контент
-                 */
+                    /**
+                     * пишем кеш контент
+                     */
 //        if (!empty($file_cash)) {
 //            file_put_contents($file_cash, json_encode($re));
 //        }
@@ -1246,115 +1285,117 @@ class items {
 //        return self::$cash['itemsimple'][$cash] = $re;
 
 
-                /*
-                  $re2 = [];
-                  foreach ($re as $k => $v) {
-                  if (isset($v['id']))
-                  $re2[$v['id']] = $k;
-                  }
+                    /*
+                      $re2 = [];
+                      foreach ($re as $k => $v) {
+                      if (isset($v['id']))
+                      $re2[$v['id']] = $k;
+                      }
 
-                  // \f\pa($re);
-                  // \f\pa($sql);
-                  // die();
-                  // $ff1 = ' ( SELECT
-                 * */
-                $ff1 = ' SELECT
+                      // \f\pa($re);
+                      // \f\pa($sql);
+                      // die();
+                      // $ff1 = ' ( SELECT
+                     * */
+                    $ff1 = ' SELECT
 
                 midop.id_item id, '
-                        // .' midop.id dops_id, '
-                        . ' midop.`name`,
+                            // .' midop.id dops_id, '
+                            . ' midop.`name`,
                 midop.`value`,
                 midop.`value_date`,
                 midop.`value_datetime`,
                 midop.`value_text` '
-                        . ( self::$sql_select_vars ?? '' )
-                        . '
+                            . ( self::$sql_select_vars ?? '' )
+                            . '
             FROM `mitems-dops` midop '
-                        . ' WHERE '
-                        . ' midop.id_item IN (' . $sql . ') '
-                        . ' AND midop.status IS NULL '
-                        . ( self::$where2dop ?? '' )
+                            . ' WHERE '
+                            . ' midop.id_item IN (' . $sql . ') '
+                            . ' AND midop.status IS NULL '
+                            . ( self::$where2dop ?? '' )
 
-                ;
+                    ;
 
-                //            \f\pa($ff1);
+                    //            \f\pa($ff1);
 
-                $ff = $db->prepare($ff1);
+                    $ff = $db->prepare($ff1);
 
 //        $for_sql = [];
 //        $ff->execute($for_sql);
-                $ff->execute();
+                    $ff->execute();
 
-                // while( \f\pa($ff->fetchAll(), '', '', 'все');
-                // $re = [];
+                    // while( \f\pa($ff->fetchAll(), '', '', 'все');
+                    // $re = [];
 
-                while ($r = $ff->fetch()) {
+                    while ($r = $ff->fetch()) {
 
-                    if (empty($re[( $re2[$r['id']] ?? $r['id'] )])) {
-                        //$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
-                        $re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'start2' => 'ok'];
-                    }
+                        if (empty($re[( $re2[$r['id']] ?? $r['id'] )])) {
+                            //$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
+                            $re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'start2' => 'ok'];
+                        }
 
-                    if (!empty($r['name'])) {
-                        if (self::$style_old === true) {
-                            $re[( $re2[$r['id']] ?? $r['id'] )]['dop'][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
-                        } else {
-                            $re[( $re2[$r['id']] ?? $r['id'] )][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                        if (!empty($r['name'])) {
+                            if (self::$style_old === true) {
+                                $re[( $re2[$r['id']] ?? $r['id'] )]['dop'][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                            } else {
+                                $re[( $re2[$r['id']] ?? $r['id'] )][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                            }
                         }
                     }
-                }
 
-                if (!empty(self::$need_polya_vars)) {
+                    if (!empty(self::$need_polya_vars)) {
 
-                    $re2 = [];
+                        $re2 = [];
 
-                    foreach ($re as $k => $v) {
+                        foreach ($re as $k => $v) {
 
-                        $skip = false;
+                            $skip = false;
 
-                        foreach (self::$need_polya_vars as $kk) {
+                            foreach (self::$need_polya_vars as $kk) {
 
-                            if (!isset($v[$kk])) {
-                                $skip = true;
-                                break;
+                                if (!isset($v[$kk])) {
+                                    $skip = true;
+                                    break;
+                                }
+                            }
+
+                            if ($skip == true) {
+                                //$re2[$k] = $v;
+                                unset($re[$k]);
                             }
                         }
 
-                        if ($skip == true) {
-                            //$re2[$k] = $v;
-                            unset($re[$k]);
-                        }
-                    }
-
 //                $re = $re2;
 //                unset($re2);
-                }
+                    }
 
-                if ($sort == 'sort_asc') {
-                    usort($re, "\\f\\sort_ar_sort");
-                }
+                    if ($sort == 'sort_asc') {
+                        usort($re, "\\f\\sort_ar_sort");
+                    } elseif ($sort == 'date_asc') {
+                        usort($re, "\\f\\sort_ar_date");
+                    }
 
-                if (isset($show_memory) && $show_memory === true) {
-                    $sm2 = 0;
-                    $sm2 = memory_get_usage();
-                    echo '<br/>'
-                    . 's' . __LINE__ . 's > ' . round(( $sm2 - $sm ) / 1024, 2) . ' Kb = '
-                    . '<br/>'
-                    . 'timer:' . \f\timer::stop('str', 123) . ' - ';
+                    if (isset($show_memory) && $show_memory === true) {
+                        $sm2 = 0;
+                        $sm2 = memory_get_usage();
+                        echo '<br/>'
+                        . 's' . __LINE__ . 's > ' . round(( $sm2 - $sm ) / 1024, 2) . ' Kb = '
+                        . '<br/>'
+                        . 'timer:' . \f\timer::stop('str', 123) . ' - ';
+                    }
                 }
             }
-        }
 
-        // \f\pa($re);
-
+            // \f\pa($re);
 
 
 
 
 
-        /**
-         * если в начале запустили мемкеш то сохраняем результат
-         */
+
+            /**
+             * если в начале запустили мемкеш то сохраняем результат
+             */
 //        if (isset($memcache) && $memcache === true) {
 //            if (isset($memcache_obj) && !empty($cash_var)) {
 //
@@ -1367,27 +1408,45 @@ class items {
 
 
 
-        /**
-         * трем переменные
-         */
-        self::$where2dop = '';
-        self::$need_polya_vars = [];
+            /**
+             * трем переменные
+             */
+            self::$where2dop = '';
+            self::$need_polya_vars = [];
 
 
-        if (self::$style_old === true) {
-            self::$style_old = false;
-            return ['data' => $re];
-        } else {
-            return $re;
+            if (self::$style_old === true) {
+                self::$style_old = false;
+                return ['data' => $re];
+            } else {
+                return $re;
+            }
+
+            /*
+              return self::$cash['itemsimple'][$cash] = $re;
+
+              //return \f\end2('Достали список, простой', 'ok', $re, 'array');
+              // return \f\end3('Достали список, простой', true, $re);
+             *
+             */
         }
+        //
+        catch (\PDOException $ex) {
 
-        /*
-          return self::$cash['itemsimple'][$cash] = $re;
+            echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
+            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+            . PHP_EOL . $ex->getTraceAsString()
+            . '</pre>';
+// не найдена таблица, создаём значит её
+            if (strpos($ex->getMessage(), 'no such table') !== false) {
 
-          //return \f\end2('Достали список, простой', 'ok', $re, 'array');
-          // return \f\end3('Достали список, простой', true, $re);
-         *
-         */
+                self::creatTable($db);
+                // \f\redirect( '/' );
+            }
+
+            return \f\end3('ошибка', false);
+        }
     }
 
     public static function getItemsSimple3_old($db, $module = null, $stat = 'show', $sort = null) {
@@ -2084,7 +2143,11 @@ class items {
         $folder = \Nyos\Nyos::$folder_now;
         $cfg_mod = \Nyos\Nyos::$menu[$mod_name] ?? $mod_name;
 
+        if (isset($add_all_dops['id']))
+            unset($add_all_dops['id']);
+
         try {
+
 
             return $e = self::addNew($db, $folder, $cfg_mod, $data, $files, $add_all_dops);
         } catch (\PDOException $ex) {
@@ -2219,45 +2282,50 @@ class items {
                     }
                 }
 
-            if (isset($files) && sizeof($files) > 0) {
+//            \f\pa($files, 2, '', 'files');
+            // \f\pa($cfg_mod);
+            // если много файлов
+            if (isset($files['name']) && sizeof($files['name']) > 0) {
 
                 $nn = 0;
+                foreach ($files['name'] as $k0 => $v0) {
 
-                foreach ($files as $k0 => $v0) {
+//                    \f\pa($k0);
+//                    \f\pa($v0);
+                    // \f\pa($k1);
+                    // \f\pa($v1);
 
-                    if (isset($v0['name']) && sizeof($v0['name']) > 1) {
+                    if (!empty($v0) && isset($files['error'][$k0]) && $files['error'][$k0] == 0 && isset($cfg_mod[$k0])) {
 
-                        foreach ($v0['name'] as $k1 => $v1) {
+                        $nn++;
+                        // echo '<br/>' . __LINE__;
+                        $new_name = $k0 . '_' . $nn . '_' . substr(\f\translit($v0, 'uri2'), 0, 30) . '_' . rand(10, 99) . '.' . \f\get_file_ext($v0);
 
-//                            \f\pa($k1);
-//                            \f\pa($v1);
+//                                if ( !function_exists('\Nyos\nyos_image::autoJpgRotate') && file_exists(DR . '/vendor/didrive/base/Nyos_image.php') )
+//                                    require_once DR . '/vendor/didrive/base/Nyos_image.php';
 
-                            if (!empty($v1) && isset($cfg_mod[$k1])) {
+                        $save_file = self::$dir_img_server . $new_name;
 
-                                $nn++;
+                        // echo '<Br/>111: ' . $save_file;
 
-                                // echo '<br/>' . __LINE__;
+                        if (!file_exists($save_file)) {
 
-                                $new_name = $k1 . '_' . $nn . '_' . substr(\f\translit($v1, 'uri2'), 0, 50) . '_' . rand(10, 99) . '.' . \f\get_file_ext($v1);
+                            $e = \Nyos\nyos_image::autoJpgRotate($files['tmp_name'][$k0], $save_file);
 
-                                if (!function_exists('\Nyos\nyos_image::autoJpgRotate') && file_exists(DR . '/vendor/didrive/base/Nyos_image.php'))
-                                    require_once DR . '/vendor/didrive/base/Nyos_image.php';
+                            if (!file_exists($save_file))
+                                copy($files['tmp_name'][$k0], $save_file);
 
-                                $e = \Nyos\nyos_image::autoJpgRotate($v['tmp_name'], self::$dir_img_server . $new_name);
-
-                                if (!file_exists(self::$dir_img_server . $new_name)) {
-                                    copy($v0['tmp_name'][$k1], self::$dir_img_server . $new_name);
-                                }
-
+                            if (file_exists($save_file))
                                 $in_db[] = array(
-                                    'name' => $k1,
+                                    'name' => $k0,
                                     'value' => $new_name
                                 );
-                            }
                         }
                     }
                 }
-            } else {
+            }
+            // если один файл
+            else {
 
                 // \f\pa($files);
                 //echo '<br/>#'.__LINE__;
@@ -2289,7 +2357,7 @@ class items {
                 }
             }
 
-            //\f\pa($in_db);
+            // \f\pa($in_db);
             // echo '<Br/>db\sql_insert_mnogo - ' .$new_id ;
             //$status = '';
             \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
@@ -2298,7 +2366,9 @@ class items {
             //echo $status;
         }
 
-        self::clearCash($folder);
+        // отключил 191208
+        if (1 == 2)
+            self::clearCash($folder);
 
         return \f\end2('Окей, запись добавлена', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }
@@ -2334,14 +2404,22 @@ class items {
         if (self::$dir_img_server === false)
             return f\end2('Ошибка, папка для файлов не может быть создана', 'error', array('file' => __FILE__, 'line' => __LINE__), 'array');
 
-
+// \f\pa($data,2);
+// \f\pa($cfg_mod,2);
         // \f\pa($cfg_mod, '', '', '$cfg_mod');
         // \f\pa($data, '', '', '$data');
+        //$data_old = self::getItemSimple($db, $id_item);
+        // echo $cfg_mod['cfg.level'];
+//        \f\CalcMemory::start(778);
+//        \f\timer::start(778);
 
-        $data_old = self::getItemSimple($db, $id_item);
+        self::$where2 = ' AND mi.id = \'' . (int) $id_item . '\' ';
+        $data_old = self::getItemsSimple3($db, $cfg_mod['cfg.level']);
         // \f\pa($data_old, '', '', '$data_old');
+//        echo 'tt'.\f\timer::stop( 'str', 778 );
+//        echo 'tt'. \f\CalcMemory::stop( 778 );
 
-        if (isset($data['head']{0}) && $data_old['data']['head'] != $data['head']) {
+        if (isset($data['head']{0}) && $data_old[$id_item]['head'] != $data['head']) {
 
             // echo '<br/>' . __FILE__ . ' ' . __LINE__;
             \f\db\db_edit2($db, 'mitems', array('id' => $id_item), array('head' => $data['head']), false, 1, 'da');

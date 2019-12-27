@@ -3,6 +3,28 @@
 /**
   определение функций для TWIG
  */
+
+
+$function = new Twig_SimpleFunction('items__get', function ( $db, $module, $stat = 'show', $sort = '' ) {
+
+    return \Nyos\mod\items::getItemsSimple3($db, $module, $stat, $sort);
+});
+$twig->addFunction($function);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 $function = new Twig_SimpleFunction('items__getItemsSimple2', function ( $db, $module, $filtr = [], $stat = 'show', $sort = '' ) {
 
 //    if( $_SERVER['HTTP_HOST'] == 'razv2.uralweb.info' )
@@ -82,20 +104,6 @@ $twig->addFunction($function);
 
 
 
-$function = new Twig_SimpleFunction('items__get', function ( $db, $module, $stat = 'show', $sort = '' ) {
-
-//    if( $_SERVER['HTTP_HOST'] == 'razv2.uralweb.info' )
-//    \Nyos\mod\items::$show_sql = true;
-
-    $e = \Nyos\mod\items::getItemsSimple3($db, $module, $stat, $sort);
-//    $e = \Nyos\mod\items::getItemsSimple($db, $module, $stat, $sort);
-//    if( $_SERVER['HTTP_HOST'] == 'bbb72.ru' )
-//    \f\pa($e);
-
-    return $e;
-    //return \Nyos\Nyos::creatSecret($text);
-});
-$twig->addFunction($function);
 
 
 

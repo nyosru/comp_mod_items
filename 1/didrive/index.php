@@ -4,7 +4,6 @@
 //        $s->execute( array( ':table' => $table ) );
 //        $r = $s->fetchAll();
 //        \f\pa($r);
-
 //if ($_SERVER['HTTP_HOST'] == 'bbb72.ru') {
 //
 //    if (file_exists(DR . '/vendor/didrive/f/cash.php'))
@@ -33,6 +32,7 @@
 //        echo '<br/>нет #' . __LINE__;
 //    }
 //}
+//\f\pa($_REQUEST);
 
 /**
  * добавление записи
@@ -125,9 +125,8 @@ elseif (isset($_POST['delete_item_id']{1})) {
 
     // echo $status;
 }
-/**
- * сохранение редактирования
- */ elseif (isset($_REQUEST['save_id']) && is_numeric($_REQUEST['save_id']) && isset($_REQUEST['save_edit'])) {
+// сохранение редактирования
+elseif (isset($_REQUEST['save_id']) && is_numeric($_REQUEST['save_id']) && isset($_REQUEST['save_edit'])) {
 
     $d = $_POST;
     unset($d['addnew']);
@@ -159,7 +158,7 @@ $vv['krohi'][1] = array(
 
 foreach ($vv['now_level'] as $k => $v) {
 
-    //\f\pa($v);
+    // \f\pa($v);
 
     if (isset($v['type']) && $v['type'] == 'textarea_html') {
         // $vv['ckeditor_in'][$k] = array( 'type' => 'mini.img' );
@@ -170,13 +169,20 @@ foreach ($vv['now_level'] as $k => $v) {
 //    \f\pa($v);
 //    echo PHP_EOL;
 
-    if (isset($v['import_1_module'])) {
-        $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::getItems($db, $vv['folder'], $v['import_1_module']);
+    if (isset($v['import_1_module']) && empty($vv['v_data'][$v['import_1_module']])) {
+        // $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::getItems($db, $vv['folder'], $v['import_1_module']);
+        $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::getItemsSimple3($db, $v['import_1_module']);
+//        \f\pa($v['import_1_module']);
+//        \f\pa($vv['v_data'][$v['import_1_module']],2);
     }
 
-    if (isset($v['import_2_module'])) {
-        $vv['v_data'][$v['import_2_module']] = Nyos\mod\items::getItems($db, $vv['folder'], $v['import_2_module']);
+    if (isset($v['import_2_module']) && empty($vv['v_data'][$v['import_2_module']])) {
+        // $vv['v_data'][$v['import_2_module']] = Nyos\mod\items::getItems($db, $vv['folder'], $v['import_2_module']);
+        $vv['v_data'][$v['import_2_module']] = Nyos\mod\items::getItemsSimple3($db, $v['import_2_module']);
+//        \f\pa($v['import_2_module']);
+//        \f\pa($vv['v_data'][$v['import_2_module']],2);
     }
+
 }
 
 // \f\pa($vv['v_data']);
@@ -184,4 +190,5 @@ foreach ($vv['now_level'] as $k => $v) {
 //echo '<br/>';
 //echo dir_site_module_nowlev_tpldidr;
 //echo '<br/>';
+
 $vv['tpl_body'] = \f\like_tpl('body', dir_mods_mod_vers_didrive_tpl, dir_site_module_nowlev_tpldidr, DR);

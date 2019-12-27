@@ -1,0 +1,17 @@
+{% spaceless %}
+
+    <input id='i_{{ k }}' type="number" name="{{ k }}" 
+
+           {% if v.step is defined %} step="{{ v.step }}" {% endif %}
+           {% if v.min is defined %} min="{{ v.min }}" {% endif %}
+           {% if v.max is defined %} max="{{ v.max }}" {% endif %}
+
+           {% if edit_item is defined and list[edit_item][k] is defined %}
+               value="{{ list[edit_item][k] }}" 
+           {% endif %}
+
+           {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+
+           class="form-control" />
+
+{% endspaceless %}

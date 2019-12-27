@@ -20,6 +20,11 @@ if (!defined('IN_NYOS_PROJECT'))
 //$oborots = \Nyos\mod\items::getItemsSimple2($db, $module_oborot);
 
 
+//        \Nyos\mod\items::$join_where = ' INNER JOIN `mitems-dops` mid '
+//                . ' ON mid.id_item = mi.id '
+//                . ' AND mid.name = \'start\' '
+//                . ' AND mid.value_datetime >= \'' . $date . ' 08:00:00\' '
+//                . ' AND mid.value_datetime <= \'' . date('Y-m-d 03:00:00', strtotime($date . ' +1day')) . '\' ';
 
 
 
@@ -43,6 +48,11 @@ class items {
     public static $where = [];
     public static $where2 = '';
     public static $where2dop = '';
+    /**
+     * что добавляем в селект в выборке итемов ( itemgetsimple3 )
+     * @var строка
+     */
+    public static $select_var1 = '';
 
     /**
      * массив переменных для вставки в первый sql 
@@ -1033,6 +1043,8 @@ class items {
      */
     public static function getItemsSimple3($db, $module = null, $stat = 'show', $sort = null) {
 
+        // echo '<br/>'.__FUNCTION__.' '.$module;
+        
         try {
 
 
@@ -1194,28 +1206,34 @@ class items {
                 mi.head,
                 mi.sort,
                 mi.status
+                '. self::$select_var1 .'
             FROM 
-                `mitems` mi
+                `mitems` mi ' 
+            . ( self::$join_where ?? '' ) 
+            . ' WHERE '
+                . ' mi.`module` = :module '
+                . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '' )
+                . ( self::$where2 ?? '' )
+                . self::$sql_order ?? '';
 
-            ' . ( self::$join_where ?? '' ) . '
-
-            WHERE '
-                        . ' mi.`module` = :module '
-                        . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '' )
-                        . ( self::$where2 ?? '' )
-                        . self::$sql_order ?? '';
-
-                // \f\pa($ff1);
+                if( self::$show_sql === true )
+                \f\pa($ff1);
 
                 self::$join_where = self::$where2 = '';
 
                 $ff = $db->prepare($ff1);
 
+                
                 self::$var_ar_for_1sql[':module'] = ( $module ?? '' );
                 $ff->execute(self::$var_ar_for_1sql);
 
+                if( self::$show_sql === true )
+                    \f\pa(self::$var_ar_for_1sql);
+                
+                
                 self::$var_ar_for_1sql = [];
-
+                self::$select_var1 = '';
+                
                 // \f\pa( $ff->fetchAll(), '', '', 'все');
                 // die;
                 // while( \f\pa($ff->fetchAll(), '', '', 'все');
@@ -1227,14 +1245,16 @@ class items {
 
                     if (empty($re[$r['id']])) {
 
-                        //\f\pa($r);
+                        // \f\pa($r);
 
-                        $re[$r['id']] = [
-                            'id' => $r['id'],
-                            'head' => $r['head'],
-                            'sort' => $r['sort'],
-                            'status' => $r['status']
-                        ];
+//                        $re[$r['id']] = [
+//                            'id' => $r['id'],
+//                            'head' => $r['head'],
+//                            'sort' => $r['sort'],
+//                            'status' => $r['status']
+//                        ];
+
+                        $re[$r['id']] = $r;
 
                         // \f\pa($r);
                         // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
@@ -1409,7 +1429,7 @@ class items {
               // return \f\end3('Достали список, простой', true, $re);
              *
              */
-        } 
+        }
         //
         catch (\PDOException $ex) {
 
@@ -2123,7 +2143,11 @@ class items {
         $folder = \Nyos\Nyos::$folder_now;
         $cfg_mod = \Nyos\Nyos::$menu[$mod_name] ?? $mod_name;
 
+        if (isset($add_all_dops['id']))
+            unset($add_all_dops['id']);
+
         try {
+
 
             return $e = self::addNew($db, $folder, $cfg_mod, $data, $files, $add_all_dops);
         } catch (\PDOException $ex) {

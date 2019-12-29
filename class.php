@@ -18,8 +18,6 @@ if (!defined('IN_NYOS_PROJECT'))
 //        . ' BETWEEN \''.date('Y-m-d',strtotime($d_start)).'\' '
 //        . ' AND \''.date('Y-m-d',strtotime($d_finish)).'\' ) ';
 //$oborots = \Nyos\mod\items::getItemsSimple2($db, $module_oborot);
-
-
 //        \Nyos\mod\items::$join_where = ' INNER JOIN `mitems-dops` mid '
 //                . ' ON mid.id_item = mi.id '
 //                . ' AND mid.name = \'start\' '
@@ -48,6 +46,7 @@ class items {
     public static $where = [];
     public static $where2 = '';
     public static $where2dop = '';
+
     /**
      * что добавляем в селект в выборке итемов ( itemgetsimple3 )
      * @var строка
@@ -1044,7 +1043,7 @@ class items {
     public static function getItemsSimple3($db, $module = null, $stat = 'show', $sort = null) {
 
         // echo '<br/>'.__FUNCTION__.' '.$module;
-        
+
         try {
 
 
@@ -1206,34 +1205,34 @@ class items {
                 mi.head,
                 mi.sort,
                 mi.status
-                '. self::$select_var1 .'
+                ' . self::$select_var1 . '
             FROM 
-                `mitems` mi ' 
-            . ( self::$join_where ?? '' ) 
-            . ' WHERE '
-                . ' mi.`module` = :module '
-                . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '' )
-                . ( self::$where2 ?? '' )
-                . self::$sql_order ?? '';
+                `mitems` mi '
+                        . ( self::$join_where ?? '' )
+                        . ' WHERE '
+                        . ' mi.`module` = :module '
+                        . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '' )
+                        . ( self::$where2 ?? '' )
+                        . self::$sql_order ?? '';
 
-                if( self::$show_sql === true )
-                \f\pa($ff1);
+                if (self::$show_sql === true)
+                    \f\pa($ff1);
 
                 self::$join_where = self::$where2 = '';
 
                 $ff = $db->prepare($ff1);
 
-                
+
                 self::$var_ar_for_1sql[':module'] = ( $module ?? '' );
                 $ff->execute(self::$var_ar_for_1sql);
 
-                if( self::$show_sql === true )
+                if (self::$show_sql === true)
                     \f\pa(self::$var_ar_for_1sql);
-                
-                
+
+
                 self::$var_ar_for_1sql = [];
                 self::$select_var1 = '';
-                
+
                 // \f\pa( $ff->fetchAll(), '', '', 'все');
                 // die;
                 // while( \f\pa($ff->fetchAll(), '', '', 'все');
@@ -1246,7 +1245,6 @@ class items {
                     if (empty($re[$r['id']])) {
 
                         // \f\pa($r);
-
 //                        $re[$r['id']] = [
 //                            'id' => $r['id'],
 //                            'head' => $r['head'],
@@ -2384,6 +2382,64 @@ class items {
                 unlink(DR . DS . 'sites' . DS . $folder . DS . $v);
             }
         }
+    }
+
+    public static function saveNewDop($db, $array) {
+
+        if (empty($array))
+            return \f\end3('нет данных для сохранения', false);
+
+        $sql = '';
+        $nn = 1;
+
+        $indb = $dop_ar = [];
+
+        foreach ($array as $id => $v1) {
+
+            if (empty($v1))
+                continue;
+
+            $nn++;
+
+            $sql .= (!empty($sql) ? ' OR ' : '' ) . ' ( `id_item` = :id' . $nn . ' AND ';
+            $dop_ar[':id' . $nn] = $id;
+
+            $sql2 = '';
+            foreach ($v1 as $key => $value) {
+                
+                $sql2 .= (!empty($sql2) ? ' OR ' : '' ) . ' `name` = :name'.$nn .' ';
+                $dop_ar[':name' . $nn] = $key;
+                $nn++;
+                
+                $indb[] = [
+                    'id_item' => $id,
+                    'name' => $key ,
+                    'value' => $value
+                ];
+            }
+
+            $sql .= ' ( ' . $sql2 . ' ) ) ';
+        }
+
+        //echo $sql;
+
+        $sql1 = 'UPDATE `mitems-dops` SET `status` = \'delete\', `date_status` = NOW() WHERE `status` != \'delete\' AND ( ' . $sql . ' ) ';
+//        echo '<br/>';
+//        echo '<br/>';
+
+        $ff = $db->prepare($sql1);
+        // \f\pa($dop_ar);
+
+        $e = $ff->execute($dop_ar);
+        // \f\pa($e, '', '', 'sql delete');
+
+        // \f\pa($indb);
+        $er = \f\db\sql_insert_mnogo($db, 'mitems-dops', $indb);
+        // \f\pa($er);
+
+        echo '<br/>изменено доп параметров имеющихся записей: '.sizeof($indb);
+        
+        return \f\end3('окей записали');
     }
 
     /**

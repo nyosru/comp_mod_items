@@ -7,18 +7,9 @@
 
 $function = new Twig_SimpleFunction('items__get', function ( $db, $module, $stat = 'show', $sort = '' ) {
 
-    return \Nyos\mod\items::getItemsSimple3($db, $module, $stat, $sort);
+    return \Nyos\mod\items::get($db, $module, $stat, $sort);
 });
 $twig->addFunction($function);
-
-
-
-
-
-
-
-
-
 
 
 
@@ -71,10 +62,6 @@ $function = new Twig_SimpleFunction('items__get_old', function ( $db, $module, $
 });
 $twig->addFunction($function);
 
-
-
-
-
 $function = new Twig_SimpleFunction('items__readItems', function ( $db, $module, $stat = 'show', $sort = '' ) {
 
     $var_cash = 'items_' . $module . $stat . $sort;
@@ -123,7 +110,13 @@ $function = new Twig_SimpleFunction('readItems', function ( $module, $stat = 'sh
 
     global $db;
 
+//    \f\timer_start(1);
     $e = \Nyos\mod\items::getItems($db, \Nyos\nyos::$folder_now, $module, $stat, null);
+//    echo '1: '.\f\timer_stop(1);
+//    
+//    \f\timer_start(2);
+//    $e = \Nyos\mod\items::get( $db, $module, $stat, null);
+//    echo '2: '.\f\timer_stop(2);
     
     return $e;
     //return \Nyos\Nyos::creatSecret($text);

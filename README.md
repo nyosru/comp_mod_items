@@ -18,3 +18,16 @@ composer require didrive_mod/items
     ':df' => date('Y-m-d', strtotime($date_fin))
 ];
 $ret = \Nyos\mod\items::getItemsSimple3($db, '074.time_expectations_list');
+
+
+------ Пример ----------
+загрузки с ограничением запроса и доп параметров
+
+// запрос в главный запрос
+\Nyos\mod\items::$where2 = ' AND `id` = \'' . (int) $sp . '\' ';
+// если тащим одно значение
+\Nyos\mod\items::$limit1 = true;
+// ограничение выборки доп параметров
+\Nyos\mod\items::$where2dop = ' AND `name` = \'id_tech_for_oborot\' ';
+// старт выборки
+$sp1 = \Nyos\mod\items::get($db, $mod_sp);

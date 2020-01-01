@@ -12,12 +12,32 @@ if (!defined('IN_NYOS_PROJECT'))
     <a href="http://www.uralweb.info" target="_blank">Создание, дизайн, вёрстка и программирование сайтов.</a><br />
     <a href="http://www.nyos.ru" target="_blank">Только отдельные услуги: Дизайн, вёрстка и программирование сайтов.</a>');
 
+//    \Nyos\mod\items::$join_where = ' INNER JOIN `mitems-dops` mid '
+//            . ' ON mid.id_item = mi.id '
+//            . ' AND mid.name = \'date\' '
+//            . ' AND mid.value_date >= :ds '
+//            . ' AND mid.value_date <= :df '
+//            . ' INNER JOIN `mitems-dops` mid2 '
+//            . ' ON mid2.id_item = mi.id '
+//            . ' AND mid2.name = \'sale_point\' '
+//            . ' AND mid2.value = :sp '
+//
+//    ;
+//    \Nyos\mod\items::$var_ar_for_1sql[':sp'] = $sp;
+//    \Nyos\mod\items::$var_ar_for_1sql[':ds'] = $date_start;
+//    \Nyos\mod\items::$var_ar_for_1sql[':df'] = $date_finish;
+//    $oborots = \Nyos\mod\items::get($db, 'sale_point_oborot');
+//    
 //echo __FILE__;
+//
 // выборка item simple
+// 
 //\Nyos\mod\items::$where2 = ' AND ( midop.name = \'date\' AND midop.value_date '
 //        . ' BETWEEN \''.date('Y-m-d',strtotime($d_start)).'\' '
 //        . ' AND \''.date('Y-m-d',strtotime($d_finish)).'\' ) ';
+//        
 //$oborots = \Nyos\mod\items::getItemsSimple2($db, $module_oborot);
+//
 //        \Nyos\mod\items::$join_where = ' INNER JOIN `mitems-dops` mid '
 //                . ' ON mid.id_item = mi.id '
 //                . ' AND mid.name = \'start\' '
@@ -31,6 +51,7 @@ if (!defined('IN_NYOS_PROJECT'))
 
 class items {
 
+    public static $nocash = false;
     public static $dir_img_server = false;
     public static $dir_img_uri = false;
     public static $dir_img_uri_download = false;
@@ -1059,21 +1080,17 @@ class items {
 
         try {
 
-
             if (empty(self::$where2dop) && empty(self::$need_polya_vars)) {
                 $save_cash = true;
             } else {
                 $save_cash = false;
             }
 
-
             // echo '<br/>-- ' . $cash_var;
             //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
             //            echo '<br/>a - '.$module;
             //        
             //        if ( 1 == 1 || $module == '050.chekin_checkout') {
-
-
 
             /**
              * запускаем мемкеш и тащим если есть кеш
@@ -1477,7 +1494,7 @@ class items {
 
 
             if (
-                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars)
+                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash)
             ) {
                 $save_cash = true;
             } else {
@@ -1664,6 +1681,8 @@ class items {
                 self::$var_ar_for_1sql = [];
                 self::$select_var1 = '';
 
+                self::$join_where = self::$select_var1 = self::$sql_order = '';
+
                 // \f\pa( $ff->fetchAll(), '', '', 'все');
                 // die;
                 // while( \f\pa($ff->fetchAll(), '', '', 'все');
@@ -1740,10 +1759,15 @@ class items {
             FROM `mitems-dops` midop '
                             . ' WHERE '
                             . ' midop.id_item IN (' . $sql . ') '
-                            . ' AND midop.status IS NULL '
+                            . PHP_EOL . ' AND midop.status IS NULL '
                             . ( self::$where2dop ?? '' )
 
                     ;
+
+                    self::$where2dop = '';
+
+                    if (self::$show_sql === true)
+                        \f\pa($ff1);
 
                     //            \f\pa($ff1);
 
@@ -1751,6 +1775,7 @@ class items {
 
 //        $for_sql = [];
 //        $ff->execute($for_sql);
+
                     $ff->execute();
 
                     // while( \f\pa($ff->fetchAll(), '', '', 'все');
@@ -1776,23 +1801,24 @@ class items {
 
                         $re2 = [];
 
-                        foreach ($re as $k => $v) {
+                        if (!empty($re))
+                            foreach ($re as $k => $v) {
 
-                            $skip = false;
+                                $skip = false;
 
-                            foreach (self::$need_polya_vars as $kk) {
+                                foreach (self::$need_polya_vars as $kk) {
 
-                                if (!isset($v[$kk])) {
-                                    $skip = true;
-                                    break;
+                                    if (!isset($v[$kk])) {
+                                        $skip = true;
+                                        break;
+                                    }
+                                }
+
+                                if ($skip == true) {
+                                    //$re2[$k] = $v;
+                                    unset($re[$k]);
                                 }
                             }
-
-                            if ($skip == true) {
-                                //$re2[$k] = $v;
-                                unset($re[$k]);
-                            }
-                        }
 
 //                $re = $re2;
 //                unset($re2);
@@ -1866,6 +1892,7 @@ class items {
             . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
             . PHP_EOL . $ex->getTraceAsString()
             . '</pre>';
+
 // не найдена таблица, создаём значит её
             if (strpos($ex->getMessage(), 'no such table') !== false) {
 
@@ -2814,6 +2841,13 @@ class items {
         }
     }
 
+    /**
+     * сохраняем доп параметры к имеющимся итемам
+     * массив ( id итем > [ поле = значение ] )
+     * @param type $db
+     * @param type $array
+     * @return type
+     */
     public static function saveNewDop($db, $array) {
 
         if (empty($array))
@@ -2866,7 +2900,7 @@ class items {
         $er = \f\db\sql_insert_mnogo($db, 'mitems-dops', $indb);
         // \f\pa($er);
 
-        echo '<br/>изменено доп параметров имеющихся записей: ' . sizeof($indb);
+        // echo '<br/>изменено доп параметров имеющихся записей: ' . sizeof($indb);
 
         return \f\end3('окей записали');
     }

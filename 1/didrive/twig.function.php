@@ -20,10 +20,6 @@ $twig->addFunction($function);
 
 
 
-
-
-
-
 $function = new Twig_SimpleFunction('add_items_on_modal', function ( $module, $data = [], $default = [], $skip = [] ) {
 
     global $db;

@@ -102,7 +102,7 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
     // \f\Cash::deleteKeyPoFilter( )
     
 // f\end2( 'новый статус ' . $status);
-    f\end2('новый статус ' . $_POST['val']);
+   \f\end2('новый статус ' . $_POST['val']);
 }
 /**
  * изменение инфы в дополнительных итемсах

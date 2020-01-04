@@ -2,7 +2,9 @@ $().ready(function () {
 
 
 // var $elements = $('#list .element');
-    $('span .edit_pole').on('keyup input', function () {
+
+    var items__edit_pole = function (e) {
+//    $('span .edit_pole').on('keyup input', function () {
 // var $val = this.value;
 
         var $val = $(this).val();
@@ -25,7 +27,7 @@ $().ready(function () {
             type: 'POST',
             url: '/vendor/didrive_mod/items/1/ajax.php',
             dataType: 'json',
-            data: "action=edit_pole&pole=" + $pole + "&id=" + $id + "&val=" + $val + "&s=" + $s + "&level="+$level,
+            data: "action=edit_pole&pole=" + $pole + "&id=" + $id + "&val=" + $val + "&s=" + $s + "&level=" + $level,
             // сoбытиe дo oтпрaвки
             beforeSend: function ($data) {
                 // $div_res.html('<img src="/img/load.gif" alt="" border="" />');
@@ -67,7 +69,12 @@ $().ready(function () {
         return false;
         // $elements.hide();
         // $elements.filter(':contains("' + value + '")').show();
-    });
+//    });
+    };
+
+    $('span .edit_pole').on('keyup input', $.debounce(1000, items__edit_pole) );
+
+
 
 
 
@@ -91,8 +98,8 @@ $().ready(function () {
 
         $.each(this.attributes, function () {
             if (this.specified) {
-                if (this.name == 'before_success_show_id' ) {
-                    $before_success_show_id = '#'+this.value;
+                if (this.name == 'before_success_show_id') {
+                    $before_success_show_id = '#' + this.value;
                 }
             }
         });
@@ -138,7 +145,7 @@ $().ready(function () {
                     $div_res2.html($div_res2_text);
                 }
 
-                if ( $before_success_show_id != 0 ) {
+                if ($before_success_show_id != 0) {
                     $($before_success_show_id).show('slow');
                 }
 

@@ -2495,7 +2495,172 @@ class items {
         return f\end2('Окей, запись добавлена', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }
 
+    /**
+     * какаято старая версия
+     * @param type $db
+     * @param string $folder
+     * @param string $module_name
+     * @param type $data_dops
+     * @param type $id
+     * @return type
+     */
     public static function deleteItems($db, string $folder, string $module_name, $data_dops = [], $id = null) {
+
+        if (!empty($id)) {
+
+            $ff = $db->prepare('UPDATE FROM mitems SET `status` = \'delete\' WHERE id = :id ');
+            $ff->execute(array(':id' => $id));
+            // $ff = $db->prepare('UPDATE FROM mitems-dops SET `status` = \'delete\' WHERE id_item = :id ');
+            // $ff->execute(array(':id' => $id));
+            return \f\end3('удалёно');
+        } else {
+
+            $vars = array(
+                ':mod' => $module_name,
+            );
+
+            $dopsql = '';
+            $nn = 1;
+            foreach ($data_dops as $k => $v) {
+                $dopsql .= PHP_EOL . ' AND id IN ( SELECT id_item FROM `mitems-dops` WHERE name = :k' . $nn . ' AND value = :v' . $nn . ' ) ';
+                $vars[':k' . $nn] = $k;
+                $vars[':v' . $nn] = $v;
+                $nn++;
+            }
+
+            $sql = 'UPDATE mitems 
+                    SET status = \'delete\'
+                    WHERE module = :mod '
+                    . PHP_EOL . ' AND status != \'delete2\' '
+                    // .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
+                    . $dopsql
+                    . ';';
+            //\f\pa($sql);
+            $ff = $db->prepare($sql);
+            $ff->execute($vars);
+
+
+
+            /*
+
+              $dopsql = '';
+              $nn = 1;
+              foreach ($data_dops as $k => $v) {
+              $dopsql .= ' INNER JOIN `mitems-dops` mid5' . $nn . ' ON mid5' . $nn . '.id_item = mi.id AND mid5' . $nn . '.name = \'' . addslashes($k) . '\' AND mid5' . $nn . '.value = \'' . addslashes($v) . '\' ';
+              $nn++;
+              }
+
+              $ff = $db->prepare('SELECT
+              mi.id
+              FROM
+              mitems mi
+
+              ' . $dopsql . '
+
+              WHERE
+              mi.module = :mod1 AND
+              mi.status != \'delete2\'
+              GROUP BY
+              mi.id
+              ');
+
+              $ff->execute(array(
+              // ':id_user' => 'f34d6d84-5ecb-4a40-9b03-71d03cb730cb',
+              ':mod1' => $module_name,
+              // ':date' => ' date(\'' . date('Y-m-d', $_SERVER['REQUEST_TIME'] - 3600*24*3 ) .'\') ',
+              // ':dates' => $start_date //date( 'Y-m-d', ($_SERVER['REQUEST_TIME'] - 3600 * 24 * 14 ) )
+              ));
+              //$e3 = $ff->fetchAll();
+
+              $sql2 = '';
+              while ($e = $ff->fetch()) {
+
+              $sql2 .= (!empty($sql2) ? ' OR ' : '' ) . ' `id` = \'' . $e['id'] . '\' ';
+              }
+
+              //echo '<br/>';
+              $er = 'UPDATE mitems SET `status` = \'delete\' WHERE ' . $sql2;
+              //echo '<br/>';
+              $f = $db->prepare($er);
+              $f->execute();
+
+              //self::clearCash();
+              //\f\pa($e);
+             * 
+             */
+        }
+
+        return \f\end3('Окей');
+    }
+
+    /**
+     * удаление параметра по id или по списку параметров
+     * @param type $db
+     * @param type $id
+     * @return type
+     */
+    public static function deleteFromDops($db, $module, $dops) {
+
+        $var_in_sql = [
+            ':module' => $module
+        ];
+
+        $dop_sql = '';
+        $nn = 1;
+
+        foreach ($dops as $k => $v) {
+            $dop_sql .= ' INNER JOIN `mitems-dops` md' . $nn . ' '
+                    . ' ON '
+                    . ' md' . $nn . '.id_item = mi.id '
+                    . ' AND md' . $nn . '.name = :name' . $nn . ' '
+                    . ' AND '
+                    . ' ( '
+                    . ' md' . $nn . '.value = :var' . $nn . ' '
+                    . ' OR md' . $nn . '.value_date = :var' . $nn . ' '
+                    . ' OR md' . $nn . '.value_datetime = :var' . $nn . ' '
+                    . ' ) ';
+            $var_in_sql[':name' . $nn] = $k;
+            $var_in_sql[':var' . $nn] = $v;
+            $nn++;
+        }
+
+        $sql = 'SELECT mi.id FROM `mitems` mi ' . $dop_sql . ' WHERE mi.`module` = :module ;';
+        // \f\pa($sql);
+        $ff = $db->prepare($sql);
+        // \f\pa($var_in_sql);
+        $ff->execute($var_in_sql);
+
+        // \f\pa($ff->fetchAll());
+
+        $ids = '';
+
+        while ($res = $ff->fetch()) {
+            // \f\pa($res, '', '', '$res');
+            $ids .= (!empty($ids) ? ',' : '' ) . $res['id'];
+        }
+
+        if (!empty($ids)) {
+            $var_in_sql = [':module' => $module];
+
+            $sql = 'UPDATE `mitems` mi '
+                    . ' SET `mi`.`status` = \'delete\' '
+                    . ' WHERE mi.`module` = :module AND mi.`id` IN (' . $ids . ') '
+                    . ' ;';
+            // \f\pa($sql);
+            $ff = $db->prepare($sql);
+            // \f\pa($var_in_sql);
+            $ff->execute($var_in_sql);
+        }
+        
+        return \f\end3('удалёно', true);
+    }
+
+    public static function deleteId($db, int $id) {
+
+        $ff = $db->prepare('UPDATE `mitems` SET `status` = \'delete\' WHERE id = :id ;');
+        $ff->execute(array(':id' => $id));
+
+        return \f\end3('удалёно', true, ['id' => $id]);
 
         if (!empty($id)) {
 
@@ -2899,7 +3064,6 @@ class items {
         // \f\pa($indb);
         $er = \f\db\sql_insert_mnogo($db, 'mitems-dops', $indb);
         // \f\pa($er);
-
         // echo '<br/>изменено доп параметров имеющихся записей: ' . sizeof($indb);
 
         return \f\end3('окей записали');

@@ -31,3 +31,10 @@ $ret = \Nyos\mod\items::getItemsSimple3($db, '074.time_expectations_list');
 \Nyos\mod\items::$where2dop = ' AND `name` = \'id_tech_for_oborot\' ';
 // старт выборки
 $sp1 = \Nyos\mod\items::get($db, $mod_sp);
+
+------ удаление всех итемов указывая допы и модуль --------
+
+\Nyos\mod\items::deleteFromDops($db, $module , [
+    'sale_point' => $ocenka['data']['sp'],
+    'date' => $ocenka['data']['date'],
+]);

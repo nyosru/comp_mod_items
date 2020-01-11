@@ -32,7 +32,8 @@ if (!defined('IN_NYOS_PROJECT'))
 //
 // выборка item simple
 // 
-//\Nyos\mod\items::$where2 = ' AND ( midop.name = \'date\' AND midop.value_date '
+//\Nyos\mod\items::$where2 = ' AND ( midop.name = \'date\' AND 
+//        . ' midop.value_date '
 //        . ' BETWEEN \''.date('Y-m-d',strtotime($d_start)).'\' '
 //        . ' AND \''.date('Y-m-d',strtotime($d_finish)).'\' ) ';
 //        
@@ -1496,9 +1497,13 @@ class items {
             if (
                     empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash)
             ) {
+
                 $save_cash = true;
+                // echo '<br/>#'.__LINE__;
             } else {
+
                 $save_cash = false;
+                // echo '<br/>#'.__LINE__;
             }
 
 
@@ -1507,6 +1512,25 @@ class items {
             //            echo '<br/>a - '.$module;
             //        
             //        if ( 1 == 1 || $module == '050.chekin_checkout') {
+
+
+
+
+            if ( $save_cash === true && 
+                    ( $module == \Nyos\mod\JobDesc::$mod_jobman )
+                ) {
+
+                $cash_var = 'items__' . $module . '_' . $stat . '_' . $sort;
+                $e = \f\Cash::getVar($cash_var);
+                // \f\pa($e, '', '', '$e');
+                echo '<br/>#'.__LINE__;
+                
+                if (!empty($e))
+                    return $e;
+
+            }else{
+                $save_cash = false;
+            }
 
 
 
@@ -1679,8 +1703,6 @@ class items {
 
 
                 self::$var_ar_for_1sql = [];
-                self::$select_var1 = '';
-
                 self::$join_where = self::$select_var1 = self::$sql_order = '';
 
                 // \f\pa( $ff->fetchAll(), '', '', 'все');
@@ -1755,13 +1777,16 @@ class items {
                 midop.`value_datetime`,
                 midop.`value_text` '
                             . ( self::$sql_select_vars ?? '' )
-                            . '
-            FROM `mitems-dops` midop '
+                            . PHP_EOL
+                            . ' FROM `mitems-dops` midop '
+                            . PHP_EOL
                             . ' WHERE '
+                            . PHP_EOL
                             . ' midop.id_item IN (' . $sql . ') '
-                            . PHP_EOL . ' AND midop.status IS NULL '
+                            . PHP_EOL
+                            . ' AND midop.status IS NULL '
+                            . PHP_EOL
                             . ( self::$where2dop ?? '' )
-
                     ;
 
                     self::$where2dop = '';
@@ -1864,15 +1889,27 @@ class items {
             self::$where2dop = '';
             self::$need_polya_vars = [];
 
+            self::$show_sql = false;
+
+
             if (self::$style_old === true) {
+
                 self::$style_old = false;
                 return ['data' => $re];
             } elseif (self::$limit1 === true) {
+
                 self::$limit1 = false;
                 foreach ($re as $k => $v) {
                     return $v;
                 }
             } else {
+
+                if ($save_cash === true) {
+//                    // $cash_var = 'items__'.$module.'_'.$stat.'_'.$sort;
+                    \f\Cash::setVar($cash_var, $re, 60 * 60 * 2);
+//                    // \f\pa($e,'','','$e');
+                }
+
                 return $re;
             }
 
@@ -2651,7 +2688,7 @@ class items {
             // \f\pa($var_in_sql);
             $ff->execute($var_in_sql);
         }
-        
+
         return \f\end3('удалёно', true);
     }
 
@@ -3053,8 +3090,11 @@ class items {
         //echo $sql;
 
         $sql1 = 'UPDATE `mitems-dops` SET `status` = \'delete\', `date_status` = NOW() WHERE `status` != \'delete\' AND ( ' . $sql . ' ) ';
+        //$sql1 = 'DELETE FROM  `mitems-dops` WHERE ( ' . $sql . ' ) ';
 //        echo '<br/>';
-//        echo '<br/>';
+//        \f\pa($sql1);
+//        \f\pa($dop_ar);
+//        return;
 
         $ff = $db->prepare($sql1);
         // \f\pa($dop_ar);
@@ -3062,6 +3102,7 @@ class items {
         $e = $ff->execute($dop_ar);
         // \f\pa($e, '', '', 'sql delete');
         // \f\pa($indb);
+
         $er = \f\db\sql_insert_mnogo($db, 'mitems-dops', $indb);
         // \f\pa($er);
         // echo '<br/>изменено доп параметров имеющихся записей: ' . sizeof($indb);

@@ -1516,19 +1516,20 @@ class items {
 
 
 
-            if ( $save_cash === true && 
-                    ( $module == \Nyos\mod\JobDesc::$mod_jobman )
-                ) {
+            if ($save_cash === true &&
+                    (
+                    $module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp
+                    )
+            ) {
 
                 $cash_var = 'items__' . $module . '_' . $stat . '_' . $sort;
                 $e = \f\Cash::getVar($cash_var);
                 // \f\pa($e, '', '', '$e');
-                echo '<br/>#'.__LINE__;
-                
+                // echo '<br/>#'.__LINE__;
+
                 if (!empty($e))
                     return $e;
-
-            }else{
+            } else {
                 $save_cash = false;
             }
 
@@ -3067,13 +3068,13 @@ class items {
 
             $nn++;
 
-            $sql .= (!empty($sql) ? ' OR ' : '' ) . ' ( `id_item` = :id' . $nn . ' AND ';
+            $sql .= (!empty($sql) ? ' OR ' : '' ) . ' ( `mitems-dops`.`id_item` = :id' . $nn . ' AND ';
             $dop_ar[':id' . $nn] = $id;
 
             $sql2 = '';
             foreach ($v1 as $key => $value) {
 
-                $sql2 .= (!empty($sql2) ? ' OR ' : '' ) . ' `name` = :name' . $nn . ' ';
+                $sql2 .= (!empty($sql2) ? ' OR ' : '' ) . ' `mitems-dops`.`name` = :name' . $nn . ' ';
                 $dop_ar[':name' . $nn] = $key;
                 $nn++;
 
@@ -3088,17 +3089,30 @@ class items {
         }
 
         //echo $sql;
+        // $sql1 = 'UPDATE `mitems-dops` SET `status` = \'delete\', `date_status` = NOW() WHERE `status` != \'delete\' AND ( ' . $sql . ' ) ';
 
-        $sql1 = 'UPDATE `mitems-dops` SET `status` = \'delete\', `date_status` = NOW() WHERE `status` != \'delete\' AND ( ' . $sql . ' ) ';
+        $sql1 = 'UPDATE '
+                . ' `mitems-dops` '
+                . ' SET '
+                . ' `status` = \'delete\''
+                . ' ,`date_status` = NOW() '
+                . ' WHERE '
+                . ' `date_status` IS NULL '
+                . ' AND ( ' . $sql . ' ) ';
+
+//        $sql1 = 'DELETE FROM `mitems-dops` '
+//                // . 'SET `status` = \'delete\''
+//                // . ', `date_status` = NOW() '
+//                . ' WHERE ' . $sql . ' ;';
         //$sql1 = 'DELETE FROM  `mitems-dops` WHERE ( ' . $sql . ' ) ';
 //        echo '<br/>';
-//        \f\pa($sql1);
 //        \f\pa($dop_ar);
 //        return;
 
+        // \f\pa($sql1);
         $ff = $db->prepare($sql1);
-        // \f\pa($dop_ar);
 
+        // \f\pa($dop_ar);
         $e = $ff->execute($dop_ar);
         // \f\pa($e, '', '', 'sql delete');
         // \f\pa($indb);

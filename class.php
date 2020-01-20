@@ -1496,14 +1496,17 @@ class items {
 
             if (
                     empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash)
+                    && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
             ) {
 
                 $save_cash = true;
                 // echo '<br/>#'.__LINE__;
+
             } else {
 
                 $save_cash = false;
                 // echo '<br/>#'.__LINE__;
+
             }
 
 

@@ -68,6 +68,12 @@ class items {
     public static $where = [];
 
     /**
+     * вернуть результаты первого запроса
+     * @var type 
+     */
+    public static $return_items_header = false;
+
+    /**
      * часть запроса в выборке главных items where ***
      * @var type 
      */
@@ -1495,18 +1501,15 @@ class items {
 
 
             if (
-                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash)
-                    && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
+                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
             ) {
 
                 $save_cash = true;
                 // echo '<br/>#'.__LINE__;
-
             } else {
 
                 $save_cash = false;
                 // echo '<br/>#'.__LINE__;
-
             }
 
 
@@ -1698,7 +1701,6 @@ class items {
 
                 $ff = $db->prepare($ff1);
 
-
                 self::$var_ar_for_1sql[':module'] = ( $module ?? '' );
                 $ff->execute(self::$var_ar_for_1sql);
 
@@ -1708,6 +1710,11 @@ class items {
 
                 self::$var_ar_for_1sql = [];
                 self::$join_where = self::$select_var1 = self::$sql_order = '';
+
+                if (self::$return_items_header === true) {
+                    self::$return_items_header = false;
+                    return $ff->fetchAll();
+                }
 
                 // \f\pa( $ff->fetchAll(), '', '', 'все');
                 // die;
@@ -3111,7 +3118,6 @@ class items {
 //        echo '<br/>';
 //        \f\pa($dop_ar);
 //        return;
-
         // \f\pa($sql1);
         $ff = $db->prepare($sql1);
 

@@ -15,7 +15,7 @@ require( $_SERVER['DOCUMENT_ROOT'] . '/all/ajax.start.php' );
 if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 
     scanNewData($db);
-    //cron_scan_new_datafile();
+//cron_scan_new_datafile();
 }
 
 
@@ -57,7 +57,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'show_info_strings') {
     require_once '../../../../all/ajax.start.php';
     require_once dirname(__FILE__) . '/../class.php';
 
-    // \Nyos\mod\items::getItems( $db, $folder )
+// \Nyos\mod\items::getItems( $db, $folder )
 
     \f\end2('окей', true, array('data' => 'новый статус ' . 'val'));
 }
@@ -87,9 +87,9 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
 //$table = 'mitems_dop';    
 //    $polya = \f\db\pole_list($db, $table);
 //    \f\pa($polya);
-    //$folder = \Nyos\nyos::getFolder($db);
+//$folder = \Nyos\nyos::getFolder($db);
 // папка для кеша данных
-    //$dir_for_cash = $_SERVER['DOCUMENT_ROOT'] . '/9.site/' . $folder . '/';
+//$dir_for_cash = $_SERVER['DOCUMENT_ROOT'] . '/9.site/' . $folder . '/';
     $dir_for_cash = DR . dir_site;
 
     $list_cash = scandir($dir_for_cash);
@@ -99,16 +99,39 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
         }
     }
 
-    // \f\Cash::deleteKeyPoFilter( )
-    
+// \f\Cash::deleteKeyPoFilter( )
 // f\end2( 'новый статус ' . $status);
-   \f\end2('новый статус ' . $_POST['val']);
+    \f\end2('новый статус ' . $_POST['val']);
 }
 /**
  * изменение инфы в дополнительных итемсах
  */
 // edit dop поле
 elseif (isset($_POST['action']) && $_POST['action'] == 'edit_dop_pole') {
+
+// если есть переменные удаления кеша .. то запускаем обработку удаления кеша, внутри которой пройдёт поиск и чистка по переменным что отправим
+    try {
+        
+//        echo '<br/>'.__LINE__;
+        foreach ($_REQUEST as $k => $v) {
+            if (strpos($k, 'ajax_cash_delete') !== false) {
+//                echo '<br/>'.__LINE__;
+                \f\Cash::clearCasheFromVars($_REQUEST);
+                
+//                \f\Cash::$cache->delete('jobdesc__hoursonjob_calculateHoursOnJob_2020-01-02_sp1');
+//                $ee = \f\Cash::$cache->get('jobdesc__hoursonjob_calculateHoursOnJob_2020-01-02_sp1');
+//                \f\pa($ee,'','','2020-01-02 sp1');
+                
+                break;
+            }
+        }
+        
+    } 
+    catch ( \Exception $exc) {
+//        echo $exc->getTraceAsString();
+    }
+
+
 
 //    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'db.2.php' );
 //    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'txt.2.php' );
@@ -383,8 +406,7 @@ if (1 == 2) {
                         , 'ok', array('number_kupon' => $res['number_kupon'])
                 );
             }
-        }
-        else {
+        } else {
 
 //require_once($_SERVER['DOCUMENT_ROOT'] . '/0.all/f/smarty.php');
 //f\end2(f\compileSmarty('ajax_form_enter.htm', array(), dirname(__FILE__) . '/../../lk/3/tpl_smarty/')

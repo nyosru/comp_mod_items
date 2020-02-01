@@ -1501,7 +1501,12 @@ class items {
 
 
             if (
-                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
+                    empty(self::$where2dop) 
+                    && empty(self::$where2) 
+                    && empty(self::$need_polya_vars) 
+                    && empty(self::$nocash) 
+                    && empty(self::$join_where) 
+                    && empty(self::$var_ar_for_1sql)
             ) {
 
                 $save_cash = true;
@@ -1524,11 +1529,13 @@ class items {
 
             if ($save_cash === true &&
                     (
-                    $module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp
+                    $module == \Nyos\mod\JobDesc::$mod_jobman 
+                    || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp
+                    || $module == \Nyos\mod\JobDesc::$mod_dolgn
                     )
             ) {
 
-                $cash_var = 'items__' . $module . '_' . $stat . '_' . $sort;
+                $cash_var = 'items__mod' . $module . '_' . $stat . '_' . $sort;
                 $e = \f\Cash::getVar($cash_var);
                 // \f\pa($e, '', '', '$e');
                 // echo '<br/>#'.__LINE__;
@@ -1670,7 +1677,10 @@ class items {
                     self::$sql_order = ' ORDER BY mi.add_d DESC ';
                 }
                 //
-                elseif ($sort == 'sort_asc') {
+                elseif (
+                        $sort == 'sort_asc'
+                        || $sort == 'sort'
+                        ) {
                     self::$sql_order = ' ORDER BY mi.sort ASC ';
                 }
                 //
@@ -2816,12 +2826,31 @@ class items {
 
         try {
 
-
             return $e = self::addNew($db, $folder, $cfg_mod, $data, $files, $add_all_dops);
+            
         } catch (\PDOException $ex) {
+            
             return false;
+            
         }
     }
+
+//    public static function selectGoodVarsInItems( string $module, array $data ) {
+//
+//            //\f\pa( $data );
+//
+//            // \f\pa(\Nyos\nyos::$menu['073.comments']);
+//            $indb2 = [];
+//
+//            foreach ($data as $k => $v) {
+//                if (isset(\Nyos\nyos::$menu['073.comments'][$k]['name_rus'])) {
+//                    $indb2[$k] = $v;
+//                }
+//            }
+//
+//            \f\pa( $indb2 );
+//        
+//    }
 
     public static function addNewSimples($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 

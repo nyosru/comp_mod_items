@@ -6,8 +6,41 @@ composer require didrive_mod/items
 
 
 
+
 ------------------
-использование
+использование др пример / 200203
+------------------- 
+
+// ограничение в выборке
+
+\Nyos\mod\items::$join_where = ' INNER JOIN `mitems-dops` mid '
+        . ' ON mid.id_item = mi.id '
+        . ' AND mid.name = \'date\' '
+        . ' AND mid.value_date >= :ds '
+        . ' AND mid.value_date <= :df '
+        . ' INNER JOIN `mitems-dops` mid2 '
+        . ' ON mid2.id_item = mi.id '
+        . ' AND mid2.name = \'sale_point\' '
+        . ' AND mid2.value = :sp '
+;
+\Nyos\mod\items::$var_ar_for_1sql[':sp'] = $sp;
+\Nyos\mod\items::$var_ar_for_1sql[':ds'] = $date_start;
+\Nyos\mod\items::$var_ar_for_1sql[':df'] = $date_finish;
+$array = \Nyos\mod\items::get($db, 'sale_point_oborot');
+
+--------------
+
+//  ограничение по названию доп столбцов в выборке
+
+\Nyos\mod\items::$where2dop = ' AND ( midop.name = \'date\' OR midop.name = \'sale_point\' ) ';
+
+
+
+
+
+
+------------------
+использование др пример
 ------------------- 
 
 \Nyos\mod\items::$join_where = ' INNER JOIN `mitems-dops` md1 ON md1.id_item = mi.id AND md1.name = \'date\' AND md1.value_date >= :ds AND md1.value_date <= :df 

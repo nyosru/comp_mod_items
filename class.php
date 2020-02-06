@@ -27,6 +27,8 @@ if (!defined('IN_NYOS_PROJECT'))
 //    \Nyos\mod\items::$var_ar_for_1sql[':ds'] = $date_start;
 //    \Nyos\mod\items::$var_ar_for_1sql[':df'] = $date_finish;
 //    $oborots = \Nyos\mod\items::get($db, 'sale_point_oborot');
+//  ограничение по названию доп столбцов в выборке
+//       \Nyos\mod\items::$where2dop = ' AND ( midop.name = \'date\' OR midop.name = \'sale_point\' ) ';
 //    
 //echo __FILE__;
 //
@@ -1501,12 +1503,7 @@ class items {
 
 
             if (
-                    empty(self::$where2dop) 
-                    && empty(self::$where2) 
-                    && empty(self::$need_polya_vars) 
-                    && empty(self::$nocash) 
-                    && empty(self::$join_where) 
-                    && empty(self::$var_ar_for_1sql)
+                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
             ) {
 
                 $save_cash = true;
@@ -1529,9 +1526,7 @@ class items {
 
             if ($save_cash === true &&
                     (
-                    $module == \Nyos\mod\JobDesc::$mod_jobman 
-                    || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp
-                    || $module == \Nyos\mod\JobDesc::$mod_dolgn
+                    $module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp || $module == \Nyos\mod\JobDesc::$mod_dolgn || $module == \Nyos\mod\JobDesc::$mod_sp_link_timeo
                     )
             ) {
 
@@ -1678,9 +1673,8 @@ class items {
                 }
                 //
                 elseif (
-                        $sort == 'sort_asc'
-                        || $sort == 'sort'
-                        ) {
+                        $sort == 'sort_asc' || $sort == 'sort'
+                ) {
                     self::$sql_order = ' ORDER BY mi.sort ASC ';
                 }
                 //
@@ -1721,10 +1715,15 @@ class items {
                 self::$var_ar_for_1sql = [];
                 self::$join_where = self::$select_var1 = self::$sql_order = '';
 
+                /**
+                 * возвращаем много первых запросов
+                 */
                 if (self::$return_items_header === true) {
+
                     self::$return_items_header = false;
                     return $ff->fetchAll();
                 }
+
 
                 // \f\pa( $ff->fetchAll(), '', '', 'все');
                 // die;
@@ -1927,7 +1926,8 @@ class items {
 
                 if ($save_cash === true) {
 //                    // $cash_var = 'items__'.$module.'_'.$stat.'_'.$sort;
-                    \f\Cash::setVar($cash_var, $re, 60 * 60 * 2);
+                    // \f\Cash::setVar($cash_var, $re, 60 * 60 * 2);
+                    \f\Cash::setVar($cash_var, $re);
 //                    // \f\pa($e,'','','$e');
                 }
 
@@ -2818,6 +2818,8 @@ class items {
      */
     public static function addNewSimple($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
+        \f\Cash::deleteKeyPoFilter([$mod_name]);
+
         $folder = \Nyos\Nyos::$folder_now;
         $cfg_mod = \Nyos\Nyos::$menu[$mod_name] ?? $mod_name;
 
@@ -2827,11 +2829,9 @@ class items {
         try {
 
             return $e = self::addNew($db, $folder, $cfg_mod, $data, $files, $add_all_dops);
-            
         } catch (\PDOException $ex) {
-            
+
             return false;
-            
         }
     }
 
@@ -2853,6 +2853,8 @@ class items {
 //    }
 
     public static function addNewSimples($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
+
+        \f\Cash::deleteKeyPoFilter([$mod_name]);
 
         $folder = \Nyos\Nyos::$folder_now;
         $cfg_mod = \Nyos\Nyos::$menu[$mod_name];
@@ -3094,7 +3096,7 @@ class items {
 
         if (empty($array))
             return \f\end3('нет данных для сохранения', false);
-
+        
         $sql = '';
         $nn = 1;
 

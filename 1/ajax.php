@@ -45,6 +45,20 @@ else {
 //require( $_SERVER['DOCUMENT_ROOT'] . '/0.site/0.cfg.start.php');
 //require( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'class' . DS . 'mysql.php' );
 //require( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'db.connector.php' );
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+// трём метки
+    if ( !empty($_REQUEST['remove_cash']) )
+        \f\Cash::deleteKeyPoFilter($_REQUEST['remove_cash']);
+
 
 
 
@@ -60,6 +74,41 @@ if (isset($_POST['action']) && $_POST['action'] == 'show_info_strings') {
 // \Nyos\mod\items::getItems( $db, $folder )
 
     \f\end2('окей', true, array('data' => 'новый статус ' . 'val'));
+}
+
+// добавить новый итем
+elseif (isset($_POST['action']) && $_POST['action'] == 'add_new') {
+
+    if (empty($_REQUEST['add_module']) || empty($_REQUEST['add']))
+        \f\end2('Что то пошло не так #' . __LINE__, false);
+
+    //ob_start('ob_gzhandler');
+    // \f\pa($_REQUEST);
+
+    $res = \Nyos\mod\items::add($db, $_REQUEST['add_module'], $_REQUEST['add']);
+    // \f\pa($res);
+//    $r = ob_get_contents();
+//    ob_end_clean();
+    // \f\end2($res['html'].'<Br/>'.$r, true);
+    \f\end2($res['html'], true);
+}
+
+// удалить итем
+elseif (isset($_POST['action']) && $_POST['action'] == 'remove_item') {
+
+//    if (empty($_REQUEST['add_module']) || empty($_REQUEST['add']))
+//        \f\end2('Что то пошло не так #' . __LINE__, false);
+    //ob_start('ob_gzhandler');
+    // \f\pa($_REQUEST);
+
+    $res = \Nyos\mod\items::deleteId($db, $_REQUEST['id']);
+    // $res = \Nyos\mod\items::add($db, $_REQUEST['add_module'], $_REQUEST['add']);
+    // \f\pa($res);
+//    $r = ob_get_contents();
+//    ob_end_clean();
+    // \f\end2($res['html'].'<Br/>'.$r, true);
+
+    \f\end2($res['html'], true);
 }
 /**
  * изменение инфы в главном итемс
@@ -111,23 +160,21 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_dop_pole') {
 
 // если есть переменные удаления кеша .. то запускаем обработку удаления кеша, внутри которой пройдёт поиск и чистка по переменным что отправим
     try {
-        
+
 //        echo '<br/>'.__LINE__;
         foreach ($_REQUEST as $k => $v) {
             if (strpos($k, 'ajax_cash_delete') !== false) {
 //                echo '<br/>'.__LINE__;
                 \f\Cash::clearCasheFromVars($_REQUEST);
-                
+
 //                \f\Cash::$cache->delete('jobdesc__hoursonjob_calculateHoursOnJob_2020-01-02_sp1');
 //                $ee = \f\Cash::$cache->get('jobdesc__hoursonjob_calculateHoursOnJob_2020-01-02_sp1');
 //                \f\pa($ee,'','','2020-01-02 sp1');
-                
+
                 break;
             }
         }
-        
-    } 
-    catch ( \Exception $exc) {
+    } catch (\Exception $exc) {
 //        echo $exc->getTraceAsString();
     }
 
@@ -225,10 +272,6 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_dop_pole') {
 
 
 f\end2('Произошла неописуемая ситуация #' . __LINE__ . ' обратитесь к администратору', 'error');
-
-
-
-
 
 
 // печать купона

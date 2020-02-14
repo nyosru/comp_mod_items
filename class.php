@@ -2808,6 +2808,20 @@ class items {
     }
 
     /**
+     * добавление записи (версия от 200214 )
+     * @global \Nyos\mod\type $status
+     * @param type $db
+     * @param string $folder
+     * @param array $cfg_mod
+     * @param array $data
+     * @return type
+     */
+    public static function add($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
+
+        return self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
+    }
+
+    /**
      * добавление записи боллее лёгкая версия
      * @global \Nyos\mod\type $status
      * @param type $db
@@ -3096,7 +3110,7 @@ class items {
 
         if (empty($array))
             return \f\end3('нет данных для сохранения', false);
-        
+
         $sql = '';
         $nn = 1;
 

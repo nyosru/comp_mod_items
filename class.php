@@ -1503,7 +1503,8 @@ class items {
 
 
             if (
-                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
+                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) 
+                    && empty(self::$var_ar_for_1sql)
             ) {
 
                 $save_cash = true;
@@ -1514,19 +1515,18 @@ class items {
                 // echo '<br/>#'.__LINE__;
             }
 
-
             // echo '<br/>-- ' . $cash_var;
             //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
             //            echo '<br/>a - '.$module;
             //        
             //        if ( 1 == 1 || $module == '050.chekin_checkout') {
 
-
-
-
             if ($save_cash === true &&
                     (
-                    $module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp || $module == \Nyos\mod\JobDesc::$mod_dolgn || $module == \Nyos\mod\JobDesc::$mod_sp_link_timeo
+                    $module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp 
+                    || $module == \Nyos\mod\JobDesc::$mod_dolgn 
+                    // || $module == \Nyos\mod\JobDesc::$mod_salary
+                    || $module == \Nyos\mod\JobDesc::$mod_sp_link_timeo
                     )
             ) {
 
@@ -1869,10 +1869,18 @@ class items {
 //                unset($re2);
                     }
 
+                    
+                    //\f\pa($sort);
+                    
                     if ($sort == 'sort_asc') {
                         usort($re, "\\f\\sort_ar_sort");
-                    } elseif ($sort == 'date_asc') {
+                    } 
+                    elseif ($sort == 'date_asc') {
                         usort($re, "\\f\\sort_ar_date");
+                    }
+                    elseif ($sort == 'date_desc') {
+                        usort($re, "\\f\\sort_ar_date_desc");
+                        // usort($re, "\\f\\sort_ar_date");
                     }
 
                     if (isset($show_memory) && $show_memory === true) {
@@ -2553,6 +2561,24 @@ class items {
         return f\end2('Окей, запись добавлена', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }
 
+    
+    
+    
+    
+    
+    /**
+     * удалить массу записей
+     * @param type $db
+     * @param string $module_name
+     * @param type $data_dops
+     */
+    public static function deleteItems2($db, string $module_name, array $datas ) {
+        foreach( $datas as $k => $v ){
+            self::deleteItems($db, \Nyos\Nyos::$folder_now, $module_name, $v );
+        }
+    }
+    
+    
     /**
      * какаято старая версия
      * @param type $db
@@ -2948,7 +2974,7 @@ class items {
                     // \f\pa($k);
                     // \f\pa($data[$k]);
                     //if ( isset($data[$k]{0})) {
-                    if (!empty($data[$k]) || !empty($v['default'])) {
+                    if ( isset($data[$k]) || isset($v['default'])) {
 
                         // echo '<br>' . __LINE__;
 

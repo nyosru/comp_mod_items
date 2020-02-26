@@ -3137,6 +3137,8 @@ class items {
         if (empty($array))
             return \f\end3('нет данных для сохранения', false);
 
+        // echo '<br/>#'.__LINE__.' '.__FILE__;
+        
         $sql = '';
         $nn = 1;
 
@@ -3189,16 +3191,19 @@ class items {
 //        echo '<br/>';
 //        \f\pa($dop_ar);
 //        return;
-        // \f\pa($sql1);
+        // \f\pa($sql1,2,'','sql');
         $ff = $db->prepare($sql1);
 
-        // \f\pa($dop_ar);
+        // \f\pa($dop_ar,2,'','dop_ar');
         $e = $ff->execute($dop_ar);
         // \f\pa($e, '', '', 'sql delete');
-        // \f\pa($indb);
+        
+        // \f\pa($indb,'','','indb');
 
         $er = \f\db\sql_insert_mnogo($db, 'mitems-dops', $indb);
-        // \f\pa($er);
+        // \f\pa($er,'','','\f\db\sql_insert_mnogo');
+        // $er = \Nyos\mod\items::saveNewDop($db, $indb);
+        // \f\pa($er,'','','\Nyos\mod\items::saveNewDop');
         // echo '<br/>изменено доп параметров имеющихся записей: ' . sizeof($indb);
 
         return \f\end3('окей записали');

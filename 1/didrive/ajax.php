@@ -21,10 +21,8 @@ if (
         (
         isset($_REQUEST['id']{0}) && isset($_REQUEST['s']{5}) &&
         \Nyos\nyos::checkSecret($_REQUEST['s'], $_REQUEST['id']) === true
-        ) 
-                ||
-        ( isset($_REQUEST['id2']{0}) && isset($_REQUEST['s2']{5}) && \Nyos\nyos::checkSecret($_REQUEST['s2'], $_REQUEST['id2']) === true ) 
-                ||
+        ) ||
+        ( isset($_REQUEST['id2']{0}) && isset($_REQUEST['s2']{5}) && \Nyos\nyos::checkSecret($_REQUEST['s2'], $_REQUEST['id2']) === true ) ||
         (
         isset($_REQUEST['itemsmod']{0}) &&
         isset($_REQUEST['item_id']{0}) &&
@@ -32,10 +30,7 @@ if (
         isset($_REQUEST['dop_new_value']{0}) &&
         isset($_REQUEST['s3']{5}) &&
         \Nyos\nyos::checkSecret($_REQUEST['s3'], $_REQUEST['itemsmod'] . '-' . $_REQUEST['item_id'] . '-' . $_REQUEST['dop_name'] . '-' . $_REQUEST['dop_new_value']) === true
-        )
-                ||
-                
-
+        ) ||
 //                           {# модуль итемов #}
 //                           itemsmod="072.vzuscaniya"
 //                           {# id итема #}
@@ -52,23 +47,77 @@ if (
 //                           new_status="hide"
 //                           {# секрет #}
 //                           s3="{{ creatSecret( '072.vzuscaniya-'~minus.id~'-hide' ) }}" 
-                
+
         (
         isset($_REQUEST['itemsmod']{0}) &&
         isset($_REQUEST['item_id']{0}) &&
         isset($_REQUEST['new_status']{0}) &&
         isset($_REQUEST['s3']{5}) &&
         \Nyos\nyos::checkSecret($_REQUEST['s3'], $_REQUEST['itemsmod'] . '-' . $_REQUEST['item_id'] . '-' . $_REQUEST['new_status']) === true
-        )
-        ||
+        ) ||
         (
         isset($_REQUEST['module']{0}) &&
         isset($_REQUEST['dop_name']{0}) &&
         isset($_REQUEST['item_id']{0}) &&
         isset($_REQUEST['s']{5}) &&
         \Nyos\nyos::checkSecret($_REQUEST['s'], $_REQUEST['module'] . $_REQUEST['dop_name'] . $_REQUEST['item_id']) === true
+        ) ||
+        (
+        isset($_REQUEST['items_module']{0}) &&
+        isset($_REQUEST['edit_dop_name']{0}) &&
+        //isset($_REQUEST['edit_item_id']) &&
+        isset($_REQUEST['s']{5}) &&
+        (
+        (
+        isset($_REQUEST['addpole1val']{0}) &&
+        \Nyos\nyos::checkSecret($_REQUEST['s'], ($_REQUEST['edit_item_id'] ?? '' ) . $_REQUEST['edit_dop_name']
+                . $_REQUEST['addpole1val']
+        ) === true
+        ) ||
+        (
+        isset($_REQUEST['addpole1val']{0}) &&
+        isset($_REQUEST['addpole2val']{0}) &&
+        \Nyos\nyos::checkSecret($_REQUEST['s'], ($_REQUEST['edit_item_id'] ?? '' ) . $_REQUEST['edit_dop_name']
+                . $_REQUEST['addpole1val']
+                . $_REQUEST['addpole2val']
+        ) === true
+        ) ||
+        (
+        isset($_REQUEST['addpole1val']{0}) &&
+        isset($_REQUEST['addpole2val']{0}) &&
+        isset($_REQUEST['addpole3val']{0}) &&
+        \Nyos\nyos::checkSecret($_REQUEST['s'], ($_REQUEST['edit_item_id'] ?? '' ) . $_REQUEST['edit_dop_name']
+                . $_REQUEST['addpole1val']
+                . $_REQUEST['addpole2val']
+                . $_REQUEST['addpole3val']
+        ) === true
+        ) ||
+        (
+        isset($_REQUEST['addpole1val']{0}) &&
+        isset($_REQUEST['addpole2val']{0}) &&
+        isset($_REQUEST['addpole3val']{0}) &&
+        isset($_REQUEST['addpole4val']{0}) &&
+        \Nyos\nyos::checkSecret($_REQUEST['s'], ($_REQUEST['edit_item_id'] ?? '' ) . $_REQUEST['edit_dop_name']
+                . $_REQUEST['addpole1val']
+                . $_REQUEST['addpole2val']
+                . $_REQUEST['addpole3val']
+                . $_REQUEST['addpole4val']
+        ) === true
+        ) ||
+        (
+        isset($_REQUEST['addpole1val']{0}) &&
+        isset($_REQUEST['addpole2val']{0}) &&
+        isset($_REQUEST['addpole3val']{0}) &&
+        isset($_REQUEST['addpole4val']{0}) &&
+        isset($_REQUEST['addpole5val']{0}) &&
+        \Nyos\nyos::checkSecret($_REQUEST['s'], ($_REQUEST['edit_item_id'] ?? '' ) . $_REQUEST['edit_dop_name'] . $_REQUEST['addpole1val'] . $_REQUEST['addpole2val']
+                . $_REQUEST['addpole3val']
+                . $_REQUEST['addpole4val']
+                . $_REQUEST['addpole5val']
+        ) === true
         )
-                
+        )
+        )
 ) {
     
 }
@@ -92,30 +141,50 @@ else {
 // добавляем смену сотруднику
 // \f\pa($_REQUEST);
 
-if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_dop_item') {
+if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'newedit_items_dop') {
 
-    require_once DR . '/all/ajax.start.php';
+    //\f\pa( $_REQUEST );
 
+    $data = [];
+
+    for ($e = 1; $e <= 5; $e++) {
+        if (isset($_REQUEST['addpole' . $e]) && isset($_REQUEST['addpole' . $e . 'val'])) {
+            $data[$_REQUEST['addpole' . $e]] = $_REQUEST['addpole' . $e . 'val'];
+        }
+    }
+
+// удаляем запись с такими параметрами если есть        
+    if (1 == 1) {
+
+        \Nyos\mod\items::deleteFromDops($db, $_REQUEST['items_module'], $data);
+    }
+
+    $data[$_REQUEST['edit_dop_name']] = $_REQUEST['value'];
+
+    \Nyos\mod\items::add($db, $_REQUEST['items_module'], $data);
+
+    \f\end2('окей сохранили', true, ['data_in' => $data]);
+} elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_dop_item') {
+
+//    require_once DR . '/all/ajax.start.php';
     //\f\pa($_REQUEST);
 //    $ff = $db->prepare('UPDATE `mitems` SET `status` = \'hide\' WHERE `id` = :id ');
 //    $ff->execute(array(':id' => (int) $_POST['id2']));
-
 //item_id	78
 //new_status	hide    
-    
-    if (isset($_REQUEST['itemsmod']{0}) && isset($_REQUEST['item_id']{0}) && isset($_REQUEST['new_status']{0}) ) {
-        
-      $ff = $db->prepare('UPDATE mitems SET status = :status WHERE id = :id ');
+
+    if (isset($_REQUEST['itemsmod']{0}) && isset($_REQUEST['item_id']{0}) && isset($_REQUEST['new_status']{0})) {
+
+        $ff = $db->prepare('UPDATE mitems SET status = :status WHERE id = :id ');
         $ff->execute(
                 array(
                     ':id' => (int) $_POST['item_id']
                     ,
                     ':status' => $_REQUEST['new_status']
                 )
-        );        
-        
+        );
     }
-    
+
     //
     if (isset($_REQUEST['itemsmod']{0}) && isset($_REQUEST['item_id']{0}) && isset($_REQUEST['dop_name']{0}) && isset($_REQUEST['dop_new_value']{0})) {
 
@@ -136,11 +205,9 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_dop_item') {
             ,
             ':val' => $_REQUEST['dop_new_value']
         ));
-
     }
 
-        \f\end2('окей');
-    
+    \f\end2('окей');
 }
 
 // edit dop поле

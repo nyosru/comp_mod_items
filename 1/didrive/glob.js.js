@@ -32,18 +32,18 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
         // alert(D);
 
         var mm = date.getUTCMonth() + 1; //months from 1-12
-        
-        if( mm < 10 )
-        mm = '0'+mm;
-    
+
+        if (mm < 10)
+            mm = '0' + mm;
+
         var dd = date.getUTCDate();
 
-        if( dd < 10 )
-        dd = '0'+dd;
-        
+        if (dd < 10)
+            dd = '0' + dd;
+
         var YY = date.getUTCFullYear();
-        
-        var str = ''+YY + '-' + mm + '-' + dd;
+
+        var str = '' + YY + '-' + mm + '-' + dd;
 
         return str;
 
@@ -63,7 +63,7 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
                 // alert(i);
                 now_date = month($date, i);
                 // console.log(now_date);
-                $('#a_price_' + $sp + '_' + now_date ).html('<div class=\'bg-warning\' style=\'padding:5px;\' >Значение изменено</div>');
+                $('#a_price_' + $sp + '_' + now_date).html('<div class=\'bg-warning\' style=\'padding:5px;\' >Значение изменено</div>');
             }
 
             // alert($date);
@@ -164,7 +164,7 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
                 // alert(i);
                 now_date = month($date, i);
                 // console.log(now_date);
-                $('#a_price_' + $sp + '_' + now_date ).html('<div class=\'bg-warning\' style=\'padding:5px;\' >Значение изменено</div>');
+                $('#a_price_' + $sp + '_' + now_date).html('<div class=\'bg-warning\' style=\'padding:5px;\' >Значение изменено</div>');
             }
 
             // alert($date);
@@ -852,11 +852,49 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
                     /**
                      * если есть эти параметры то печатаем в блок нужный текст
                      */
-                    if ($a_pole_price_id == null || $a_text_in_pole_price_id == null) {
+//                    if ($a_pole_price_id == null || $a_text_in_pole_price_id == null) {
+//
+//                    } else {
+//                        $a_pole_price_id.html($a_text_in_pole_price_id);
+//                    }
 
-                    } else {
-                        $a_pole_price_id.html($a_text_in_pole_price_id);
+
+
+//        $.each(this.attributes, function () {
+//
+//            if (this.specified) {
+//                // alert( `${attr.name} = ${attr.value}` );
+//
+//                if (this.name == 'value') {
+//                    at = at + '&' + this.name + '=' + $this.val();
+//                } else {
+//                    at = at + '&' + this.name + '=' + this.value;
+//                }
+//            }
+//
+//        });
+
+                    let i = 1;
+                    while (i < 5) { // выводит 0, затем 1, затем 2
+                        // alert( i );
+                        var a = $this.attr('complete_ok_to_pole'+i+'_id');
+                        if (typeof (a) === 'undefined') {
+                            //console.log('нет');
+                        } else {
+                            //console.log('есть');
+                            var a1 = $this.attr('complete_ok_to_pole'+i+'_html');
+                            if (typeof (a1) === 'undefined') {
+                                //console.log('нет');
+                            } else {
+                                //console.log('есть2');
+                                $('#' + a).html(a1);
+                            }
+                        }
+
+                        i++;
                     }
+
+
 
                 }
 
@@ -881,7 +919,7 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
     };
 
     // $('body').on('keyup input', '.didrive__newedit_items_dop_pole', $.debounce(1000, didrive__newedit_items_dop_pole));
-    $(document).on('keyup input', '.items__newedit_dop_pole', $.debounce(1000, false, items_di__newedit_dop_pole ) );
+    $(document).on('keyup input', '.items__newedit_dop_pole', $.debounce(1000, false, items_di__newedit_dop_pole));
 
 
 });

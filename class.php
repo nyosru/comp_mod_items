@@ -2574,9 +2574,11 @@ class items {
      */
     public static function deleteItems2($db, string $module_name, array $datas ) {
         foreach( $datas as $k => $v ){
-            self::deleteItems($db, \Nyos\Nyos::$folder_now, $module_name, $v );
+            //self::deleteItems($db, \Nyos\Nyos::$folder_now, $module_name, $v );
+            self::deleteFromDops($db, $module_name, $v);
         }
     }
+    
     
     
     /**
@@ -2677,6 +2679,27 @@ class items {
         return \f\end3('Окей');
     }
 
+    
+    
+    
+    
+    
+    
+/**
+ * удаление массы наборов по допам 
+ * @param type $db
+ * @param string $module_name
+ * @param array $datas
+ */    
+    public static function deleteFromDopsMany($db, string $module_name, array $datas ) {
+        foreach( $datas as $k => $v ){
+            //self::deleteItems($db, \Nyos\Nyos::$folder_now, $module_name, $v );
+            self::deleteFromDops($db, $module_name, $v);
+        }
+    }
+    
+    
+    
     /**
      * удаление параметра по id или по списку параметров
      * @param type $db

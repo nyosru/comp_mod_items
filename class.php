@@ -2574,9 +2574,11 @@ class items {
      */
     public static function deleteItems2($db, string $module_name, array $datas ) {
         foreach( $datas as $k => $v ){
-            self::deleteItems($db, \Nyos\Nyos::$folder_now, $module_name, $v );
+            //self::deleteItems($db, \Nyos\Nyos::$folder_now, $module_name, $v );
+            self::deleteFromDops($db, $module_name, $v);
         }
     }
+    
     
     
     /**
@@ -2677,6 +2679,27 @@ class items {
         return \f\end3('Окей');
     }
 
+    
+    
+    
+    
+    
+    
+/**
+ * удаление массы наборов по допам 
+ * @param type $db
+ * @param string $module_name
+ * @param array $datas
+ */    
+    public static function deleteFromDopsMany($db, string $module_name, array $datas ) {
+        foreach( $datas as $k => $v ){
+            //self::deleteItems($db, \Nyos\Nyos::$folder_now, $module_name, $v );
+            self::deleteFromDops($db, $module_name, $v);
+        }
+    }
+    
+    
+    
     /**
      * удаление параметра по id или по списку параметров
      * @param type $db
@@ -3137,6 +3160,8 @@ class items {
         if (empty($array))
             return \f\end3('нет данных для сохранения', false);
 
+        // echo '<br/>#'.__LINE__.' '.__FILE__;
+        
         $sql = '';
         $nn = 1;
 
@@ -3189,16 +3214,19 @@ class items {
 //        echo '<br/>';
 //        \f\pa($dop_ar);
 //        return;
-        // \f\pa($sql1);
+        // \f\pa($sql1,2,'','sql');
         $ff = $db->prepare($sql1);
 
-        // \f\pa($dop_ar);
+        // \f\pa($dop_ar,2,'','dop_ar');
         $e = $ff->execute($dop_ar);
         // \f\pa($e, '', '', 'sql delete');
-        // \f\pa($indb);
+        
+        // \f\pa($indb,'','','indb');
 
         $er = \f\db\sql_insert_mnogo($db, 'mitems-dops', $indb);
-        // \f\pa($er);
+        // \f\pa($er,'','','\f\db\sql_insert_mnogo');
+        // $er = \Nyos\mod\items::saveNewDop($db, $indb);
+        // \f\pa($er,'','','\Nyos\mod\items::saveNewDop');
         // echo '<br/>изменено доп параметров имеющихся записей: ' . sizeof($indb);
 
         return \f\end3('окей записали');

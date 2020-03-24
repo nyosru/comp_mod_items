@@ -255,8 +255,11 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
 
     }
 
+<<<<<<< HEAD
 // alert('123123');
 
+=======
+>>>>>>> f3b7cea634dba47d6601562561fe2dbf601ca238
     $(document).on('click', '.edit_item', function () {
 
         console.log('click актион смена итема');
@@ -373,10 +376,6 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
 
         // return false;
     });
-
-
-
-
 
     $('body .select_edit_item_dop').change(function (event) {
         // alert('Элемент foo был изменен.');
@@ -644,12 +643,16 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
     // alert(i + ': ' + $(elem).text());
     // }
 
+<<<<<<< HEAD
 
     $(document).on('click', '.edit_items_dop_values33', function (event) {
 
         return false;
 
         console.log('.edit_items_dop_values');
+=======
+    $('body').on('click', '.edit_items_dop_values', function (event) {
+>>>>>>> f3b7cea634dba47d6601562561fe2dbf601ca238
 
         //alert('2323');
 //        $(this).removeClass("show_job_tab");item_id
@@ -958,5 +961,136 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
     // else {
     // alert(i + ': ' + $(elem).text());
     // }
+
+
+    /**
+     * редактируем доп поле
+     * @param {type} e
+     * @returns {Boolean}
+     */
+
+    var items_di__newedit_dop_pole = function (e) {
+
+        var $this = $(this);
+        var at = '';
+
+        $.each(this.attributes, function () {
+
+            if (this.specified) {
+                // alert( `${attr.name} = ${attr.value}` );
+
+                if (this.name == 'value') {
+                    at = at + '&' + this.name + '=' + $this.val();
+                } else {
+                    at = at + '&' + this.name + '=' + this.value;
+                }
+            }
+
+        });
+
+        $.ajax({
+
+            type: 'POST',
+            url: '/vendor/didrive_mod/items/1/didrive/ajax.php',
+            dataType: 'json',
+            data: "action=newedit_items_dop" + at,
+            // data: "action=edit_items_dop&item_id=" + $a_item_id + "&dop_pole=" + $a_dop_name + "&val=" + $val + "&s=" + $a_s,
+
+            // сoбытиe дo oтпрaвки
+            beforeSend: function ($data) {
+                // $div_res.html('<img src="/img/load.gif" alt="" border="" />');
+                $this.css({"border": "2px solid orange"});
+            },
+            // сoбытиe пoслe удaчнoгo oбрaщeния к сeрвeру и пoлучeния oтвeтa
+            success: function ($data) {
+
+                // eсли oбрaбoтчик вeрнул oшибку
+                if ($data['status'] == 'error')
+                {
+
+                    // alert($data['error']); // пoкaжeм eё тeкст
+                    //$div_res.html('<div class="warn warn">' + $data['html'] + '</div>');
+                    $this.css({"border": "2px solid red"});
+
+                }
+                // eсли всe прoшлo oк
+                else
+                {
+
+                    // $div_res.html('<div class="warn good">' + $data['html'] + '</div>');
+                    $this.css({"border": "2px solid green"});
+
+                    /**
+                     * если есть эти параметры то печатаем в блок нужный текст
+                     */
+//                    if ($a_pole_price_id == null || $a_text_in_pole_price_id == null) {
+//
+//                    } else {
+//                        $a_pole_price_id.html($a_text_in_pole_price_id);
+//                    }
+
+
+
+//        $.each(this.attributes, function () {
+//
+//            if (this.specified) {
+//                // alert( `${attr.name} = ${attr.value}` );
+//
+//                if (this.name == 'value') {
+//                    at = at + '&' + this.name + '=' + $this.val();
+//                } else {
+//                    at = at + '&' + this.name + '=' + this.value;
+//                }
+//            }
+//
+//        });
+
+                    let i = 1;
+                    while (i < 5) { // выводит 0, затем 1, затем 2
+                        // alert( i );
+                        var a = $this.attr('complete_ok_to_pole'+i+'_id');
+                        if (typeof (a) === 'undefined') {
+                            //console.log('нет');
+                        } else {
+                            //console.log('есть');
+                            var a1 = $this.attr('complete_ok_to_pole'+i+'_html');
+                            if (typeof (a1) === 'undefined') {
+                                //console.log('нет');
+                            } else {
+                                //console.log('есть2');
+                                $('#' + a).html(a1);
+                            }
+                        }
+
+                        i++;
+                    }
+
+
+
+                }
+
+            }
+            ,
+            // в случae нeудaчнoгo зaвeршeния зaпрoсa к сeрвeру
+            error: function (xhr, ajaxOptions, thrownError) {
+                // пoкaжeм oтвeт сeрвeрa
+                alert(xhr.status + ' ' + thrownError); // и тeкст oшибки
+            }
+
+// сoбытиe пoслe любoгo исхoдa
+// ,complete: function ($data) {
+// в любoм случae включим кнoпку oбрaтнo
+// $form.find('input[type="submit"]').prop('disabled', false);
+// }
+
+        }); // ajax-
+
+        return false;
+
+    };
+
+    // $('body').on('keyup input', '.didrive__newedit_items_dop_pole', $.debounce(1000, didrive__newedit_items_dop_pole));
+    $(document).on('keyup input', '.items__newedit_dop_pole', $.debounce(1000, false, items_di__newedit_dop_pole));
+
 
 });

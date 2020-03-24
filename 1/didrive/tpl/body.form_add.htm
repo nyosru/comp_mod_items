@@ -43,7 +43,6 @@
         {#{ pa(list[edit_item]) }#}
 
         <br clear='all' />
-
         <div style="xoverflow: auto; xborder: 1px solid gray;">
             <div class="container-fluid">
                 <div class="grid" style="xborder:0; xoverflow:auto; ">
@@ -73,8 +72,6 @@
 
                     {% set di_tpls = items__get_file_didrive_tpls() %}
 
-                    {#{ pa(now_level,2) }#}
-                    
                     {% for k, v in now_level if v.name_rus is defined %}
 
                         {% if v.type is defined and v.type == 'head' %}
@@ -100,7 +97,6 @@
 
                                     {% if v.type is defined and di_tpls['body.form_add.'~v.type~'.htm'] is defined %}
 
-                                        +{{ v.type }}
                                         {% include dir_mod_now_mod_ditpl~'body.form_add.'~v.type~'.htm' %}
 
                                         {#% elseif v.type is defined and v.type == 'date' %}
@@ -111,8 +107,6 @@
                                         {# иначе text string #}
 
                                     {% else %}
-
-                                        --{{ v.type }}
 
                                         <input id='i_{{ k }}' type="text" name="{{ k }}" 
                                                value="{% if edit_item is defined and list[edit_item][k] is defined %}{{ list[edit_item][k] }}{% endif %}" 

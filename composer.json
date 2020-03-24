@@ -1,12 +1,7 @@
 {
-
     "name": "didrive_mod/items",
     "description": "Модуль для Didrive - items",
-<<<<<<< HEAD
-    "version": "1.5.2",
-=======
-    "version": "1.5.5",
->>>>>>> f3b7cea634dba47d6601562561fe2dbf601ca238
+    "version": "1.5.7",
 
     "keywords": [
         "didrive",

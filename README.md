@@ -7,6 +7,63 @@ composer require didrive_mod/items
 
 
 
+
+
+
+------------ изменение доп параметра после клика по ссылке с вопросом и секретом ------------
+
+        <a href="#" class="btn3 edit_items_dop_values drop2_{{ pay.id }} btn btn-xs btn-light" 
+
+           xstyle='display:none;'
+
+           {# действие после вопроса #}
+           comit_answer="Отменить премию ?"
+
+           {# замена доп параметра #}
+           action="edit_dop_item"
+
+           {# модуль итемов #}
+           itemsmod="075.buh_oplats"
+
+           {# id итема #}
+           item_id="{{ pay.id }}"
+
+           {# название доп параметра #}
+           {# dop_name="pay_check" #}
+           {# новое значение параметра #}
+           {# dop_new_value="no" #}
+           {# секрет #}
+           {# s3="{{ creatSecret( '050.chekin_checkout-'~item.id~'-pay_check-no' ) }}"  #}
+
+           {# новое значение статуса записи #}
+           new_status="hide"
+
+           {# секрет #}
+           s3="{{ creatSecret( '075.buh_oplats-'~pay.id~'-hide' ) }}" 
+
+           {# скрыть ссылку после клика #}
+           hidethis="da" 
+
+           {# сделать видимым блок по id #}
+           show_id="del_pay_{{ pay.id }}" 
+
+           {# id куда печатаем результат #}
+           res_to_id="del_pay_{{ pay.id }}" 
+
+           {# сообщение печатаем если всё ок #}
+           msg_to_success="Отменено"
+
+           >Х</a>
+
+           <div style="display:none;" id="del_pay_{{ pay.id }}" ></div>
+                   
+
+
+
+
+
+
+
 ------------------
 использование др пример / 200203
 ------------------- 

@@ -92,7 +92,7 @@ else {
 // добавляем смену сотруднику
 // \f\pa($_REQUEST);
 
-if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_dop_item') {
+if ( isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_dop_item' ) {
 
     require_once DR . '/all/ajax.start.php';
 
@@ -183,6 +183,7 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_dop_pole') {
 // f\end2( 'новый статус ' . $status);
     f\end2('ок');
 }
+
 
 
 f\end2('Произошла неописуемая ситуация #' . __LINE__ . ' обратитесь к администратору', 'error');

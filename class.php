@@ -1503,8 +1503,7 @@ class items {
 
 
             if (
-                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) 
-                    && empty(self::$var_ar_for_1sql)
+                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
             ) {
 
                 $save_cash = true;
@@ -1523,8 +1522,7 @@ class items {
 
             if ($save_cash === true &&
                     (
-                    $module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp 
-                    || $module == \Nyos\mod\JobDesc::$mod_dolgn 
+                    $module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp || $module == \Nyos\mod\JobDesc::$mod_dolgn
                     // || $module == \Nyos\mod\JobDesc::$mod_salary
                     || $module == \Nyos\mod\JobDesc::$mod_sp_link_timeo
                     )
@@ -1869,16 +1867,14 @@ class items {
 //                unset($re2);
                     }
 
-                    
+
                     //\f\pa($sort);
-                    
+
                     if ($sort == 'sort_asc') {
                         usort($re, "\\f\\sort_ar_sort");
-                    } 
-                    elseif ($sort == 'date_asc') {
+                    } elseif ($sort == 'date_asc') {
                         usort($re, "\\f\\sort_ar_date");
-                    }
-                    elseif ($sort == 'date_desc') {
+                    } elseif ($sort == 'date_desc') {
                         usort($re, "\\f\\sort_ar_date_desc");
                         // usort($re, "\\f\\sort_ar_date");
                     }
@@ -2561,24 +2557,18 @@ class items {
         return f\end2('Окей, запись добавлена', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }
 
-    
-    
-    
-    
-    
     /**
      * удалить массу записей
      * @param type $db
      * @param string $module_name
      * @param type $data_dops
      */
-    public static function deleteItems2($db, string $module_name, array $datas ) {
-        foreach( $datas as $k => $v ){
-            self::deleteItems($db, \Nyos\Nyos::$folder_now, $module_name, $v );
+    public static function deleteItems2($db, string $module_name, array $datas) {
+        foreach ($datas as $k => $v) {
+            self::deleteItems($db, \Nyos\Nyos::$folder_now, $module_name, $v);
         }
     }
-    
-    
+
     /**
      * какаято старая версия
      * @param type $db
@@ -2679,12 +2669,19 @@ class items {
 
     /**
      * удаление параметра по id или по списку параметров
+     * 
      * @param type $db
-     * @param type $id
-     * @return type
+     * @param строка $module
+     * модуль
+     * @param массив $dops
+     * если массив пустой то трём все значения
+     * [ 'dop1' => $val, 'dop2' => $val ]
+     * @return массив
      */
-    public static function deleteFromDops($db, $module, $dops) {
+    public static function deleteFromDops($db, $module, $dops = []) {
 
+        \f\Cash::deleteKeyPoFilter([$module]);
+        
         $var_in_sql = [
             ':module' => $module
         ];
@@ -2692,21 +2689,22 @@ class items {
         $dop_sql = '';
         $nn = 1;
 
-        foreach ($dops as $k => $v) {
-            $dop_sql .= ' INNER JOIN `mitems-dops` md' . $nn . ' '
-                    . ' ON '
-                    . ' md' . $nn . '.id_item = mi.id '
-                    . ' AND md' . $nn . '.name = :name' . $nn . ' '
-                    . ' AND '
-                    . ' ( '
-                    . ' md' . $nn . '.value = :var' . $nn . ' '
-                    . ' OR md' . $nn . '.value_date = :var' . $nn . ' '
-                    . ' OR md' . $nn . '.value_datetime = :var' . $nn . ' '
-                    . ' ) ';
-            $var_in_sql[':name' . $nn] = $k;
-            $var_in_sql[':var' . $nn] = $v;
-            $nn++;
-        }
+        if (!empty($dops))
+            foreach ($dops as $k => $v) {
+                $dop_sql .= ' INNER JOIN `mitems-dops` md' . $nn . ' '
+                        . ' ON '
+                        . ' md' . $nn . '.id_item = mi.id '
+                        . ' AND md' . $nn . '.name = :name' . $nn . ' '
+                        . ' AND '
+                        . ' ( '
+                        . ' md' . $nn . '.value = :var' . $nn . ' '
+                        . ' OR md' . $nn . '.value_date = :var' . $nn . ' '
+                        . ' OR md' . $nn . '.value_datetime = :var' . $nn . ' '
+                        . ' ) ';
+                $var_in_sql[':name' . $nn] = $k;
+                $var_in_sql[':var' . $nn] = $v;
+                $nn++;
+            }
 
         $sql = 'SELECT mi.id FROM `mitems` mi ' . $dop_sql . ' WHERE mi.`module` = :module ;';
         // \f\pa($sql);
@@ -2716,24 +2714,27 @@ class items {
 
         // \f\pa($ff->fetchAll());
 
-        $ids = '';
+        if (!empty($dops)) {
 
-        while ($res = $ff->fetch()) {
-            // \f\pa($res, '', '', '$res');
-            $ids .= (!empty($ids) ? ',' : '' ) . $res['id'];
-        }
+            $ids = '';
 
-        if (!empty($ids)) {
-            $var_in_sql = [':module' => $module];
+            while ($res = $ff->fetch()) {
+                // \f\pa($res, '', '', '$res');
+                $ids .= (!empty($ids) ? ',' : '' ) . $res['id'];
+            }
 
-            $sql = 'UPDATE `mitems` mi '
-                    . ' SET `mi`.`status` = \'delete\' '
-                    . ' WHERE mi.`module` = :module AND mi.`id` IN (' . $ids . ') '
-                    . ' ;';
-            // \f\pa($sql);
-            $ff = $db->prepare($sql);
-            // \f\pa($var_in_sql);
-            $ff->execute($var_in_sql);
+            if (!empty($ids)) {
+                $var_in_sql = [':module' => $module];
+
+                $sql = 'UPDATE `mitems` mi '
+                        . ' SET `mi`.`status` = \'delete\' '
+                        . ' WHERE mi.`module` = :module AND mi.`id` IN (' . $ids . ') '
+                        . ' ;';
+                // \f\pa($sql);
+                $ff = $db->prepare($sql);
+                // \f\pa($var_in_sql);
+                $ff->execute($var_in_sql);
+            }
         }
 
         return \f\end3('удалёно', true);
@@ -2894,6 +2895,8 @@ class items {
 
     public static function addNewSimples($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
+        \f\pa($data,2);
+        
         \f\Cash::deleteKeyPoFilter([$mod_name]);
 
         $folder = \Nyos\Nyos::$folder_now;
@@ -2974,7 +2977,7 @@ class items {
                     // \f\pa($k);
                     // \f\pa($data[$k]);
                     //if ( isset($data[$k]{0})) {
-                    if ( isset($data[$k]) || isset($v['default'])) {
+                    if (isset($data[$k]) || isset($v['default'])) {
 
                         // echo '<br>' . __LINE__;
 

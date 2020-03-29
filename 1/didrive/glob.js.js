@@ -645,7 +645,7 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
     // }
 
 
-    $(document).on('click', '.edit_items_dop_values33', function (event) {
+    $(document).on('click', '.edit_items_dop_values11133', function (event) {
 
         return false;
 
@@ -802,9 +802,7 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
 
     });
 
-
-
-    $(document).on('click', '.edit_items_dop_values2', function (event) {
+    $(document).on('click', '.edit_items_dop_values1112', function (event) {
 
         console.log('.edit_items_dop_values');
 
@@ -958,5 +956,183 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
     // else {
     // alert(i + ': ' + $(elem).text());
     // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+// не доделанная штука 
+// перенёс в универсальный base ... при клике передавать атрибуты в аякс и возвращать результат
+    $(document).on('click', '.items__record_new_item', function (event) {
+
+        console.log('.items__record_new_item', '/nyos_mod/items/1/didrive/glob.js.js');
+
+//        return false;
+
+        //alert('2323');
+//        $(this).removeClass("show_job_tab");item_id
+//        $(this).addClass("show_job_tab2");
+//        var $uri_query = '';
+//        var $vars = [];
+        // var $vars = serialize(this.attributes);
+        // var $vars =  JSON.stringify(this.attributes);
+        var res_to_id = '';
+        var $vars = new Array();
+        var $uri_query = '';
+        var hidethis = 0;
+        var showid = 0;
+        var answer = 0;
+        var msg_to_success = 0;
+        var return1 = 0;
+
+        $.each(this.attributes, function () {
+
+            if (this.specified) {
+
+                // пропускаем атрибуты
+                if ( this.name == 'style' || this.name == 'class' ) {
+                } 
+                // обрабатываем атрибуты
+                else {
+
+
+
+                    // console.log(this.name, this.value);
+                    // $uri_query = $uri_query + '&' + this.name + '=' + this.value.replace(' ', '..')
+                    $uri_query = $uri_query + '&' + this.name + '=' + this.value;
+//
+                    if (this.name == 'hidethis' && this.value == 'da') {
+                        hidethis = 1;
+                    } else if (this.name == 'return' && this.value == 'false') {
+                        return1 = false;
+                    } else if (this.name == 'show_id') {
+                        showid = '#' + this.value;
+                    } else if (this.name == 'comit_answer2') {
+                        answer = this.value;
+                    } else if (this.name == 'msg_to_success') {
+                        msg_to_success = this.value;
+                    } else if (this.name == 'res_to_id') {
+                        res_to_id = $('#' + this.value);
+                        //console.log($vars['resto']);
+                        // alert($res_to);
+                    }
+//
+//                if (this.name == 'show_on_click') {
+//                    $('#' + this.value).show('slow');
+//                }
+
+                }
+            }
+
+        });
+
+//        alert($uri_query);
+//        return false;
+
+        // console.log($vars['resto']);
+
+        if (answer != 0) {
+            if (!confirm(answer)) {
+                return false;
+            }
+        }
+
+        // console.log($uri_query);
+        //$(this).html("тут список");
+        var $th = $(this);
+
+        $.ajax({
+
+            url: "/vendor/didrive_mod/items/1/didrive/ajax.php",
+            data: "t=1" + $uri_query,
+            cache: false,
+            dataType: "json",
+            type: "post",
+
+            beforeSend: function () {
+
+                /*
+                 if (typeof $div_hide !== 'undefined') {
+                 $('#' + $div_hide).hide();
+                 }
+                 */
+                // $("#ok_but_stat").html('<img src="/img/load.gif" alt="" border=0 />');
+//                $("#ok_but_stat").show('slow');
+//                $("#ok_but").hide();
+            }
+            ,
+
+            success: function ($j) {
+
+                //alert(resto);
+
+                // $($res_to).html($j.data);
+                // $($vars['resto']).html($j.data);
+                // $(resto).html($j.html);
+
+                if ($j.status == 'ok') {
+
+                    if (showid != 0) {
+                        $(showid).show('slow');
+                    }
+
+                    if (hidethis == 1) {
+                        $th.hide();
+                    }
+
+                    if (msg_to_success != 0) {
+                        res_to_id.html('<b class="warn" >' + msg_to_success + '</b>');
+                    } else {
+                        res_to_id.html('<b class="warn" >' + $j.html + '</b>');
+                    }
+
+                    // $th("#main").prepend("<div id='box1'>1 блок</div>");                    
+                    // $th("#main").prepend("<div id='box1'>1 блок</div>");                    
+                    // $th("#main").prepend("<div id='box1'>1 блок</div>");                    
+                    // $th.html( $j.html + '<br/><A href="">Сделать ещё заявку</a>');
+                    // $($res_to_id).html( $j.html + '<br/><A href="">Сделать ещё заявку</a>');
+
+                    // return true;
+
+                    /*
+                     // alert($j.html);
+                     if (typeof $div_show !== 'undefined') {
+                     $('#' + $div_show).show();
+                     }
+                     */
+//                $('#form_ok').hide();
+//                $('#form_ok').html($j.html + '<br/><A href="">Сделать ещё заявку</a>');
+//                $('#form_ok').show('slow');
+//                $('#form_new').hide();
+//
+//                $('.list_mag').hide();
+//                $('.list_mag_ok').show('slow');
+                }
+// если ошибка
+                else {
+
+                    if (showid != 0) {
+                        $(showid).show('slow');
+                    }
+                    res_to_id.html('<b class="warn" >' + $j.html + '</b>');
+
+                }
+            }
+
+        });
+
+        if (return1 == false)
+            return false;
+
+    });
+
 
 });

@@ -1772,7 +1772,6 @@ class items {
 //        return $re;
 //        return self::$cash['itemsimple'][$cash] = $re;
 
-
                     /*
                       $re2 = [];
                       foreach ($re as $k => $v) {
@@ -2680,64 +2679,80 @@ class items {
      */
     public static function deleteFromDops($db, $module, $dops = []) {
 
+        // echo '<br/>' . __FILE__ . ' - ' . __LINE__ . ' - ' . $module;
+        // \f\pa($dops);
+
         \f\Cash::deleteKeyPoFilter([$module]);
-        
-        $var_in_sql = [
-            ':module' => $module
-        ];
 
-        $dop_sql = '';
-        $nn = 1;
+        // echo '<br/>#' . __LINE__;
+        // удалчем все значения в таблице
+        if (empty($dops)) {
 
-        if (!empty($dops))
-            foreach ($dops as $k => $v) {
-                $dop_sql .= ' INNER JOIN `mitems-dops` md' . $nn . ' '
-                        . ' ON '
-                        . ' md' . $nn . '.id_item = mi.id '
-                        . ' AND md' . $nn . '.name = :name' . $nn . ' '
-                        . ' AND '
-                        . ' ( '
-                        . ' md' . $nn . '.value = :var' . $nn . ' '
-                        . ' OR md' . $nn . '.value_date = :var' . $nn . ' '
-                        . ' OR md' . $nn . '.value_datetime = :var' . $nn . ' '
-                        . ' ) ';
-                $var_in_sql[':name' . $nn] = $k;
-                $var_in_sql[':var' . $nn] = $v;
-                $nn++;
-            }
+            $ff = $db->prepare('UPDATE `mitems` SET `status` = \'delete\' WHERE `module` = :module ;');
+            $ff->execute([':module' => $module]);
 
-        $sql = 'SELECT mi.id FROM `mitems` mi ' . $dop_sql . ' WHERE mi.`module` = :module ;';
-        // \f\pa($sql);
-        $ff = $db->prepare($sql);
-        // \f\pa($var_in_sql);
-        $ff->execute($var_in_sql);
+            return \f\end3('удалёно (всё)', true, ['line' => __LINE__]);
+        }
+        // удаляем с фильтром
+        else {
 
-        // \f\pa($ff->fetchAll());
+            $var_in_sql = [
+                ':module' => $module
+            ];
 
-        if (!empty($dops)) {
+            $dop_sql = '';
+            $nn = 1;
 
-            $ids = '';
+            if (!empty($dops))
+                foreach ($dops as $k => $v) {
+                    $dop_sql .= ' INNER JOIN `mitems-dops` md' . $nn . ' '
+                            . ' ON '
+                            . ' md' . $nn . '.id_item = mi.id '
+                            . ' AND md' . $nn . '.name = :name' . $nn . ' '
+                            . ' AND '
+                            . ' ( '
+                            . ' md' . $nn . '.value = :var' . $nn . ' '
+                            . ' OR md' . $nn . '.value_date = :var' . $nn . ' '
+                            . ' OR md' . $nn . '.value_datetime = :var' . $nn . ' '
+                            . ' ) ';
+                    $var_in_sql[':name' . $nn] = $k;
+                    $var_in_sql[':var' . $nn] = $v;
+                    $nn++;
+                }
 
-            while ($res = $ff->fetch()) {
-                // \f\pa($res, '', '', '$res');
-                $ids .= (!empty($ids) ? ',' : '' ) . $res['id'];
-            }
+            $sql = 'SELECT mi.id FROM `mitems` mi ' . $dop_sql . ' WHERE mi.`module` = :module ;';
+            // \f\pa($sql);
+            $ff = $db->prepare($sql);
+            // \f\pa($var_in_sql);
+            $ff->execute($var_in_sql);
 
-            if (!empty($ids)) {
-                $var_in_sql = [':module' => $module];
+            // \f\pa($ff->fetchAll());
 
-                $sql = 'UPDATE `mitems` mi '
-                        . ' SET `mi`.`status` = \'delete\' '
-                        . ' WHERE mi.`module` = :module AND mi.`id` IN (' . $ids . ') '
-                        . ' ;';
-                // \f\pa($sql);
-                $ff = $db->prepare($sql);
-                // \f\pa($var_in_sql);
-                $ff->execute($var_in_sql);
+            if (!empty($dops)) {
+
+                $ids = '';
+
+                while ($res = $ff->fetch()) {
+                    // \f\pa($res, '', '', '$res');
+                    $ids .= (!empty($ids) ? ',' : '' ) . $res['id'];
+                }
+
+                if (!empty($ids)) {
+                    $var_in_sql = [':module' => $module];
+
+                    $sql = 'UPDATE `mitems` mi '
+                            . ' SET `mi`.`status` = \'delete\' '
+                            . ' WHERE mi.`module` = :module AND mi.`id` IN (' . $ids . ') '
+                            . ' ;';
+                    // \f\pa($sql);
+                    $ff = $db->prepare($sql);
+                    // \f\pa($var_in_sql);
+                    $ff->execute($var_in_sql);
+                }
             }
         }
 
-        return \f\end3('удалёно', true);
+        return \f\end3('удалёно', true, ['line' => __LINE__]);
     }
 
     public static function deleteId($db, int $id) {
@@ -2895,8 +2910,12 @@ class items {
 
     public static function addNewSimples($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
-        \f\pa($data,2);
-        
+        if (empty($data))
+            return false;
+
+        // \f\pa($data, 2);
+        // echo '<br/>#' . __LINE__;
+
         \f\Cash::deleteKeyPoFilter([$mod_name]);
 
         $folder = \Nyos\Nyos::$folder_now;
@@ -2906,6 +2925,7 @@ class items {
 
         foreach ($data as $k => $v) {
             self::addNew($db, $folder, $cfg_mod, $v);
+            // break;
             $nn++;
         }
 
@@ -2922,6 +2942,9 @@ class items {
      * @return type
      */
     public static function addNew($db, string $folder, $cfg_mod, array $data, $files = array(), $add_all_dops = false) {
+
+        // \f\pa($data);
+        // die;
 
         if (empty(self::$dir_img_server)) {
             self::creatFolderImage($folder);
@@ -2953,6 +2976,7 @@ class items {
             if (!empty($data['status']))
                 $arin['status'] = $data['status'];
 
+            // \f\pa($arin);
             $new_id = \f\db\db2_insert($db, 'mitems', $arin, 'da', 'last_id');
 
             // echo 'новый id '.$new_id;
@@ -2960,73 +2984,87 @@ class items {
             $in_db = array();
 
             // \f\pa($cfg_mod,2,null,'$cfg_mod');
+//            if (isset($cfg_mod) && is_array($cfg_mod) && sizeof($cfg_mod) > 0)
+//                \f\pa($cfg_mod);
 
-            if (isset($cfg_mod) && is_array($cfg_mod) && sizeof($cfg_mod) > 0)
-                foreach ($cfg_mod as $k => $v) {
+            foreach ($cfg_mod as $k => $v) {
 
-                    // \f\pa($v,2,null,'$cfg_mod $v');
+                // \f\pa($v, 2, null, '$cfg_mod $v');
 
-                    if ($add_all_dops === false && empty($v['type']))
-                        continue;
+                if ($add_all_dops === false && empty($v['name_rus']))
+                    continue;
 
 //                echo '<hr><hr>';
 //                \f\pa($k);
 //                \f\pa($v);
 //                \f\pa($data[$k]);
-                    //if (isset($data[$k]{0}) && isset($v['name_rus']{0})) {
-                    // \f\pa($k);
-                    // \f\pa($data[$k]);
-                    //if ( isset($data[$k]{0})) {
-                    if (isset($data[$k]) || isset($v['default'])) {
+                //if (isset($data[$k]{0}) && isset($v['name_rus']{0})) {
+                // \f\pa($k);
+                // \f\pa($data[$k]);
+                //if ( isset($data[$k]{0})) {
 
-                        // echo '<br>' . __LINE__;
+                if (isset($data[$k]) || isset($v['default'])) {
 
-                        if ($v['type'] == 'textarea' || $v['type'] == 'textarea_html') {
+                    // echo '<br>' . __LINE__;
 
-                            $in_db[] = array(
-                                'name' => $k,
-                                'value_text' => $data[$k] ?? $v['default']
-                            );
-                        } elseif ($v['type'] == 'datetime') {
-
-                            $in_db[] = array(
-                                'name' => $k,
-                                'value_datetime' => date('Y-m-d H:i:s', isset($data[$k]{1}) ?
-                                        strtotime($data[$k] . ' ' . ( isset($data[$k . '_time']) ? $data[$k . '_time'] : '' )) :
-                                        ( (!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : $v['default'] )
-                                )
-                            );
-                        } elseif ($v['type'] == 'date') {
-
-                            $in_db[] = array(
-                                'name' => $k,
-                                'value_date' => date('Y-m-d', isset($data[$k]{2}) ? strtotime($data[$k]) : ( (!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : null ))
-                            );
-                        } elseif ($v['type'] == 'number') {
-
-                            $in_db[] = array(
-                                'name' => $k,
-                                'value' => $data[$k] ?? $v['default']
-                            );
-                        } else {
-
-                            $in_db[] = array(
-                                'name' => $k,
-                                'value' => $data[$k] ?? $v['default']
-                            );
-                        }
-                    } elseif ($v['type'] == 'translit' && isset($v['var_in']{0}) && isset($data[$v['var_in']]{0})) {
+                    if (isset($v['type']) && ( $v['type'] == 'textarea' || $v['type'] == 'textarea_html' )) {
 
                         $in_db[] = array(
-                            'name' => $v['var_in'] . '_translit',
-                            'value_text' => \f\translit($data[$v['var_in']], 'uri2')
+                            'name' => $k,
+                            'value_text' => $data[$k] ?? $v['default']
+                        );
+                    }
+                    //
+                    elseif (isset($v['type']) && $v['type'] == 'datetime') {
+
+                        $in_db[] = array(
+                            'name' => $k,
+                            'value_datetime' => date('Y-m-d H:i:s', isset($data[$k]{1}) ?
+                                    strtotime($data[$k] . ' ' . ( isset($data[$k . '_time']) ? $data[$k . '_time'] : '' )) :
+                                    ( (!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : $v['default'] )
+                            )
+                        );
+                    }
+                    //
+                    elseif (isset($v['type']) && $v['type'] == 'date') {
+
+                        $in_db[] = array(
+                            'name' => $k,
+                            'value_date' => date('Y-m-d', isset($data[$k]{2}) ? strtotime($data[$k]) : ( (!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : null ))
+                        );
+                    }
+                    //
+                    elseif (isset($v['type']) && $v['type'] == 'number') {
+
+                        $in_db[] = array(
+                            'name' => $k,
+                            'value' => $data[$k] ?? $v['default']
+                        );
+                    }
+                    //
+                    else {
+
+                        $in_db[] = array(
+                            'name' => $k,
+                            'value' => $data[$k] ?? $v['default']
                         );
                     }
                 }
+                //
+                elseif (!empty($v['type']) && $v['type'] == 'translit' && isset($v['var_in']{0}) && isset($data[$v['var_in']]{0})) {
 
-//            \f\pa($files, 2, '', 'files');
-            // \f\pa($cfg_mod);
-            // если много файлов
+                    $in_db[] = array(
+                        'name' => $v['var_in'] . '_translit',
+                        'value_text' => \f\translit($data[$v['var_in']], 'uri2')
+                    );
+                }
+            }
+
+//          \f\pa($files, 2, '', 'files');
+//          \f\pa($cfg_mod);
+            //\f\pa($in_db);
+//          если много файлов
+
             if (isset($files['name']) && sizeof($files['name']) > 0) {
 
                 $nn = 0;

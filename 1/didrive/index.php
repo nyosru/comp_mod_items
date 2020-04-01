@@ -35,6 +35,12 @@
 //\f\pa($_REQUEST);
 
 /**
+ * удаляем из кеша всегда когда открываем страницу или что нить делаем
+ */
+// \f\pa([$vv['now_level']]);
+\f\Cash::deleteKeyPoFilter([$vv['now_level']]);
+
+/**
  * добавление записи
  */
 if (isset($_POST['addnew']{1})) {

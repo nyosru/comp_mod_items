@@ -38,7 +38,7 @@
  * удаляем из кеша всегда когда открываем страницу или что нить делаем
  */
 // \f\pa([$vv['now_level']]);
-\f\Cash::deleteKeyPoFilter([$vv['now_level']]);
+\f\Cash::deleteKeyPoFilter([$_GET['level']]);
 
 /**
  * добавление записи

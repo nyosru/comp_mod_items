@@ -2860,6 +2860,8 @@ class items {
      */
     public static function add($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
+        \f\Cash::deleteKeyPoFilter([$mod_name]);
+        
         return self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
     }
 

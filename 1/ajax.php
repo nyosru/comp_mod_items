@@ -22,6 +22,10 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 // проверяем секрет
 if (
         (
+        isset($_REQUEST['aj_id']{0}) && isset($_REQUEST['aj_s']{5}) &&
+        \Nyos\nyos::checkSecret($_REQUEST['aj_s'], $_REQUEST['aj_id']) === true
+        ) ||
+        (
         isset($_REQUEST['id']{0}) && isset($_REQUEST['s']{5}) &&
         \Nyos\nyos::checkSecret($_REQUEST['s'], $_REQUEST['id']) === true
         ) ||
@@ -56,8 +60,8 @@ else {
 //
 //
 // трём метки
-    if ( !empty($_REQUEST['remove_cash']) )
-        \f\Cash::deleteKeyPoFilter($_REQUEST['remove_cash']);
+if (!empty($_REQUEST['remove_cash']))
+    \f\Cash::deleteKeyPoFilter($_REQUEST['remove_cash']);
 
 
 
@@ -74,6 +78,53 @@ if (isset($_POST['action']) && $_POST['action'] == 'show_info_strings') {
 // \Nyos\mod\items::getItems( $db, $folder )
 
     \f\end2('окей', true, array('data' => 'новый статус ' . 'val'));
+}
+
+// добавить итем или заменить (удалить, добавить)
+// аякс через didrive base
+elseif (isset($_POST['action']) && $_POST['action'] == 'didrive__items__new_edit') {
+
+    if (empty($_REQUEST['items_module']))
+        \f\end2('неописуемая ситуация #' . __LINE__, false);
+
+    $dops = [];
+    for ($i = 1; $i <= 10; $i++) {
+        if (!empty($_REQUEST['addpole' . $i]) && isset($_REQUEST['addpole' . $i . 'val'])) {
+            $dops[$_REQUEST['addpole' . $i]] = $_REQUEST['addpole' . $i . 'val'];
+        }
+    }
+
+    if (empty($dops))
+        \f\end2('неописуемая ситуация #' . __LINE__, false);
+
+    $del = \Nyos\mod\items::deleteFromDops($db, $_REQUEST['items_module'], $dops);
+    // \f\pa($we);
+
+    if( !empty($_REQUEST['value']) ){
+    $dops[$_REQUEST['edit_dop_name']] = $_REQUEST['value'];
+
+    $res = \Nyos\mod\items::add($db, $_REQUEST['items_module'], $dops);
+    // \f\pa($res);
+    }
+
+    /*
+      if (empty($_REQUEST['add_module']) || empty($_REQUEST['add']))
+      \f\end2('Что то пошло не так #' . __LINE__, false);
+
+      //ob_start('ob_gzhandler');
+      // \f\pa($_REQUEST);
+
+      $res = \Nyos\mod\items::add($db, $_REQUEST['add_module'], $_REQUEST['add']);
+      // \f\pa($res);
+      // \f\end2($res['html'].'<Br/>'.$r, true);
+
+     */
+
+//    $r = ob_get_contents();
+//    ob_end_clean();
+
+    \f\end2('окей, удалили и добавили');
+    // \f\end2('asd', true, [ 'add' => ( $res ?? 'x' ), 'del' => ( $del ?? 'x' ) ] );
 }
 
 // добавить новый итем

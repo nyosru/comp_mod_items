@@ -7,6 +7,51 @@ composer require didrive_mod/items
 
 
 
+----- запись новой записи с доп параметром, и удаление страой если была -----------
+
+    {% set action = 'didrive__items__new_edit' %}
+    {% set aj_module = '003_money_buh_pm' %}
+    {% set aj_value = ( pm_user[k]['summa'] ?? '' ) %}
+    {% set aj_edit_pole = 'summa' %}
+
+    {% set dops = { 'jobman' : man_id ,
+           "date" : get.d_start ,
+           "type_plus" :  k } %}
+
+    <input type="number" 
+           class="didrive__items__new_edit"
+           style="width: 80px;"
+
+           step="0.01"
+           min="1"
+           max="99999"
+           placeholder=""
+
+           action="{{ action }}"
+           items_module="{{ aj_module }}"
+
+           edit_dop_name="{{ aj_edit_pole }}"
+           value="{{ aj_value }}"
+
+           {% set string_dop = '' %}
+           {% set nn = 1 %}
+
+           {% for k,v in dops %}
+
+               addpole{{ nn }} = "{{ k }}"
+               addpole{{ nn }}val = "{{ v }}"
+
+               {% set string_dop = string_dop~'_'~k~'_'~v %}
+
+               {% set nn = nn+1 %}
+
+           {% endfor %}
+
+           aj_id="{{ action }}_{{ aj_module }}{{ string_dop }}"
+           aj_s="{{ creatSecret( action ~'_'~ aj_module ~ string_dop ) }}"
+
+           >
+
 
 
 

@@ -998,8 +998,8 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
             if (this.specified) {
 
                 // пропускаем атрибуты
-                if ( this.name == 'style' || this.name == 'class' ) {
-                } 
+                if (this.name == 'style' || this.name == 'class') {
+                }
                 // обрабатываем атрибуты
                 else {
 
@@ -1133,6 +1133,24 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
             return false;
 
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 });

@@ -1680,7 +1680,6 @@ class items {
                     self::$sql_order = ' ORDER BY mi.sort DESC ';
                 }
 
-
                 $ff1 = ' SELECT 
                 mi.id,
                 mi.head,
@@ -3288,7 +3287,7 @@ class items {
 
         // die();
 
-        if (!empty($data['head']{0})) {
+        if (!empty($data['head'])) {
 
             /*
               $new_id = db\db2_insert($db, 'mitems', array(
@@ -3321,7 +3320,7 @@ class items {
 
                 //echo '<br/>'.__LINE__;
                 //if (isset($data[$k]{0}) && is_array($v) && !empty($v['name_rus']) ) {
-                if (!empty($data[$k]) && !empty($v['name_rus'])) {
+                if ( isset($data[$k]{0}) && !empty($v['name_rus'])) {
 
                     //echo '<br/>'.__LINE__;
                     // $dop_sql .= ( isset($dop_sql{1}) ? ' OR ' : '' ) . ' `name` = \'' . addslashes($k) . '\' ';

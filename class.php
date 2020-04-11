@@ -62,6 +62,12 @@ class items {
     // public static $get_data_simple = true;
     public static $sort_head = null;
     public static $sql_select_vars = null;
+
+    /**
+     * переменная с переменными для get2
+     * @var type 
+     */
+    public static $sql_vars = [];
     public static $now_mod = null;
     public static $get_data_simple = null;
     public static $cash = [];
@@ -131,6 +137,13 @@ class items {
      * @var type 
      */
     public static $show_sql = false;
+
+    /**
+     * ищем переменные в выборке
+     * первое использование в get2
+     * @var type 
+     */
+    public static $search = [];
 
     /**
      * массив переменных для запроса
@@ -1487,7 +1500,7 @@ class items {
     }
 
     /**
-     * получаем данные, версия новая от 19-12-30 0552
+     * получаем данные, 
      * @param type $db
      * @param строка $module
      * @param строка $stat
@@ -1943,6 +1956,187 @@ class items {
               // return \f\end3('Достали список, простой', true, $re);
              *
              */
+        }
+        //
+        catch (\PDOException $ex) {
+
+            echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
+            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+            . PHP_EOL . $ex->getTraceAsString()
+            . '</pre>';
+
+// не найдена таблица, создаём значит её
+            if (strpos($ex->getMessage(), 'no such table') !== false) {
+
+                self::creatTable($db);
+                // \f\redirect( '/' );
+            }
+
+            return \f\end3('ошибка', false);
+        }
+    }
+
+    /**
+     * получаем данные, 
+     * новая версия от 2004112344
+     * @param type $db
+     * @param строка $module
+     * @param строка $stat
+     * show hide ''
+     * @param строка $sort
+     * @return массив
+     */
+    public static function get2($db, string $module, $stat = 'show', $sort = null) {
+
+        // echo '<br/>'.__FUNCTION__.' '.$module;
+
+        try {
+
+            \f\timer_start(11);
+
+            $dop_in_cash_var = '';
+            
+            if( !empty(self::$search) ){
+                $dop_in_cash_var .= serialize(self::$search);
+            }
+
+            $cash_var = 'items__get2__' . $module . '_stat' . ( $stat ?? '' ) . '_sort' . ( $sort ?? '' ).'_v'.md5( $dop_in_cash_var );
+            // $cash_time = 60*60;
+
+            \f\pa($cash_var);
+            
+            $return = false;
+            
+            if (!empty($cash_var))
+                $return = \f\Cash::getVar($cash_var);
+
+            \f\pa($return);
+            
+            if( $return === false ){
+                echo '<br/>#'.__LINE__;
+            }else{
+                echo '<br/>#'.__LINE__;
+            }
+            
+            if ( $return !== false ) {
+
+                return \f\end3('выборка готова (кеш)', true, $return);
+                
+            } else {
+
+                if (!empty(self::$search)) {
+
+                    $nn = 1;
+
+                    foreach (self::$search as $k1 => $v1) {
+
+                        self::$join_where .= ' INNER JOIN `mitems-dops` midop1 ON '
+                                . ' midop1.id_item = mi.id '
+                                . ' AND midop1.name = :i_name' . $nn . ' '
+                                . ' AND midop1.value = :i_val' . $nn . ' '
+                        ;
+                        \Nyos\mod\items::$sql_vars[':i_name' . $nn] = $k1;
+                        \Nyos\mod\items::$sql_vars[':i_val' . $nn] = $v1;
+                        $nn++;
+                    }
+                }
+
+                $ff1 = ' SELECT '
+                        . ' mi.id item_id, '
+                        . ' mi.head, '
+                        . ' mi.sort, '
+                        . ' mi.status, '
+                        . ' midop.* '
+                        . ' FROM '
+                        . ' `mitems-dops` midop '
+                        //
+                        . ' INNER JOIN `mitems` mi ON '
+                        . ' mi.`module` = :module '
+                        . ' AND mi.id = midop.id_item '
+                        . (!empty($stat) ? ' AND mi.status = :status ' : '' )
+                        //
+                        . ( self::$join_where ?? '' )
+
+                ;
+
+                // \f\pa($ff1);
+
+                $ff = $db->prepare($ff1);
+
+                // переменные в запрос
+                if (1 == 1) {
+
+                    $ar_for_sql = [':module' => $module];
+
+                    if (!empty($stat))
+                        $ar_for_sql[':status'] = $stat;
+
+                    if (!empty(self::$sql_vars)) {
+                        $ar_for_sql = array_merge($ar_for_sql, self::$sql_vars);
+                    }
+
+                    // \f\pa($ar_for_sql);
+                }
+
+                // трём все входящие параметры
+                self::$sql_vars = [];
+                self::$join_where = '';
+
+                $ff->execute($ar_for_sql);
+
+                $ee = $ff->fetchAll();
+
+                // return $ee;
+                // \f\pa($ee);
+
+                $return = [];
+
+                foreach ($ee as $k => $v) {
+
+                    if (!isset($return[$v['id_item']]))
+                        $return[$v['id_item']] = [
+                            'id' => $v['id_item']
+                            , 'head' => $v['head']
+                            , 'sort' => $v['sort']
+                            , 'status' => $v['status']
+                        ];
+
+                    $dd = (!empty($v['value']) ? $v['value'] :
+                            (!empty($v['value_date']) ? $v['value_date'] :
+                            (!empty($v['value_datetime']) ? $v['value_datetime'] :
+                            (!empty($v['value_int']) ? $v['value_int'] :
+                            (!empty($v['value_text']) ? $v['value_text'] : null )
+                            )
+                            )
+                            )
+                            );
+
+                    if (!empty($dd))
+                        $return[$v['id_item']][$v['name']] = $dd;
+                }
+
+                // usort($res_items, "\\f\\sort_ar_date_desc");
+                //usort($res_items, "\\f\\sort__oborot_sp_last_monht_bolee__desc");
+
+                if (!empty($sort)) {
+
+                    if ($sort == 'sort_asc') {
+                        usort($return, "\\f\\sort_ar_sort");
+                    } elseif ($sort == 'date_asc') {
+                        usort($return, "\\f\\sort_ar_date");
+                    } elseif ($sort == 'date_desc') {
+                        usort($return, "\\f\\sort_ar_date_desc");
+                        // usort($re, "\\f\\sort_ar_date");
+                    }
+                }
+
+
+                if (!empty($cash_var))
+                    \f\Cash::setVar($cash_var, $return, ( $cash_time ?? 0));
+
+                return \f\end3('выборка готова', true, $return);
+            }
         }
         //
         catch (\PDOException $ex) {
@@ -2860,7 +3054,7 @@ class items {
     public static function add($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
         \f\Cash::deleteKeyPoFilter([$mod_name]);
-        
+
         return self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
     }
 
@@ -3320,7 +3514,7 @@ class items {
 
                 //echo '<br/>'.__LINE__;
                 //if (isset($data[$k]{0}) && is_array($v) && !empty($v['name_rus']) ) {
-                if ( isset($data[$k]{0}) && !empty($v['name_rus'])) {
+                if (isset($data[$k]{0}) && !empty($v['name_rus'])) {
 
                     //echo '<br/>'.__LINE__;
                     // $dop_sql .= ( isset($dop_sql{1}) ? ' OR ' : '' ) . ' `name` = \'' . addslashes($k) . '\' ';
@@ -3330,8 +3524,6 @@ class items {
 //                        $in_db[$k] = $data[$k];
 //                    }
                     //\f\pa($v);
-
-
 
                     if ($v['type'] == 'textarea' || $v['type'] == 'textarea_html') {
 

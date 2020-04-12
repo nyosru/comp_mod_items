@@ -7,7 +7,8 @@
 
 $function = new Twig_SimpleFunction('items__get', function ( $db, $module, $stat = 'show', $sort = '' ) {
 
-    return \Nyos\mod\items::get($db, $module, $stat, $sort);
+    return \Nyos\mod\items::get2($db, $module, $stat, $sort);
+    //return \Nyos\mod\items::get($db, $module, $stat, $sort);
 });
 $twig->addFunction($function);
 

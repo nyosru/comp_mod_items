@@ -76,6 +76,18 @@ class items {
     public static $where = [];
 
     /**
+     * отмена кеширования в запросе get2
+     * @var type 
+     */
+    public static $cancel_cash = false;
+
+    /**
+     * название переменной кеша текущего запроса (если пустая или нет, то используем автоназвание)
+     * @var type 
+     */
+    public static $cash_var_name = '';
+
+    /**
      * вернуть результаты первого запроса
      * @var type 
      */
@@ -1993,38 +2005,72 @@ class items {
 
         try {
 
-            \f\timer_start(11);
+//                    $cash_var = '123123';
+//                    \f\Cash::setVar($cash_var   , ['qwqw'], ( $cash_time ?? 0));
+//                    $return = \f\Cash::getVar($cash_var);
+//                    var_dump($return);
 
-            $dop_in_cash_var = '';
-            
-            if( !empty(self::$search) ){
-                $dop_in_cash_var .= serialize(self::$search);
+// кеширование вкл/выкл
+            if (1 == 1) {
+                if (!empty(self::$cash_var_name)) {
+                    $cash_var = self::$cash_var_name;
+                } else {
+                    $dop_in_cash_var1 = '';
+                    if (!empty(self::$search))
+                        $dop_in_cash_var1 .= serialize(self::$search);
+                    if (!empty(self::$join_where))
+                        $dop_in_cash_var1 .= serialize(self::$join_where);
+                    if (!empty(self::$sql_vars))
+                        $dop_in_cash_var1 .= serialize(self::$sql_vars);
+                    $cash_var = 'items__' . $module . '_' . md5('stat' . ( $stat ?? '' ) . '_sort' . ( $sort ?? '' ) . '_' . ( $dop_in_cash_var1 ?? '' ));
+                }
+
+                // $cash_time = 0;
+                // $cash_var = 'items__mod' . $module . '_' . $stat . '_' . $sort;
+                if (!empty($cash_var) && self::$cancel_cash !== true) {
+                    $e = \f\Cash::getVar($cash_var);
+                    // \f\pa($cash_var);
+                    // \f\pa($e, '', '', '$e');
+                    // echo '<br/>#'.__LINE__;
+
+                    if (!empty($e))
+                        return $e;
+                }
             }
+//
+//            $return = false;
+//            // $cash_var = 'items__mod' . $module . '_' . $stat . '_' . $sort;
+//            $return = \f\Cash::getVar($cash_var);
+//            // \f\pa($e, '', '', '$e');
+//            // echo '<br/>#'.__LINE__;
+//
+//
+//            if (!empty($return)) {
+//                return $return;
+//            // \f\pa($cash_var);
+//
+//            $return = false;
+//
+//            if (!empty($cash_var)) {
+//                $return = \f\Cash::getVar($cash_var);
+//
+//                // \f\pa($return);
+//                var_dump($return);
+////                if ($return === false) {
+////                    echo '<br/>#' . __LINE__;
+////                } else {
+////                    echo '<br/>#' . __LINE__;
+////                }
+//            }
+//            if ($return !== false) {
+//
+//                return \f\end3('выборка готова (кеш)', true, $return);
 
-            $cash_var = 'items__get2__' . $module . '_stat' . ( $stat ?? '' ) . '_sort' . ( $sort ?? '' ).'_v'.md5( $dop_in_cash_var );
-            // $cash_time = 60*60;
-
-            \f\pa($cash_var);
-            
-            $return = false;
-            
-            if (!empty($cash_var))
-                $return = \f\Cash::getVar($cash_var);
-
-            \f\pa($return);
-            
-            if( $return === false ){
-                echo '<br/>#'.__LINE__;
-            }else{
-                echo '<br/>#'.__LINE__;
-            }
-            
-            if ( $return !== false ) {
-
-                return \f\end3('выборка готова (кеш)', true, $return);
+            if (1 == 2) {
                 
             } else {
 
+                // если есть то что ищем ( ключ - значение )
                 if (!empty(self::$search)) {
 
                     $nn = 1;
@@ -2036,10 +2082,11 @@ class items {
                                 . ' AND midop1.name = :i_name' . $nn . ' '
                                 . ' AND midop1.value = :i_val' . $nn . ' '
                         ;
-                        \Nyos\mod\items::$sql_vars[':i_name' . $nn] = $k1;
-                        \Nyos\mod\items::$sql_vars[':i_val' . $nn] = $v1;
+                        self::$sql_vars[':i_name' . $nn] = $k1;
+                        self::$sql_vars[':i_val' . $nn] = $v1;
                         $nn++;
                     }
+                    self::$search = [];
                 }
 
                 $ff1 = ' SELECT '
@@ -2047,7 +2094,12 @@ class items {
                         . ' mi.head, '
                         . ' mi.sort, '
                         . ' mi.status, '
-                        . ' midop.* '
+                        . ' midop.name, '
+                        . ' midop.value, '
+                        . ' midop.value_date, '
+                        . ' midop.value_datetime, '
+                        . ' midop.value_int, '
+                        . ' midop.value_text '
                         . ' FROM '
                         . ' `mitems-dops` midop '
                         //
@@ -2057,7 +2109,7 @@ class items {
                         . (!empty($stat) ? ' AND mi.status = :status ' : '' )
                         //
                         . ( self::$join_where ?? '' )
-
+                //.' LIMIT 10 '
                 ;
 
                 // \f\pa($ff1);
@@ -2085,18 +2137,22 @@ class items {
 
                 $ff->execute($ar_for_sql);
 
-                $ee = $ff->fetchAll();
-
+//                echo __LINE__;
+//                $ee = $ff->fetchAll();
                 // return $ee;
                 // \f\pa($ee);
 
                 $return = [];
 
-                foreach ($ee as $k => $v) {
+                //foreach ($ee as $k => $v) {
+                while ($v = $ff->fetch()) {
 
-                    if (!isset($return[$v['id_item']]))
-                        $return[$v['id_item']] = [
-                            'id' => $v['id_item']
+                    // \f\pa($v);
+                    // echo '<pre>'; var_dump($v); echo '</pre>';
+
+                    if (!isset($return[$v['item_id']]))
+                        $return[$v['item_id']] = [
+                            'id' => $v['item_id']
                             , 'head' => $v['head']
                             , 'sort' => $v['sort']
                             , 'status' => $v['status']
@@ -2113,7 +2169,7 @@ class items {
                             );
 
                     if (!empty($dd))
-                        $return[$v['id_item']][$v['name']] = $dd;
+                        $return[$v['item_id']][$v['name']] = $dd;
                 }
 
                 // usort($res_items, "\\f\\sort_ar_date_desc");
@@ -2123,7 +2179,7 @@ class items {
 
                     if ($sort == 'sort_asc') {
                         usort($return, "\\f\\sort_ar_sort");
-                    } elseif ($sort == 'date_asc') {
+                    } elseif ($sort == 'date_asc' ) {
                         usort($return, "\\f\\sort_ar_date");
                     } elseif ($sort == 'date_desc') {
                         usort($return, "\\f\\sort_ar_date_desc");
@@ -2131,11 +2187,17 @@ class items {
                     }
                 }
 
-
                 if (!empty($cash_var))
                     \f\Cash::setVar($cash_var, $return, ( $cash_time ?? 0));
 
-                return \f\end3('выборка готова', true, $return);
+
+//                if (!empty($cash_var)) {
+//                    \f\pa($cash_var);
+//                    $e = \f\Cash::setVar($cash_var, $return, ( $cash_time ?? 0));
+//                    \f\pa($e);
+//                }
+                // return \f\end3('выборка готова', true, $return);
+                return $return;
             }
         }
         //

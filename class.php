@@ -2009,7 +2009,6 @@ class items {
 //                    \f\Cash::setVar($cash_var   , ['qwqw'], ( $cash_time ?? 0));
 //                    $return = \f\Cash::getVar($cash_var);
 //                    var_dump($return);
-
 // кеширование вкл/выкл
             if (1 == 1) {
                 if (!empty(self::$cash_var_name)) {
@@ -2179,7 +2178,7 @@ class items {
 
                     if ($sort == 'sort_asc') {
                         usort($return, "\\f\\sort_ar_sort");
-                    } elseif ($sort == 'date_asc' ) {
+                    } elseif ($sort == 'date_asc') {
                         usort($return, "\\f\\sort_ar_date");
                     } elseif ($sort == 'date_desc') {
                         usort($return, "\\f\\sort_ar_date_desc");
@@ -3178,6 +3177,23 @@ class items {
         $folder = \Nyos\Nyos::$folder_now;
         $cfg_mod = \Nyos\Nyos::$menu[$mod_name];
 
+        // \f\pa($data);
+
+        
+        
+        // если свободный тип, то добавляем все ключи во всех элементах что хотим добавить
+        if (!empty($cfg_mod['items_type']) && $cfg_mod['items_type'] === 'free') {
+            foreach ($data as $k => $v) {
+                foreach ($v as $k12 => $v12) {
+                    if (!isset($cfg_mod[$k12]))
+                        $cfg_mod[$k12] = 1;
+                }
+            }
+        }
+
+        
+        
+
         $nn = 0;
 
         foreach ($data as $k => $v) {
@@ -3247,8 +3263,11 @@ class items {
             foreach ($cfg_mod as $k => $v) {
 
                 // \f\pa($v, 2, null, '$cfg_mod $v');
+                // \f\pa($v, 2, null, '$cfg_mod $v');
 
-                if ($add_all_dops === false && empty($v['name_rus']))
+                if (!empty($cfg_mod['items_type']) && $cfg_mod['items_type'] === 'free') {
+                    
+                } elseif ($add_all_dops === false && empty($v['name_rus']))
                     continue;
 
 //                echo '<hr><hr>';

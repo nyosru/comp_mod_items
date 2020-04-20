@@ -157,7 +157,8 @@
 
                                                 {% if list[k1][k] is not empty %}
                                                     <a href="{{ sd }}{{ item_dir_img_uri_download() }}{{ list[k1][k] }}" target="_blank" >
-                                                        <img src='{{ sd }}{{ item_dir_img_uri_download() }}{{ list[k1][k] }}' style='max-width: 150px;' />
+                                                        {# <img src='{{ sd }}{{ item_dir_img_uri_download() }}{{ list[k1][k] }}' style='max-width: 150px;' /> #}
+                                                        <img src='{{ sd }}module_items_image/{{ list[k1][k] }}' style='max-width: 150px;' />
                                                     </a>
                                                 {% endif %}
 

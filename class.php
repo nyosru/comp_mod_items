@@ -170,7 +170,26 @@ class items {
      * @var type 
      */
     public static $limit1 = false;
+    
+    
+    public static $between = [];
+    public static $between_date = [];
+    public static $timer_show = false;
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     public static function setSort($a1, $a2) {
         if ($a1 == 'head' && ( $a2 == 'asc' || $a2 == 'desc' )) {
             self::$sort_head = $a2;

@@ -58,8 +58,8 @@ class items {
     public static $dir_img_server = false;
     public static $dir_img_uri = false;
     public static $dir_img_uri_download = false;
-    // если true то возвращаем из get simple только dop
-    // public static $get_data_simple = true;
+// если true то возвращаем из get simple только dop
+// public static $get_data_simple = true;
     public static $sort_head = null;
     public static $sql_select_vars = null;
 
@@ -71,7 +71,7 @@ class items {
     public static $now_mod = null;
     public static $get_data_simple = null;
     public static $cash = [];
-    // эти поля должны быть на выходе в допах
+// эти поля должны быть на выходе в допах
     public static $need_polya_vars = [];
     public static $where = [];
 
@@ -170,26 +170,29 @@ class items {
      * @var type 
      */
     public static $limit1 = false;
-    
-    
     public static $between = [];
     public static $between_date = [];
+    public static $between_datetime = [];
     public static $timer_show = false;
+    public static $join_where2 = '';
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    /**
+     * массив с переменными во второй запрос
+     * @var type 
+     */
+    public static $vars_to_sql2 = [];
+
+    /**
+     * название переменной для кеша get()
+     */
+    public static $cash_var = '';
+
+    /**
+     * время хранения кеша get()
+     * если 0 то бесконечно, остальное в секундах
+     */
+    public static $cash_time = 0;
+
     public static function setSort($a1, $a2) {
         if ($a1 == 'head' && ( $a2 == 'asc' || $a2 == 'desc' )) {
             self::$sort_head = $a2;
@@ -207,7 +210,7 @@ class items {
         self::$dir_img_uri = dir_site_sd . self::$dir_img_uri_download;
         self::$dir_img_server = DR . self::$dir_img_uri;
 
-        // echo self::$dir_img_server;
+// echo self::$dir_img_server;
         if (!is_dir(self::$dir_img_server))
             mkdir(self::$dir_img_server, 0755);
 
@@ -224,7 +227,7 @@ class items {
         self::$dir_img_uri = DS . '9.site' . DS . $folder . DS . 'download' . DS . self::$dir_img_uri_download;
         self::$dir_img_server = $_SERVER['DOCUMENT_ROOT'] . self::$dir_img_uri;
 
-        // echo self::$dir_img_server;
+// echo self::$dir_img_server;
         if (!is_dir(self::$dir_img_server))
             mkdir(self::$dir_img_server, 0755);
 
@@ -251,7 +254,7 @@ class items {
         $r = self::getItemsSimple3($db, $module, $stat);
 
         $r2 = [
-            // 'img_dir' => '/sites/'.\Nyos\Nyos::$folder_now.'/download/module_items_image/',
+// 'img_dir' => '/sites/'.\Nyos\Nyos::$folder_now.'/download/module_items_image/',
             'img_dir' => '/sites/' . $folder . '/download/module_items_image/',
             'img_dir_dl' => 'module_items_image/'
         ];
@@ -261,7 +264,7 @@ class items {
             $r2['data'][$k] = $v;
         }
 
-        // return $r2;
+// return $r2;
         return \f\end2('Достали список', 'ok', $r2, 'array');
 
 
@@ -294,7 +297,7 @@ class items {
 
             $f = 'SELECT * FROM `mitems` mi WHERE '
                     . ' mi.`status` != \'delete2\' '
-                    // . ' AND mi.folder = :folder '
+// . ' AND mi.folder = :folder '
                     . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
                     . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
                     . 'ORDER BY '
@@ -310,14 +313,14 @@ class items {
             $ff = $db->prepare($f);
             $ff->execute(
                     array(
-                    // ':folder' => $folder
+// ':folder' => $folder
             ));
 
-            //$re1 = $ff->fetchAll();
+//$re1 = $ff->fetchAll();
             $re = [];
 
             while ($v = $ff->fetch()) {
-                // foreach ($re1 as $k => $v) {
+// foreach ($re1 as $k => $v) {
                 $re[$v['id']] = $v;
             }
         } catch (\PDOException $ex) {
@@ -331,7 +334,7 @@ class items {
             if (strpos($ex->getMessage(), 'no such table') !== false) {
 
                 self::creatTable($db);
-                // \f\redirect( '/' );
+// \f\redirect( '/' );
             }
         }
 
@@ -351,7 +354,7 @@ class items {
                 `mitems-dops` midop 
                 
             INNER JOIN `mitems` mi ON '
-                // .'mi.folder = :folder '
+// .'mi.folder = :folder '
                 . ' mi.id = midop.id_item '
                 . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
                 . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
@@ -373,12 +376,12 @@ class items {
         $ff = $db->prepare($ff1);
 
         $for_sql = self::$sql_itemsdop_add_where_array;
-        // $for_sql[':folder'] = $folder;
+// $for_sql[':folder'] = $folder;
         self::$sql_itemsdop_add_where_array = [];
 
         $ff->execute($for_sql);
 
-        // \f\pa($ff->fetchAll());
+// \f\pa($ff->fetchAll());
 
         while ($r = $ff->fetch()) {
 
@@ -436,8 +439,8 @@ class items {
                 `mitems-dops` midop 
                 
             INNER JOIN `mitems` mi ON '
-                    // .' mi.folder = :folder '
-                    // . ' mi.id = midop.id_item '
+// .' mi.folder = :folder '
+// . ' mi.id = midop.id_item '
                     . ' mi.id = :id '
                     . ' AND '
                     . ' mi.id = midop.id '
@@ -469,7 +472,7 @@ class items {
 
             $ff->execute($for_sql);
 
-            // \f\pa($ff->fetchAll(),'','','all');
+// \f\pa($ff->fetchAll(),'','','all');
 
             $nn = 0;
             while ($r = $ff->fetch()) {
@@ -523,7 +526,7 @@ class items {
 
             return \f\end3('Достали данные', true, $re, 'array');
         }
-        //
+//
         catch (\PDOException $ex) {
 
             echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
@@ -535,7 +538,7 @@ class items {
             if (strpos($ex->getMessage(), 'no such table') !== false) {
 
                 self::creatTable($db);
-                // \f\redirect( '/' );
+// \f\redirect( '/' );
             }
 
             return \f\end3('ошибка', false);
@@ -643,9 +646,9 @@ class items {
                 `mitems-dops` midop 
                 
             INNER JOIN `mitems` mi ON '
-                    // .' mi.folder = :folder '
+// .' mi.folder = :folder '
                     . ' mi.id = midop.id_item ' . PHP_EOL
-                    // . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' ). PHP_EOL
+// . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' ). PHP_EOL
                     . ' AND mi.`module` = :module '
                     . (!empty($stat) ? PHP_EOL . ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
                     . PHP_EOL . ' AND mi.`status` != \'delete2\' '
@@ -683,7 +686,7 @@ class items {
             $ff = $db->prepare($ff1);
 
             $for_sql = self::$sql_itemsdop_add_where_array;
-            // $for_sql[':folder'] = $folder;
+// $for_sql[':folder'] = $folder;
             $for_sql[':module'] = ( isset($module{1}) ) ? $module : '';
             self::$sql_itemsdop_add_where_array = [];
 
@@ -696,7 +699,7 @@ class items {
 //            if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
 //                \f\pa($for_sql);
 //            }
-            // \f\pa($ff->fetchAll());
+// \f\pa($ff->fetchAll());
             $nn = 0;
             while ($r = $ff->fetch()) {
 
@@ -740,10 +743,10 @@ class items {
                 }
 
                 $f = 'SELECT mi.* FROM `mitems` mi '
-                        //. ' INNER JOIN '
-                        // . ' LEFT JOIN `mitems-dops` mi2 ON mi.id = mi2.id_item '
+//. ' INNER JOIN '
+// . ' LEFT JOIN `mitems-dops` mi2 ON mi.id = mi2.id_item '
                         . 'WHERE '
-                        // . ' mi.folder = :folder '
+// . ' mi.folder = :folder '
                         . 'mi.`status` != \'delete2\' '
                         . $sql_dop
                         . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
@@ -752,7 +755,7 @@ class items {
                         . ( self::$sort_head == 'desc' ? ' mi.head DESC, ' : '' )
                         . ( self::$sort_head == 'asc' ? ' mi.head ASC, ' : '' )
                         . ' mi.`sort` DESC, mi.`add_d` DESC, mi.`add_t` DESC '
-                        // . ( isset($limit{1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '' )
+// . ( isset($limit{1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '' )
                         . ';';
 
 //            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
@@ -760,7 +763,7 @@ class items {
 
                 $ff = $db->prepare($f);
                 $ff->execute(
-                //array( ':folder' => $folder )
+//array( ':folder' => $folder )
                 );
 
                 while ($v = $ff->fetch()) {
@@ -799,7 +802,7 @@ class items {
                     WHERE '
                         . ' mi.`status` != \'delete2\' '
                         . $sql_dop
-                        // .' mi.folder = :folder '
+// .' mi.folder = :folder '
                         . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' )
                         . ( isset($stat{1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '' )
                         . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '' ) . '
@@ -831,7 +834,7 @@ class items {
                 $ff = $db->prepare($ff1);
 
                 $for_sql = self::$sql_itemsdop_add_where_array;
-                //$for_sql[':folder'] = $folder;
+//$for_sql[':folder'] = $folder;
                 self::$sql_itemsdop_add_where_array = [];
 
                 if (self::$show_sql === true) {
@@ -850,7 +853,7 @@ class items {
                 }
             }
         }
-        //
+//
         catch (\PDOException $ex) {
 
 //            echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
@@ -862,7 +865,7 @@ class items {
             if (strpos($ex->getMessage(), 'no such table') !== false) {
 
                 self::creatTable($db);
-                // \f\redirect( '/' );
+// \f\redirect( '/' );
             }
         }
 
@@ -921,7 +924,7 @@ class items {
      */
     public static function getItemsSimple2($db, $module = null, $stat = 'show', $sort = null) {
 
-        // echo ' память ';
+// echo ' память ';
 
         if ($module == '070.jobman' || $module == '061.dolgnost')
             $file_cash = DR . dir_site_sd . 'getItemsSimple2_' . $module . '_' . $stat . (!empty($sort) ? md5($sort) : '' ) . '.cash.json';
@@ -957,7 +960,7 @@ class items {
 
         \f\timer::start(47);
 
-        // $ff1 = ' ( SELECT 
+// $ff1 = ' ( SELECT 
         $ff1 = ' SELECT 
                 mi.id,
                 mi.head,
@@ -995,9 +998,9 @@ class items {
 
         $ff->execute($for_sql);
 
-        // \f\pa( $ff->fetchAll(), '', '', 'все');
-        // die;
-        // while( \f\pa($ff->fetchAll(), '', '', 'все');
+// \f\pa( $ff->fetchAll(), '', '', 'все');
+// die;
+// while( \f\pa($ff->fetchAll(), '', '', 'все');
 
         $re = [];
         $sql = '';
@@ -1014,21 +1017,21 @@ class items {
                     'status' => $r['status']
                 ];
 
-                // \f\pa($r);
-                // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
-                // $sql .= (!empty($sql) ? ',' : '' ) . $r['id'];
+// \f\pa($r);
+// $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
+// $sql .= (!empty($sql) ? ',' : '' ) . $r['id'];
             }
 
             $re[$r['id']][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
         }
 
-        // echo '<br/>timer: ' . \f\timer::stop('str', 47);
+// echo '<br/>timer: ' . \f\timer::stop('str', 47);
 
         if ($sort == 'sort_asc') {
             usort($re, "\\f\\sort_ar_sort");
         }
 
-        // \f\pa($re);
+// \f\pa($re);
 
         if (!empty(self::$sql_order))
             self::$sql_order = '';
@@ -1129,7 +1132,7 @@ class items {
 
         return self::get($db, $module, $stat, $sort);
 
-        // echo '<br/>'.__FUNCTION__.' '.$module;
+// echo '<br/>'.__FUNCTION__.' '.$module;
 
         try {
 
@@ -1139,11 +1142,11 @@ class items {
                 $save_cash = false;
             }
 
-            // echo '<br/>-- ' . $cash_var;
-            //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
-            //            echo '<br/>a - '.$module;
-            //        
-            //        if ( 1 == 1 || $module == '050.chekin_checkout') {
+// echo '<br/>-- ' . $cash_var;
+//        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
+//            echo '<br/>a - '.$module;
+//        
+//        if ( 1 == 1 || $module == '050.chekin_checkout') {
 
             /**
              * запускаем мемкеш и тащим если есть кеш
@@ -1156,23 +1159,23 @@ class items {
                     if (1 == 1 && class_exists('memcache')) {
 
                         $cash_var = $module . '__' . $stat . '__' . $sort;
-                        // echo '<br/>'.$cash_var;
+// echo '<br/>'.$cash_var;
 
                         $memcache_obj = new \Memcache;
-                        //Соединяемся с нашим сервером
+//Соединяемся с нашим сервером
                         $memcache_obj->connect('127.0.0.1', 11211) or die("Could not connect");
 
-                        //Попытаемся получить объект с ключом our_var
+//Попытаемся получить объект с ключом our_var
                         $var_key = @$memcache_obj->get($cash_var);
 
                         if (!empty($var_key)) {
 
-                            //                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
-                            //                    echo '<Br/>есть рез';
-                            //                }
+//                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+//                    echo '<Br/>есть рез';
+//                }
 
                             $memcache_obj->close();
-                            //Если объект закэширован, выводим его значение
+//Если объект закэширован, выводим его значение
 
                             if (self::$style_old === true) {
                                 return ['data' => $var_key];
@@ -1180,18 +1183,18 @@ class items {
                                 return $var_key;
                             }
 
-                            // return json_decode($var_key);
+// return json_decode($var_key);
                         }
-                        //    else
-                        //    {
-                        //        //Если в кэше нет объекта с ключом our_var, создадим его
-                        //        //Объект our_var будет храниться 5 секунд и не будет сжат
-                        //        $memcache_obj->set('our_var', date('G:i:s'), false, 5);
-                        //         //Выведем закэшированные данные
-                        //        echo $memcache_obj->get('our_var');
-                        //    }
-                        //    //Закрываем соединение с сервером Memcached
-                        //    $memcache_obj->close();        
+//    else
+//    {
+//        //Если в кэше нет объекта с ключом our_var, создадим его
+//        //Объект our_var будет храниться 5 секунд и не будет сжат
+//        $memcache_obj->set('our_var', date('G:i:s'), false, 5);
+//         //Выведем закэшированные данные
+//        echo $memcache_obj->get('our_var');
+//    }
+//    //Закрываем соединение с сервером Memcached
+//    $memcache_obj->close();        
                     }
                 }
             }
@@ -1200,7 +1203,7 @@ class items {
 
 //        echo '<br/><br/>' . __FUNCTION__ . '<Br/>';
 //        echo '<br/>' . $module;
-                // echo ' память ';
+// echo ' память ';
 //        if ($module == '070.jobman' || $module == '061.dolgnost')
 //            $file_cash = DR . dir_site_sd . 'getItemsSimple2_' . $module . '_' . $stat . (!empty($sort) ? md5($sort) : '' ) . '.cash.json';
 //        echo '<Br/>'.$file_cash;
@@ -1215,7 +1218,7 @@ class items {
 //        if (!empty(self::$cash['itemsimple'][$cash]))
 //            return self::$cash['itemsimple'][$cash];
 //        $show_memory = false;
-                // $show_memory = true;
+// $show_memory = true;
 //
                 if (isset($show_memory) && $show_memory === true) {
 
@@ -1235,7 +1238,7 @@ class items {
                 }
 
 //        \f\timer::start(47);
-                // $ff1 = ' ( SELECT 
+// $ff1 = ' ( SELECT 
 //            if (!empty(self::$need_polya_vars)) {
 //                $sql_dop1 = '';
 //                
@@ -1261,23 +1264,23 @@ class items {
                 if ($sort == 'date__desc') {
                     self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
                 }
-                //
+//
                 elseif ($sort == 'add__asc') {
                     self::$sql_order = ' ORDER BY mi.add_d ASC, mi.add_t ASC ';
                 }
-                //
+//
                 elseif ($sort == 'add__desc') {
                     self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
                 }
-                //
+//
                 elseif ($sort == 'add_date__desc') {
                     self::$sql_order = ' ORDER BY mi.add_d DESC ';
                 }
-                //
+//
                 elseif ($sort == 'sort_asc') {
                     self::$sql_order = ' ORDER BY mi.sort ASC ';
                 }
-                //
+//
                 elseif ($sort == 'sort_desc') {
                     self::$sql_order = ' ORDER BY mi.sort DESC ';
                 }
@@ -1316,9 +1319,9 @@ class items {
                 self::$var_ar_for_1sql = [];
                 self::$select_var1 = '';
 
-                // \f\pa( $ff->fetchAll(), '', '', 'все');
-                // die;
-                // while( \f\pa($ff->fetchAll(), '', '', 'все');
+// \f\pa( $ff->fetchAll(), '', '', 'все');
+// die;
+// while( \f\pa($ff->fetchAll(), '', '', 'все');
 
                 $re = [];
                 $sql = '';
@@ -1327,7 +1330,7 @@ class items {
 
                     if (empty($re[$r['id']])) {
 
-                        // \f\pa($r);
+// \f\pa($r);
 //                        $re[$r['id']] = [
 //                            'id' => $r['id'],
 //                            'head' => $r['head'],
@@ -1337,8 +1340,8 @@ class items {
 
                         $re[$r['id']] = $r;
 
-                        // \f\pa($r);
-                        // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
+// \f\pa($r);
+// $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
                         $sql .= (!empty($sql) ? ',' : '' ) . $r['id'];
                     }
 
@@ -1349,7 +1352,7 @@ class items {
 //        if ($sort == 'sort_asc') {
 //            usort($re, "\\f\\sort_ar_sort");
 //        }
-                // \f\pa($re);
+// \f\pa($re);
 
                 if (!empty(self::$sql_order))
                     self::$sql_order = '';
@@ -1381,7 +1384,7 @@ class items {
                     $ff1 = ' SELECT
 
                 midop.id_item id, '
-                            // .' midop.id dops_id, '
+// .' midop.id dops_id, '
                             . ' midop.`name`,
                 midop.`value`,
                 midop.`value_date`,
@@ -1397,7 +1400,7 @@ class items {
 
                     ;
 
-                    //            \f\pa($ff1);
+//            \f\pa($ff1);
 
                     $ff = $db->prepare($ff1);
 
@@ -1405,13 +1408,13 @@ class items {
 //        $ff->execute($for_sql);
                     $ff->execute();
 
-                    // while( \f\pa($ff->fetchAll(), '', '', 'все');
-                    // $re = [];
+// while( \f\pa($ff->fetchAll(), '', '', 'все');
+// $re = [];
 
                     while ($r = $ff->fetch()) {
 
                         if (empty($re[( $re2[$r['id']] ?? $r['id'] )])) {
-                            //$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
+//$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
                             $re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'start2' => 'ok'];
                         }
 
@@ -1441,7 +1444,7 @@ class items {
                             }
 
                             if ($skip == true) {
-                                //$re2[$k] = $v;
+//$re2[$k] = $v;
                                 unset($re[$k]);
                             }
                         }
@@ -1467,7 +1470,7 @@ class items {
                 }
             }
 
-            // \f\pa($re);
+// \f\pa($re);
 
 
 
@@ -1511,7 +1514,7 @@ class items {
              *
              */
         }
-        //
+//
         catch (\PDOException $ex) {
 
             echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
@@ -1523,7 +1526,7 @@ class items {
             if (strpos($ex->getMessage(), 'no such table') !== false) {
 
                 self::creatTable($db);
-                // \f\redirect( '/' );
+// \f\redirect( '/' );
             }
 
             return \f\end3('ошибка', false);
@@ -1541,9 +1544,34 @@ class items {
      */
     public static function get($db, $module = null, $stat = 'show', $sort = null) {
 
-        // echo '<br/>'.__FUNCTION__.' '.$module;
+// echo '<br/>'.__FUNCTION__.' '.$module;
 
         try {
+
+            if (empty(self::$cash_var)) {
+
+                $dop_cash_var = (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '' )
+                        . (!empty(self::$search) ? serialize(self::$search) : '' )
+                        . (!empty(self::$join_where) ? serialize(self::$join_where) : '' )
+                        . (!empty(self::$sql_vars) ? serialize(self::$sql_vars) : '' )
+                        . (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '' )
+                        . (!empty(self::$return_items_header) ? serialize(self::$return_items_header) : '' )
+                ;
+
+                self::$cash_var = 'item_get_' . $module . '_' . $stat . '_' . $sort . '_' . (!empty($dop_cash_var) ? md5($dop_cash_var) : '' );
+            }
+
+            // self::$cash_var = '';
+
+            if (!empty(self::$cash_var)) {
+
+                $re = false;
+                // $re = \f\Cash::getVar(self::$cash_var);
+
+                if ($re !== false)
+                    return $re;
+            }
+
 
 
             if (
@@ -1551,39 +1579,41 @@ class items {
             ) {
 
                 $save_cash = true;
-                // echo '<br/>#'.__LINE__;
+// echo '<br/>#'.__LINE__;
             } else {
 
                 $save_cash = false;
-                // echo '<br/>#'.__LINE__;
+// echo '<br/>#'.__LINE__;
             }
 
-            // echo '<br/>-- ' . $cash_var;
-            //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
-            //            echo '<br/>a - '.$module;
-            //        
-            //        if ( 1 == 1 || $module == '050.chekin_checkout') {
+// echo '<br/>-- ' . $cash_var;
+//        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
+//            echo '<br/>a - '.$module;
+//        
+//        if ( 1 == 1 || $module == '050.chekin_checkout') {
+
+
+            $save_cash = false;
+
 
             if ($save_cash === true &&
                     (
                     $module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp || $module == \Nyos\mod\JobDesc::$mod_dolgn
-                    // || $module == \Nyos\mod\JobDesc::$mod_salary
+// || $module == \Nyos\mod\JobDesc::$mod_salary
                     || $module == \Nyos\mod\JobDesc::$mod_sp_link_timeo
                     )
             ) {
 
                 $cash_var = 'items__mod' . $module . '_' . $stat . '_' . $sort;
                 $e = \f\Cash::getVar($cash_var);
-                // \f\pa($e, '', '', '$e');
-                // echo '<br/>#'.__LINE__;
+// \f\pa($e, '', '', '$e');
+// echo '<br/>#'.__LINE__;
 
                 if (!empty($e))
                     return $e;
             } else {
                 $save_cash = false;
             }
-
-
 
             /**
              * запускаем мемкеш и тащим если есть кеш
@@ -1596,23 +1626,23 @@ class items {
                     if (1 == 1 && class_exists('memcache')) {
 
                         $cash_var = $module . '__' . $stat . '__' . $sort;
-                        // echo '<br/>'.$cash_var;
+// echo '<br/>'.$cash_var;
 
                         $memcache_obj = new \Memcache;
-                        //Соединяемся с нашим сервером
+//Соединяемся с нашим сервером
                         $memcache_obj->connect('127.0.0.1', 11211) or die("Could not connect");
 
-                        //Попытаемся получить объект с ключом our_var
+//Попытаемся получить объект с ключом our_var
                         $var_key = @$memcache_obj->get($cash_var);
 
                         if (!empty($var_key)) {
 
-                            //                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
-                            //                    echo '<Br/>есть рез';
-                            //                }
+//                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
+//                    echo '<Br/>есть рез';
+//                }
 
                             $memcache_obj->close();
-                            //Если объект закэширован, выводим его значение
+//Если объект закэширован, выводим его значение
 
                             if (self::$style_old === true) {
                                 return ['data' => $var_key];
@@ -1620,18 +1650,18 @@ class items {
                                 return $var_key;
                             }
 
-                            // return json_decode($var_key);
+// return json_decode($var_key);
                         }
-                        //    else
-                        //    {
-                        //        //Если в кэше нет объекта с ключом our_var, создадим его
-                        //        //Объект our_var будет храниться 5 секунд и не будет сжат
-                        //        $memcache_obj->set('our_var', date('G:i:s'), false, 5);
-                        //         //Выведем закэшированные данные
-                        //        echo $memcache_obj->get('our_var');
-                        //    }
-                        //    //Закрываем соединение с сервером Memcached
-                        //    $memcache_obj->close();        
+//    else
+//    {
+//        //Если в кэше нет объекта с ключом our_var, создадим его
+//        //Объект our_var будет храниться 5 секунд и не будет сжат
+//        $memcache_obj->set('our_var', date('G:i:s'), false, 5);
+//         //Выведем закэшированные данные
+//        echo $memcache_obj->get('our_var');
+//    }
+//    //Закрываем соединение с сервером Memcached
+//    $memcache_obj->close();        
                     }
                 }
             }
@@ -1640,7 +1670,7 @@ class items {
 
 //        echo '<br/><br/>' . __FUNCTION__ . '<Br/>';
 //        echo '<br/>' . $module;
-                // echo ' память ';
+// echo ' память ';
 //        if ($module == '070.jobman' || $module == '061.dolgnost')
 //            $file_cash = DR . dir_site_sd . 'getItemsSimple2_' . $module . '_' . $stat . (!empty($sort) ? md5($sort) : '' ) . '.cash.json';
 //        echo '<Br/>'.$file_cash;
@@ -1655,7 +1685,7 @@ class items {
 //        if (!empty(self::$cash['itemsimple'][$cash]))
 //            return self::$cash['itemsimple'][$cash];
 //        $show_memory = false;
-                // $show_memory = true;
+// $show_memory = true;
 //
                 if (isset($show_memory) && $show_memory === true) {
 
@@ -1675,7 +1705,7 @@ class items {
                 }
 
 //        \f\timer::start(47);
-                // $ff1 = ' ( SELECT 
+// $ff1 = ' ( SELECT 
 //            if (!empty(self::$need_polya_vars)) {
 //                $sql_dop1 = '';
 //                
@@ -1701,25 +1731,25 @@ class items {
                 if ($sort == 'date__desc') {
                     self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
                 }
-                //
+//
                 elseif ($sort == 'add__asc') {
                     self::$sql_order = ' ORDER BY mi.add_d ASC, mi.add_t ASC ';
                 }
-                //
+//
                 elseif ($sort == 'add__desc') {
                     self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
                 }
-                //
+//
                 elseif ($sort == 'add_date__desc') {
                     self::$sql_order = ' ORDER BY mi.add_d DESC ';
                 }
-                //
+//
                 elseif (
                         $sort == 'sort_asc' || $sort == 'sort'
                 ) {
                     self::$sql_order = ' ORDER BY mi.sort ASC ';
                 }
-                //
+//
                 elseif ($sort == 'sort_desc') {
                     self::$sql_order = ' ORDER BY mi.sort DESC ';
                 }
@@ -1740,7 +1770,7 @@ class items {
                         . self::$sql_order ?? '';
 
                 if (self::$show_sql === true)
-                    \f\pa($ff1);
+                    \f\pa($ff1, '', '', '$ff1 sql1');
 
                 self::$join_where = self::$where2 = '';
 
@@ -1750,8 +1780,7 @@ class items {
                 $ff->execute(self::$var_ar_for_1sql);
 
                 if (self::$show_sql === true)
-                    \f\pa(self::$var_ar_for_1sql);
-
+                    \f\pa(self::$var_ar_for_1sql, '', '', 'self::$var_ar_for_1sql');
 
                 self::$var_ar_for_1sql = [];
                 self::$join_where = self::$select_var1 = self::$sql_order = '';
@@ -1766,9 +1795,9 @@ class items {
                 }
 
 
-                // \f\pa( $ff->fetchAll(), '', '', 'все');
-                // die;
-                // while( \f\pa($ff->fetchAll(), '', '', 'все');
+// \f\pa( $ff->fetchAll(), '', '', 'все');
+// die;
+// while( \f\pa($ff->fetchAll(), '', '', 'все');
 
                 $re = [];
                 $sql = '';
@@ -1777,7 +1806,7 @@ class items {
 
                     if (empty($re[$r['id']])) {
 
-                        // \f\pa($r);
+// \f\pa($r);
 //                        $re[$r['id']] = [
 //                            'id' => $r['id'],
 //                            'head' => $r['head'],
@@ -1787,8 +1816,8 @@ class items {
 
                         $re[$r['id']] = $r;
 
-                        // \f\pa($r);
-                        // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
+// \f\pa($r);
+// $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
                         $sql .= (!empty($sql) ? ',' : '' ) . $r['id'];
                     }
 
@@ -1799,7 +1828,7 @@ class items {
 //        if ($sort == 'sort_asc') {
 //            usort($re, "\\f\\sort_ar_sort");
 //        }
-                // \f\pa($re);
+// \f\pa($re);
 
                 if (!empty(self::$sql_order))
                     self::$sql_order = '';
@@ -1827,10 +1856,183 @@ class items {
                       // die();
                       // $ff1 = ' ( SELECT
                      * */
+
+                    $rebase = false;
+
+//                    if (self::$show_sql === true)
+//                        \f\pa(self::$join_where2, '', '', 'self::$join_where2 перед обработкой допов');
+
+                    if (1 == 1) {
+
+                        /**
+                         * счётчик для переменных что будут в поиске и фильтрах
+                         */
+                        $nn = 1;
+                        $nn2 = 1;
+
+                        if (!empty(self::$search)) {
+
+                            if (self::$show_sql === true)
+                                \f\pa(self::$search, '', '', 'self::$search');
+
+                            $rebase = true;
+
+                            foreach (self::$search as $k1 => $v1) {
+// if (isset($v1[0]) && isset($v1[1])) {
+
+                                self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
+                                        . ' midop' . $nn . '.id_item = midop.id_item '
+                                        . ' AND midop' . $nn . '.name = :i_name' . $nn
+                                        . ' AND ';
+
+                                self::$vars_to_sql2[':i_name' . $nn] = $k1;
+
+                                $s2 = '';
+
+                                if (is_array($v1) && sizeof($v1) > 0) {
+
+                                    foreach ($v1 as $k2 => $v2) {
+
+                                        $s2 .= (!empty($s2) ? ' OR ' : '' ) . PHP_EOL . ' midop' . $nn . '.value = :i_val' . $nn2;
+//                                        . ' AND midop' . $nn . '.value = :i_val' . $nn
+//                                ;
+                                        self::$vars_to_sql2[':i_val' . $nn2] = $v2;
+//                                    self::$vars_to_sql2[':i_val' . $nn . '_0'] = $v1[0];
+//                                    self::$vars_to_sql2[':i_val' . $nn . '_1'] = $v1[1];
+                                        $nn2++;
+                                    }
+// }
+                                    self::$join_where2 .= ' ( ' . $s2 . ' ) ';
+                                } else {
+
+                                    self::$join_where2 .= PHP_EOL . ' midop' . $nn . '.value = :i_val' . $nn2;
+                                    self::$vars_to_sql2[':i_val' . $nn2] = $v1;
+                                }
+
+                                $nn++;
+                                $nn2++;
+                            }
+                            self::$search = [];
+                        }
+
+                        if (1 == 2 && !empty(self::$between)) {
+
+                            if (self::$show_sql === true)
+                                \f\pa(self::$between, '', '', 'self::$between');
+
+                            $rebase = true;
+
+                            foreach (self::$between as $k1 => $v1) {
+                                if (isset($v1[0]) && isset($v1[1])) {
+
+                                    self::$join_where2 .= ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
+                                            . ' midop' . $nn . '.id_item = midop.id_item '
+                                            . ' AND midop' . $nn . '.name = :i_name' . $nn . ' '
+                                            . ' AND midop' . $nn . '.value_date between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 '
+                                    ;
+                                    self::$vars_to_sql2[':i_name' . $nn] = $k1;
+                                    self::$vars_to_sql2[':i_val' . $nn . '_0'] = $v1[0];
+                                    self::$vars_to_sql2[':i_val' . $nn . '_1'] = $v1[1];
+                                    $nn++;
+                                }
+                            }
+                            self::$between = [];
+                        }
+
+                        if (1 == 1 && !empty(self::$between_date)) {
+
+                            if (self::$show_sql === true)
+                                \f\pa(self::$between_date, '', '', 'self::$between_date');
+
+                            $rebase = true;
+
+                            foreach (self::$between_date as $k1 => $v1) {
+
+                                if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+
+                                    self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                                            . ' md' . $nn . '.id_item = midop.id_item '
+                                            . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                            . ' AND md' . $nn . '.value_date between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 '
+                                    ;
+
+//                            self::$join_where .= ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
+//                                    . ' midop' . $nn . '.id_item = midop.id_item '
+//                                    . ' AND midop' . $nn . '.name = :i_name' . $nn . ' '
+//                                    . ' AND midop' . $nn . '.value_date >= :i_val' . $nn . '_0 '
+//                                    . ' AND midop' . $nn . '.value_date <= :i_val' . $nn . '_1 '
+//                            ;
+
+                                    self::$vars_to_sql2[':i_name' . $nn] = $k1;
+                                    self::$vars_to_sql2[':i_val' . $nn . '_0'] = $v1[0];
+                                    self::$vars_to_sql2[':i_val' . $nn . '_1'] = $v1[1];
+
+                                    $nn++;
+                                    $nn2++;
+                                }
+                            }
+                            self::$between_date = [];
+                        }
+
+                        if (1 == 1 && !empty(self::$between_datetime)) {
+
+                            if (self::$show_sql === true)
+                                \f\pa(self::$between_datetime, '', '', 'self::$between_datetime');
+
+                            $rebase = true;
+
+                            foreach (self::$between_datetime as $k1 => $v1) {
+
+                                if (isset($v1[0]) && isset($v1[1])) {
+
+                                    self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                                            . ' md' . $nn . '.id_item = midop.id_item '
+                                            . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn2 . ' '
+                                            . ' AND md' . $nn . '.value_datetime between :i_val' . $nn2 . '_0 and :i_val' . $nn2 . '_1 '
+                                    ;
+
+//                            self::$join_where .= ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
+//                                    . ' midop' . $nn . '.id_item = midop.id_item '
+//                                    . ' AND midop' . $nn . '.name = :i_name' . $nn . ' '
+//                                    . ' AND midop' . $nn . '.value_date >= :i_val' . $nn . '_0 '
+//                                    . ' AND midop' . $nn . '.value_date <= :i_val' . $nn . '_1 '
+//                            ;
+
+                                    self::$vars_to_sql2[':i_name' . $nn2] = $k1;
+                                    self::$vars_to_sql2[':i_val' . $nn2 . '_0'] = $v1[0];
+                                    self::$vars_to_sql2[':i_val' . $nn2 . '_1'] = $v1[1];
+                                    $nn++;
+                                    $nn2++;
+                                }
+                            }
+                            self::$between_datetime = [];
+                        }
+                    }
+
+
+
+
+
+
+                    $rebase_ar = [];
+
+                    if ($rebase === true) {
+// массив данных с 1 запроса
+                        $rebase_ar = $re;
+                        $re = [];
+                    }
+
+
+// \f\pa($re);
+
+
+                    if (self::$show_sql === true)
+                        \f\pa(self::$join_where2, '', '', 'self::$join_where2 перед запросом');
+
                     $ff1 = ' SELECT
 
                 midop.id_item id, '
-                            // .' midop.id dops_id, '
+// .' midop.id dops_id, '
                             . ' midop.`name`,
                 midop.`value`,
                 midop.`value_date`,
@@ -1839,6 +2041,8 @@ class items {
                             . ( self::$sql_select_vars ?? '' )
                             . PHP_EOL
                             . ' FROM `mitems-dops` midop '
+                            . PHP_EOL
+                            . self::$join_where2
                             . PHP_EOL
                             . ' WHERE '
                             . PHP_EOL
@@ -1849,38 +2053,64 @@ class items {
                             . ( self::$where2dop ?? '' )
                     ;
 
-                    self::$where2dop = '';
+                    self::$join_where2 = self::$where2dop = '';
 
                     if (self::$show_sql === true)
-                        \f\pa($ff1);
+                        \f\pa($ff1, '', '', '$ff1 sql2');
 
-                    //            \f\pa($ff1);
+//            \f\pa($ff1);
 
                     $ff = $db->prepare($ff1);
 
 //        $for_sql = [];
 //        $ff->execute($for_sql);
 
-                    $ff->execute();
+                    if (self::$show_sql === true)
+                        \f\pa(self::$vars_to_sql2, '', '', 'self::$vars_to_sql2');
 
-                    // while( \f\pa($ff->fetchAll(), '', '', 'все');
-                    // $re = [];
+                    $ff->execute(self::$vars_to_sql2);
+
+                    self::$vars_to_sql2 = [];
+
+// while( \f\pa($ff->fetchAll(), '', '', 'все');
+// $re = [];
 
                     while ($r = $ff->fetch()) {
 
-                        if (empty($re[( $re2[$r['id']] ?? $r['id'] )])) {
-                            //$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
-                            $re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'start2' => 'ok'];
-                        }
+                        if ($rebase === true) {
 
-                        if (!empty($r['name'])) {
-                            if (self::$style_old === true) {
-                                $re[( $re2[$r['id']] ?? $r['id'] )]['dop'][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
-                            } else {
-                                $re[( $re2[$r['id']] ?? $r['id'] )][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+// массив данных с 1 запроса
+// $rebase_ar = $re;
+
+                            if (!isset($re[$r['id']])) {
+                                if (isset($rebase_ar[$r['id']])) {
+                                    $re[$r['id']] = $rebase_ar[$r['id']];
+                                } else {
+                                    $re[$r['id']] = ['skip_1sql_ar' => 'da'];
+                                }
+                            }
+
+                            if (!empty($r['name'])) {
+                                $re[$r['id']][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                                $re[$r['id']]['rebase'] = 'da';
+                            }
+                        } else {
+
+                            if (empty($re[( $re2[$r['id']] ?? $r['id'] )])) {
+//$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
+                                $re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'start2' => 'ok'];
+                            }
+
+                            if (!empty($r['name'])) {
+                                if (self::$style_old === true) {
+                                    $re[( $re2[$r['id']] ?? $r['id'] )]['dop'][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                                } else {
+                                    $re[( $re2[$r['id']] ?? $r['id'] )][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                                }
                             }
                         }
                     }
+
 
                     if (!empty(self::$need_polya_vars)) {
 
@@ -1900,7 +2130,7 @@ class items {
                                 }
 
                                 if ($skip == true) {
-                                    //$re2[$k] = $v;
+//$re2[$k] = $v;
                                     unset($re[$k]);
                                 }
                             }
@@ -1910,7 +2140,7 @@ class items {
                     }
 
 
-                    //\f\pa($sort);
+//\f\pa($sort);
 
                     if ($sort == 'sort_asc') {
                         usort($re, "\\f\\sort_ar_sort");
@@ -1918,7 +2148,7 @@ class items {
                         usort($re, "\\f\\sort_ar_date");
                     } elseif ($sort == 'date_desc') {
                         usort($re, "\\f\\sort_ar_date_desc");
-                        // usort($re, "\\f\\sort_ar_date");
+// usort($re, "\\f\\sort_ar_date");
                     }
 
                     if (isset($show_memory) && $show_memory === true) {
@@ -1932,7 +2162,7 @@ class items {
                 }
             }
 
-            // \f\pa($re);
+// \f\pa($re);
 
             /**
              * если в начале запустили мемкеш то сохраняем результат
@@ -1970,12 +2200,17 @@ class items {
                 }
             } else {
 
-                if ($save_cash === true) {
-//                    // $cash_var = 'items__'.$module.'_'.$stat.'_'.$sort;
-                    // \f\Cash::setVar($cash_var, $re, 60 * 60 * 2);
-                    \f\Cash::setVar($cash_var, $re);
-//                    // \f\pa($e,'','','$e');
-                }
+//                if ($save_cash === true) {
+////                    // $cash_var = 'items__'.$module.'_'.$stat.'_'.$sort;
+//                    // \f\Cash::setVar($cash_var, $re, 60 * 60 * 2);
+//                    \f\Cash::setVar($cash_var, $re);
+////                    // \f\pa($e,'','','$e');
+//              1  }
+
+                
+//                if (!empty(self::$cash_var)) {
+//                    \f\Cash::setVar(self::$cash_var, $re, ( self::$cash_time ?? 0));
+//                }
 
                 return $re;
             }
@@ -1988,7 +2223,7 @@ class items {
              *
              */
         }
-        //
+//
         catch (\PDOException $ex) {
 
             echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
@@ -2001,7 +2236,7 @@ class items {
             if (strpos($ex->getMessage(), 'no such table') !== false) {
 
                 self::creatTable($db);
-                // \f\redirect( '/' );
+// \f\redirect( '/' );
             }
 
             return \f\end3('ошибка', false);
@@ -2020,7 +2255,7 @@ class items {
      */
     public static function get2($db, string $module, $stat = 'show', $sort = null) {
 
-        // echo '<br/>'.__FUNCTION__.' '.$module;
+// echo '<br/>'.__FUNCTION__.' '.$module;
 
         try {
 
@@ -2043,13 +2278,13 @@ class items {
                     $cash_var = 'items__' . $module . '_' . md5('stat' . ( $stat ?? '' ) . '_sort' . ( $sort ?? '' ) . '_' . ( $dop_in_cash_var1 ?? '' ));
                 }
 
-                // $cash_time = 0;
-                // $cash_var = 'items__mod' . $module . '_' . $stat . '_' . $sort;
+// $cash_time = 0;
+// $cash_var = 'items__mod' . $module . '_' . $stat . '_' . $sort;
                 if (!empty($cash_var) && self::$cancel_cash !== true) {
                     $e = \f\Cash::getVar($cash_var);
-                    // \f\pa($cash_var);
-                    // \f\pa($e, '', '', '$e');
-                    // echo '<br/>#'.__LINE__;
+// \f\pa($cash_var);
+// \f\pa($e, '', '', '$e');
+// echo '<br/>#'.__LINE__;
 
                     if (!empty($e))
                         return $e;
@@ -2088,7 +2323,7 @@ class items {
                 
             } else {
 
-                // если есть то что ищем ( ключ - значение )
+// если есть то что ищем ( ключ - значение )
                 if (!empty(self::$search)) {
 
                     $nn = 1;
@@ -2120,21 +2355,21 @@ class items {
                         . ' midop.value_text '
                         . ' FROM '
                         . ' `mitems-dops` midop '
-                        //
+//
                         . ' INNER JOIN `mitems` mi ON '
                         . ' mi.`module` = :module '
                         . ' AND mi.id = midop.id_item '
                         . (!empty($stat) ? ' AND mi.status = :status ' : '' )
-                        //
+//
                         . ( self::$join_where ?? '' )
-                //.' LIMIT 10 '
+//.' LIMIT 10 '
                 ;
 
-                // \f\pa($ff1);
+// \f\pa($ff1);
 
                 $ff = $db->prepare($ff1);
 
-                // переменные в запрос
+// переменные в запрос
                 if (1 == 1) {
 
                     $ar_for_sql = [':module' => $module];
@@ -2146,10 +2381,10 @@ class items {
                         $ar_for_sql = array_merge($ar_for_sql, self::$sql_vars);
                     }
 
-                    // \f\pa($ar_for_sql);
+// \f\pa($ar_for_sql);
                 }
 
-                // трём все входящие параметры
+// трём все входящие параметры
                 self::$sql_vars = [];
                 self::$join_where = '';
 
@@ -2157,16 +2392,16 @@ class items {
 
 //                echo __LINE__;
 //                $ee = $ff->fetchAll();
-                // return $ee;
-                // \f\pa($ee);
+// return $ee;
+// \f\pa($ee);
 
                 $return = [];
 
-                //foreach ($ee as $k => $v) {
+//foreach ($ee as $k => $v) {
                 while ($v = $ff->fetch()) {
 
-                    // \f\pa($v);
-                    // echo '<pre>'; var_dump($v); echo '</pre>';
+// \f\pa($v);
+// echo '<pre>'; var_dump($v); echo '</pre>';
 
                     if (!isset($return[$v['item_id']]))
                         $return[$v['item_id']] = [
@@ -2190,8 +2425,8 @@ class items {
                         $return[$v['item_id']][$v['name']] = $dd;
                 }
 
-                // usort($res_items, "\\f\\sort_ar_date_desc");
-                //usort($res_items, "\\f\\sort__oborot_sp_last_monht_bolee__desc");
+// usort($res_items, "\\f\\sort_ar_date_desc");
+//usort($res_items, "\\f\\sort__oborot_sp_last_monht_bolee__desc");
 
                 if (!empty($sort)) {
 
@@ -2201,7 +2436,7 @@ class items {
                         usort($return, "\\f\\sort_ar_date");
                     } elseif ($sort == 'date_desc') {
                         usort($return, "\\f\\sort_ar_date_desc");
-                        // usort($re, "\\f\\sort_ar_date");
+// usort($re, "\\f\\sort_ar_date");
                     }
                 }
 
@@ -2214,11 +2449,11 @@ class items {
 //                    $e = \f\Cash::setVar($cash_var, $return, ( $cash_time ?? 0));
 //                    \f\pa($e);
 //                }
-                // return \f\end3('выборка готова', true, $return);
+// return \f\end3('выборка готова', true, $return);
                 return $return;
             }
         }
-        //
+//
         catch (\PDOException $ex) {
 
             echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
@@ -2231,7 +2466,7 @@ class items {
             if (strpos($ex->getMessage(), 'no such table') !== false) {
 
                 self::creatTable($db);
-                // \f\redirect( '/' );
+// \f\redirect( '/' );
             }
 
             return \f\end3('ошибка', false);
@@ -2280,7 +2515,7 @@ class items {
         $for_sql = [':module' => ( $module ?? '' )];
         $ff->execute($for_sql);
 
-        // \f\pa( $ff->fetchAll(), '', '', 'все');
+// \f\pa( $ff->fetchAll(), '', '', 'все');
 
         $re = [];
         $sql = '';
@@ -2288,7 +2523,7 @@ class items {
         while ($r = $ff->fetch()) {
 
 //            if (empty($re[$r['id']])) {
-            //\f\pa($r);
+//\f\pa($r);
 
             $re[$r['id']] = [
                 'id' => $r['id'],
@@ -2297,10 +2532,10 @@ class items {
                 'status' => $r['status']
             ];
 
-            // \f\pa($r);
-            // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
+// \f\pa($r);
+// $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
             $sql .= (!empty($sql) ? ',' : '' ) . $r['id'];
-            //          }
+//          }
 //            $re[$r['id']][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
         }
 
@@ -2308,7 +2543,7 @@ class items {
 //        if ($sort == 'sort_asc') {
 //            usort($re, "\\f\\sort_ar_sort");
 //        }
-        // \f\pa($re);
+// \f\pa($re);
 
         if (!empty(self::$sql_order))
             self::$sql_order = '';
@@ -2337,7 +2572,7 @@ class items {
         $ff1 = ' SELECT
 
           midop.id_item id, '
-                // .' midop.id dops_id, '
+// .' midop.id dops_id, '
                 . ' midop.`name`,
           midop.`value`,
           midop.`value_date`,
@@ -2352,7 +2587,7 @@ class items {
                 . ' AND midop.status IS NULL '
         ;
 
-        //            \f\pa($ff1);
+//            \f\pa($ff1);
 
         $ff = $db->prepare($ff1);
 
@@ -2360,13 +2595,13 @@ class items {
 //        $ff->execute($for_sql);
         $ff->execute();
 
-        // while( \f\pa($ff->fetchAll(), '', '', 'все');
-        // $re = [];
+// while( \f\pa($ff->fetchAll(), '', '', 'все');
+// $re = [];
 
         while ($r = $ff->fetch()) {
 
             if (empty($re[( $re2[$r['id']] ?? $r['id'] )])) {
-                //$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
+//$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
                 $re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'start2' => 'ok'];
             }
 
@@ -2387,7 +2622,7 @@ class items {
             . 'timer:' . \f\timer::stop('str', 123) . ' - ';
         }
 
-        // \f\pa($re);
+// \f\pa($re);
 
         return $re;
         /*
@@ -2448,19 +2683,19 @@ class items {
             if (strpos($ex->getMessage(), 'no such table') !== false) {
 
                 self::creatTable($db);
-                // \f\redirect( '/' );
+// \f\redirect( '/' );
             }
         }
 
         $in_sql2 = '';
         $return = array();
 
-        //while ($r = $db->sql_fr($sql)) {
+//while ($r = $db->sql_fr($sql)) {
         while ($r = $ff->fetch()) {
 
 
             if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
-                //echo '<br/>'.'<br/>'.$f;
+//echo '<br/>'.'<br/>'.$f;
                 \f\pa($r);
             }
 
@@ -2469,7 +2704,7 @@ class items {
             $in_sql2 .= ( isset($in_sql2{3}) ? ' OR ' : '' ) . ' `id_item` = \'' . $r['id'] . '\' ';
         }
 
-        // $sql2 = $db->sql_query('SELECT `id_item`, `name`, `value`,`value_text` FROM `mitems-dops` WHERE (' . $in_sql2 . ') AND `status` IS NULL ;');
+// $sql2 = $db->sql_query('SELECT `id_item`, `name`, `value`,`value_text` FROM `mitems-dops` WHERE (' . $in_sql2 . ') AND `status` IS NULL ;');
 
         $ff1 = 'SELECT `id_item`, `name`, `value`,`value_text` FROM `mitems-dops` WHERE '
                 . ( isset($in_sql2{5}) ? ' (' . $in_sql2 . ') AND ' : '' )
@@ -2477,19 +2712,19 @@ class items {
 
         if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
             echo '<br/>' . '<br/>' . $ff1;
-            //\f\pa($r);
+//\f\pa($r);
         }
 
 
         $ff = $db->prepare($ff1);
         $ff->execute();
 
-        //while ($r = $db->sql_fr($sql2)) {
+//while ($r = $db->sql_fr($sql2)) {
         while ($r = $ff->fetch()) {
 
 
             if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
-                //echo '<br/>'.'<br/>'.$ff1;
+//echo '<br/>'.'<br/>'.$ff1;
                 \f\pa($r);
             }
 
@@ -2555,7 +2790,7 @@ class items {
                 );');
         $ff->execute();
 
-        //die('Созданы таблицы, перезагрузите страницу');
+//die('Созданы таблицы, перезагрузите страницу');
         \nyos\Msg::sendTelegramm('Создали таблицы для итемов', null, 1);
     }
 
@@ -2575,7 +2810,7 @@ class items {
 //            global $status;
 //            $status = '';
 //        }
-        // папка для кеша данных
+// папка для кеша данных
         $cash_dir = DR . dir_site;
 
         $cash_file = 'items.'
@@ -2625,7 +2860,7 @@ class items {
 
         while ($r = $db->sql_fr($sql2)) {
 
-            //echo \f\pa($r);
+//echo \f\pa($r);
 
             if (!isset($out['data'][$r['id_item']]))
                 continue;
@@ -2656,19 +2891,19 @@ class items {
      */
     public static function itemsPage($db, $folder, $module, $on1page = 10, $now_page = 1) {
 
-        //$_SESSION['status1'] = true;
-        //$status = '';
+//$_SESSION['status1'] = true;
+//$status = '';
 
         if (isset($_SESSION['status1']) && $_SESSION['status1'] === true) {
             global $status;
             $status .= '<fieldset><legend>' . __CLASS__ . ' #' . __LINE__ . ' + ' . __FUNCTION__ . '</legend>';
         }
 
-        //if ($module == '005.news') {
-        //    $shows = true;
-        //    $_SESSION['status1'] = true;
-        //    $status = '';
-        //}
+//if ($module == '005.news') {
+//    $shows = true;
+//    $_SESSION['status1'] = true;
+//    $status = '';
+//}
         $sql = $db->sql_query('SELECT COUNT(id) kolvo FROM `mitems` '
                 . 'WHERE '
                 . ' `folder` = \'' . $folder . '\' '
@@ -2676,10 +2911,10 @@ class items {
                 . ' AND `status` = \'show\' '
                 . ' GROUP BY `folder` '
                 . ';');
-        //if ($shows === true) {
-        //    $_SESSION['status1'] = false;
-        //    echo $status;
-        //}
+//if ($shows === true) {
+//    $_SESSION['status1'] = false;
+//    echo $status;
+//}
 
         $r = $db->sql_fr($sql);
 
@@ -2700,7 +2935,7 @@ class items {
         }
         $r['folder'] = $folder;
         $r['level'] = $module;
-        // \f\pa($r);
+// \f\pa($r);
 
         if (isset($_SESSION['status1']) && $_SESSION['status1'] === true)
             $status .= '<span class="bot_line">#' . __LINE__ . '</span></fieldset>';
@@ -2719,8 +2954,8 @@ class items {
      */
     public static function addNew_old($db, $folder, $cfg_mod, $data) {
 
-        // \f\pa($cfg_mod);
-        // \f\pa($data);
+// \f\pa($cfg_mod);
+// \f\pa($data);
 
         if (isset($_SESSION['status1']) && $_SESSION['status1'] === true) {
             global $status;
@@ -2735,12 +2970,12 @@ class items {
             return f\end2('Ошибка, папка для файлов не может быть создана', 'error', array('file' => __FILE__, 'line' => __LINE__), 'array');
         }
 
-        //echo '<br/>#'.__LINE__;
+//echo '<br/>#'.__LINE__;
 
         if (isset($data['head'])) {
 
-            //$_SESSION['status1'] = true;
-            //$status = '';
+//$_SESSION['status1'] = true;
+//$status = '';
             $new_id = db\db2_insert($db, 'mitems', array(
                 'folder' => $folder
                 , 'module' => $cfg_mod['cfg.level']
@@ -2748,10 +2983,10 @@ class items {
                 , 'add_d' => 'NOW'
                 , 'add_t' => 'NOW'
                     ), 'da', 'last_id');
-            //echo $status;
-            //
-            //echo '<br/>#'.__LINE__;
-            //echo '<br/>#-'.$new_id;
+//echo $status;
+//
+//echo '<br/>#'.__LINE__;
+//echo '<br/>#-'.$new_id;
 
             $in_db = array();
 
@@ -2787,12 +3022,12 @@ class items {
 
 
 
-                //echo '<br/>#'.__LINE__;
+//echo '<br/>#'.__LINE__;
                 $nn = 1;
 
                 foreach ($data['files'] as $k => $v) {
 
-                    //f\pa($v);
+//f\pa($v);
 
                     if (isset($cfg_mod[$k]) && is_array($v) && isset($v['size']) && $v['size'] > 100 && isset($v['error']) && $v['error'] == 0
                     ) {
@@ -2813,11 +3048,11 @@ class items {
                 }
             }
 
-            // echo '<Br/>db\sql_insert_mnogo - ' .$new_id ;
-            //$status = '';
+// echo '<Br/>db\sql_insert_mnogo - ' .$new_id ;
+//$status = '';
             \f\db\sql_insert_mnogo2($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
-            // db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
-            //echo $status;
+// db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
+//echo $status;
         }
 
         if (isset($_SESSION['status1']) && $_SESSION['status1'] === true) {
@@ -2856,8 +3091,8 @@ class items {
 
             $ff = $db->prepare('UPDATE FROM mitems SET `status` = \'delete\' WHERE id = :id ');
             $ff->execute(array(':id' => $id));
-            // $ff = $db->prepare('UPDATE FROM mitems-dops SET `status` = \'delete\' WHERE id_item = :id ');
-            // $ff->execute(array(':id' => $id));
+// $ff = $db->prepare('UPDATE FROM mitems-dops SET `status` = \'delete\' WHERE id_item = :id ');
+// $ff->execute(array(':id' => $id));
             return \f\end3('удалёно');
         } else {
 
@@ -2878,10 +3113,10 @@ class items {
                     SET status = \'delete\'
                     WHERE module = :mod '
                     . PHP_EOL . ' AND status != \'delete2\' '
-                    // .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
+// .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
                     . $dopsql
                     . ';';
-            //\f\pa($sql);
+//\f\pa($sql);
             $ff = $db->prepare($sql);
             $ff->execute($vars);
 
@@ -2952,13 +3187,13 @@ class items {
      */
     public static function deleteFromDops($db, $module, $dops = []) {
 
-        // echo '<br/>' . __FILE__ . ' - ' . __LINE__ . ' - ' . $module;
-        // \f\pa($dops);
+// echo '<br/>' . __FILE__ . ' - ' . __LINE__ . ' - ' . $module;
+// \f\pa($dops);
 
         \f\Cash::deleteKeyPoFilter([$module]);
 
-        // echo '<br/>#' . __LINE__;
-        // удалчем все значения в таблице
+// echo '<br/>#' . __LINE__;
+// удалчем все значения в таблице
         if (empty($dops)) {
 
             $ff = $db->prepare('UPDATE `mitems` SET `status` = \'delete\' WHERE `module` = :module ;');
@@ -2966,7 +3201,7 @@ class items {
 
             return \f\end3('удалёно (всё)', true, ['line' => __LINE__]);
         }
-        // удаляем с фильтром
+// удаляем с фильтром
         else {
 
             $var_in_sql = [
@@ -2994,19 +3229,19 @@ class items {
                 }
 
             $sql = 'SELECT mi.id FROM `mitems` mi ' . $dop_sql . ' WHERE mi.`module` = :module ;';
-            // \f\pa($sql);
+// \f\pa($sql);
             $ff = $db->prepare($sql);
-            // \f\pa($var_in_sql);
+// \f\pa($var_in_sql);
             $ff->execute($var_in_sql);
 
-            // \f\pa($ff->fetchAll());
+// \f\pa($ff->fetchAll());
 
             if (!empty($dops)) {
 
                 $ids = '';
 
                 while ($res = $ff->fetch()) {
-                    // \f\pa($res, '', '', '$res');
+// \f\pa($res, '', '', '$res');
                     $ids .= (!empty($ids) ? ',' : '' ) . $res['id'];
                 }
 
@@ -3017,9 +3252,9 @@ class items {
                             . ' SET `mi`.`status` = \'delete\' '
                             . ' WHERE mi.`module` = :module AND mi.`id` IN (' . $ids . ') '
                             . ' ;';
-                    // \f\pa($sql);
+// \f\pa($sql);
                     $ff = $db->prepare($sql);
-                    // \f\pa($var_in_sql);
+// \f\pa($var_in_sql);
                     $ff->execute($var_in_sql);
                 }
             }
@@ -3039,8 +3274,8 @@ class items {
 
             $ff = $db->prepare('UPDATE FROM mitems SET `status` = \'delete\' WHERE id = :id ');
             $ff->execute(array(':id' => $id));
-            // $ff = $db->prepare('UPDATE FROM mitems-dops SET `status` = \'delete\' WHERE id_item = :id ');
-            // $ff->execute(array(':id' => $id));
+// $ff = $db->prepare('UPDATE FROM mitems-dops SET `status` = \'delete\' WHERE id_item = :id ');
+// $ff->execute(array(':id' => $id));
             return \f\end3('удалёно');
         } else {
 
@@ -3061,10 +3296,10 @@ class items {
                     SET status = \'delete\'
                     WHERE module = :mod '
                     . PHP_EOL . ' AND status != \'delete2\' '
-                    // .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
+// .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
                     . $dopsql
                     . ';';
-            //\f\pa($sql);
+//\f\pa($sql);
             $ff = $db->prepare($sql);
             $ff->execute($vars);
 
@@ -3188,19 +3423,16 @@ class items {
         if (empty($data))
             return false;
 
-        // \f\pa($data, 2);
-        // echo '<br/>#' . __LINE__;
+// \f\pa($data, 2);
+// echo '<br/>#' . __LINE__;
 
         \f\Cash::deleteKeyPoFilter([$mod_name]);
 
         $folder = \Nyos\Nyos::$folder_now;
         $cfg_mod = \Nyos\Nyos::$menu[$mod_name];
 
-        // \f\pa($data);
-
-        
-        
-        // если свободный тип, то добавляем все ключи во всех элементах что хотим добавить
+// \f\pa($data);
+// если свободный тип, то добавляем все ключи во всех элементах что хотим добавить
         if (!empty($cfg_mod['items_type']) && $cfg_mod['items_type'] === 'free') {
             foreach ($data as $k => $v) {
                 foreach ($v as $k12 => $v12) {
@@ -3210,14 +3442,14 @@ class items {
             }
         }
 
-        
-        
+
+
 
         $nn = 0;
 
         foreach ($data as $k => $v) {
             self::addNew($db, $folder, $cfg_mod, $v);
-            // break;
+// break;
             $nn++;
         }
 
@@ -3235,8 +3467,8 @@ class items {
      */
     public static function addNew($db, string $folder, $cfg_mod, array $data, $files = array(), $add_all_dops = false) {
 
-        // \f\pa($data);
-        // die;
+// \f\pa($data);
+// die;
 
         if (empty(self::$dir_img_server)) {
             self::creatFolderImage($folder);
@@ -3248,12 +3480,12 @@ class items {
         if (!isset($data['head']{0}))
             $data['head'] = 1;
 
-        //echo '<Br/>'.__FILE__.' '.__LINE__;
-        // \f\pa($data);
+//echo '<Br/>'.__FILE__.' '.__LINE__;
+// \f\pa($data);
 
         if (isset($data['head'])) {
 
-            // echo '<Br/>'.__FILE__.' '.__LINE__;
+// echo '<Br/>'.__FILE__.' '.__LINE__;
 
             $arin = array(
                 'module' => ( $cfg_mod['cfg.level'] ?? $cfg_mod )
@@ -3268,21 +3500,21 @@ class items {
             if (!empty($data['status']))
                 $arin['status'] = $data['status'];
 
-            // \f\pa($arin);
+// \f\pa($arin);
             $new_id = \f\db\db2_insert($db, 'mitems', $arin, 'da', 'last_id');
 
-            // echo 'новый id '.$new_id;
+// echo 'новый id '.$new_id;
 
             $in_db = array();
 
-            // \f\pa($cfg_mod,2,null,'$cfg_mod');
+// \f\pa($cfg_mod,2,null,'$cfg_mod');
 //            if (isset($cfg_mod) && is_array($cfg_mod) && sizeof($cfg_mod) > 0)
 //                \f\pa($cfg_mod);
 
             foreach ($cfg_mod as $k => $v) {
 
-                // \f\pa($v, 2, null, '$cfg_mod $v');
-                // \f\pa($v, 2, null, '$cfg_mod $v');
+// \f\pa($v, 2, null, '$cfg_mod $v');
+// \f\pa($v, 2, null, '$cfg_mod $v');
 
                 if (!empty($cfg_mod['items_type']) && $cfg_mod['items_type'] === 'free') {
                     
@@ -3293,14 +3525,14 @@ class items {
 //                \f\pa($k);
 //                \f\pa($v);
 //                \f\pa($data[$k]);
-                //if (isset($data[$k]{0}) && isset($v['name_rus']{0})) {
-                // \f\pa($k);
-                // \f\pa($data[$k]);
-                //if ( isset($data[$k]{0})) {
+//if (isset($data[$k]{0}) && isset($v['name_rus']{0})) {
+// \f\pa($k);
+// \f\pa($data[$k]);
+//if ( isset($data[$k]{0})) {
 
                 if (isset($data[$k]) || isset($v['default'])) {
 
-                    // echo '<br>' . __LINE__;
+// echo '<br>' . __LINE__;
 
                     if (isset($v['type']) && ( $v['type'] == 'textarea' || $v['type'] == 'textarea_html' )) {
 
@@ -3309,7 +3541,7 @@ class items {
                             'value_text' => $data[$k] ?? $v['default']
                         );
                     }
-                    //
+//
                     elseif (isset($v['type']) && $v['type'] == 'datetime') {
 
                         $in_db[] = array(
@@ -3320,7 +3552,7 @@ class items {
                             )
                         );
                     }
-                    //
+//
                     elseif (isset($v['type']) && $v['type'] == 'date') {
 
                         $in_db[] = array(
@@ -3328,7 +3560,7 @@ class items {
                             'value_date' => date('Y-m-d', isset($data[$k]{2}) ? strtotime($data[$k]) : ( (!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : null ))
                         );
                     }
-                    //
+//
                     elseif (isset($v['type']) && $v['type'] == 'number') {
 
                         $in_db[] = array(
@@ -3336,7 +3568,7 @@ class items {
                             'value' => $data[$k] ?? $v['default']
                         );
                     }
-                    //
+//
                     else {
 
                         $in_db[] = array(
@@ -3345,7 +3577,7 @@ class items {
                         );
                     }
                 }
-                //
+//
                 elseif (!empty($v['type']) && $v['type'] == 'translit' && isset($v['var_in']{0}) && isset($data[$v['var_in']]{0})) {
 
                     $in_db[] = array(
@@ -3357,7 +3589,7 @@ class items {
 
 //          \f\pa($files, 2, '', 'files');
 //          \f\pa($cfg_mod);
-            //\f\pa($in_db);
+//\f\pa($in_db);
 //          если много файлов
 
             if (isset($files['name']) && sizeof($files['name']) > 0) {
@@ -3367,13 +3599,13 @@ class items {
 
 //                    \f\pa($k0);
 //                    \f\pa($v0);
-                    // \f\pa($k1);
-                    // \f\pa($v1);
+// \f\pa($k1);
+// \f\pa($v1);
 
                     if (!empty($v0) && isset($files['error'][$k0]) && $files['error'][$k0] == 0 && isset($cfg_mod[$k0])) {
 
                         $nn++;
-                        // echo '<br/>' . __LINE__;
+// echo '<br/>' . __LINE__;
                         $new_name = $k0 . '_' . $nn . '_' . substr(\f\translit($v0, 'uri2'), 0, 30) . '_' . rand(10, 99) . '.' . \f\get_file_ext($v0);
 
 //                                if ( !function_exists('\Nyos\nyos_image::autoJpgRotate') && file_exists(DR . '/vendor/didrive/base/Nyos_image.php') )
@@ -3381,7 +3613,7 @@ class items {
 
                         $save_file = self::$dir_img_server . $new_name;
 
-                        // echo '<Br/>111: ' . $save_file;
+// echo '<Br/>111: ' . $save_file;
 
                         if (!file_exists($save_file)) {
 
@@ -3399,16 +3631,16 @@ class items {
                     }
                 }
             }
-            // если один файл
+// если один файл
             else {
 
-                // \f\pa($files);
-                //echo '<br/>#'.__LINE__;
+// \f\pa($files);
+//echo '<br/>#'.__LINE__;
                 $nn = 1;
 
                 foreach ($files as $k => $v) {
 
-                    //f\pa($v);
+//f\pa($v);
 
                     if (isset($cfg_mod[$k]) && is_array($v) && isset($v['size']) && $v['size'] > 100 && isset($v['error']) && $v['error'] == 0
                     ) {
@@ -3432,16 +3664,16 @@ class items {
                 }
             }
 
-            // \f\pa($in_db);
-            // echo '<Br/>db\sql_insert_mnogo - ' .$new_id ;
-            //$status = '';
+// \f\pa($in_db);
+// echo '<Br/>db\sql_insert_mnogo - ' .$new_id ;
+//$status = '';
             \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
-            // \f\pa($in_db,2,null,'items что пишем в базу');
-            // db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
-            //echo $status;
+// \f\pa($in_db,2,null,'items что пишем в базу');
+// db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
+//echo $status;
         }
 
-        // отключил 191208
+// отключил 191208
         if (1 == 2)
             self::clearCash($folder);
 
@@ -3505,8 +3737,8 @@ class items {
             $sql .= ' ( ' . $sql2 . ' ) ) ';
         }
 
-        //echo $sql;
-        // $sql1 = 'UPDATE `mitems-dops` SET `status` = \'delete\', `date_status` = NOW() WHERE `status` != \'delete\' AND ( ' . $sql . ' ) ';
+//echo $sql;
+// $sql1 = 'UPDATE `mitems-dops` SET `status` = \'delete\', `date_status` = NOW() WHERE `status` != \'delete\' AND ( ' . $sql . ' ) ';
 
         $sql1 = 'UPDATE '
                 . ' `mitems-dops` '
@@ -3521,21 +3753,21 @@ class items {
 //                // . 'SET `status` = \'delete\''
 //                // . ', `date_status` = NOW() '
 //                . ' WHERE ' . $sql . ' ;';
-        //$sql1 = 'DELETE FROM  `mitems-dops` WHERE ( ' . $sql . ' ) ';
+//$sql1 = 'DELETE FROM  `mitems-dops` WHERE ( ' . $sql . ' ) ';
 //        echo '<br/>';
 //        \f\pa($dop_ar);
 //        return;
-        // \f\pa($sql1);
+// \f\pa($sql1);
         $ff = $db->prepare($sql1);
 
-        // \f\pa($dop_ar);
+// \f\pa($dop_ar);
         $e = $ff->execute($dop_ar);
-        // \f\pa($e, '', '', 'sql delete');
-        // \f\pa($indb);
+// \f\pa($e, '', '', 'sql delete');
+// \f\pa($indb);
 
         $er = \f\db\sql_insert_mnogo($db, 'mitems-dops', $indb);
-        // \f\pa($er);
-        // echo '<br/>изменено доп параметров имеющихся записей: ' . sizeof($indb);
+// \f\pa($er);
+// echo '<br/>изменено доп параметров имеющихся записей: ' . sizeof($indb);
 
         return \f\end3('окей записали');
     }
@@ -3560,26 +3792,26 @@ class items {
 
 // \f\pa($data,2);
 // \f\pa($cfg_mod,2);
-        // \f\pa($cfg_mod, '', '', '$cfg_mod');
-        // \f\pa($data, '', '', '$data');
-        //$data_old = self::getItemSimple($db, $id_item);
-        // echo $cfg_mod['cfg.level'];
+// \f\pa($cfg_mod, '', '', '$cfg_mod');
+// \f\pa($data, '', '', '$data');
+//$data_old = self::getItemSimple($db, $id_item);
+// echo $cfg_mod['cfg.level'];
 //        \f\CalcMemory::start(778);
 //        \f\timer::start(778);
 
         self::$where2 = ' AND mi.id = \'' . (int) $id_item . '\' ';
         $data_old = self::getItemsSimple3($db, $cfg_mod['cfg.level']);
-        // \f\pa($data_old, '', '', '$data_old');
+// \f\pa($data_old, '', '', '$data_old');
 //        echo 'tt'.\f\timer::stop( 'str', 778 );
 //        echo 'tt'. \f\CalcMemory::stop( 778 );
 
         if (isset($data['head']{0}) && $data_old[$id_item]['head'] != $data['head']) {
 
-            // echo '<br/>' . __FILE__ . ' ' . __LINE__;
+// echo '<br/>' . __FILE__ . ' ' . __LINE__;
             \f\db\db_edit2($db, 'mitems', array('id' => $id_item), array('head' => $data['head']), false, 1, 'da');
         }
 
-        // die();
+// die();
 
         if (!empty($data['head'])) {
 
@@ -3593,7 +3825,7 @@ class items {
               ), 'da', 'last_id');
              */
 
-            //$dop_sql = '';
+//$dop_sql = '';
 
             $in_db = [];
 
@@ -3604,26 +3836,26 @@ class items {
                 ];
             }
 
-            //\f\pa($cfg_mod,2,null,'$cfg_mod');
-            //\f\pa($data,2,null,'$data');
+//\f\pa($cfg_mod,2,null,'$cfg_mod');
+//\f\pa($data,2,null,'$data');
 
             foreach ($cfg_mod as $k => $v) {
 
                 if (isset($data[$k . '_del']) && $data[$k . '_del'] == 'yes')
                     continue;
 
-                //echo '<br/>'.__LINE__;
-                //if (isset($data[$k]{0}) && is_array($v) && !empty($v['name_rus']) ) {
+//echo '<br/>'.__LINE__;
+//if (isset($data[$k]{0}) && is_array($v) && !empty($v['name_rus']) ) {
                 if (isset($data[$k]{0}) && !empty($v['name_rus'])) {
 
-                    //echo '<br/>'.__LINE__;
-                    // $dop_sql .= ( isset($dop_sql{1}) ? ' OR ' : '' ) . ' `name` = \'' . addslashes($k) . '\' ';
+//echo '<br/>'.__LINE__;
+// $dop_sql .= ( isset($dop_sql{1}) ? ' OR ' : '' ) . ' `name` = \'' . addslashes($k) . '\' ';
 //                    if (isset($v['type']) && ( $v['type'] == 'textarea' || $v['type'] == 'textarea_html' )) {
 //                        $in_db_text[$k] = $data[$k];
 //                    } else {
 //                        $in_db[$k] = $data[$k];
 //                    }
-                    //\f\pa($v);
+//\f\pa($v);
 
                     if ($v['type'] == 'textarea' || $v['type'] == 'textarea_html') {
 
@@ -3664,13 +3896,13 @@ class items {
 
             if (isset($data['files']) && sizeof($data['files']) > 0) {
 
-                //require_once $_SERVER['DOCUMENT_ROOT'] . '/0.all/class/nyos_image.php';
+//require_once $_SERVER['DOCUMENT_ROOT'] . '/0.all/class/nyos_image.php';
 
                 $nn = 1;
 
                 foreach ($data['files'] as $k => $v) {
 
-                    //f\pa($v);
+//f\pa($v);
 
                     if (isset($cfg_mod[$k]) && is_array($v) && isset($v['size']) && $v['size'] > 100 && isset($v['error']) && $v['error'] == 0
                     ) {
@@ -3678,13 +3910,13 @@ class items {
                         $new_name = $id_item . '_' . $nn . '_' . substr(\f\translit($v['name'], 'uri2'), 0, 50) . '.' . f\get_file_ext($v['name']);
 
                         $e = \Nyos\nyos_image::autoJpgRotate($v['tmp_name'], self::$dir_img_server . $new_name);
-                        // \f\pa($e);
+// \f\pa($e);
 
                         if (!file_exists(self::$dir_img_server . $new_name)) {
                             copy($v['tmp_name'], self::$dir_img_server . $new_name);
                         }
 
-                        //$in_db[$k] = $new_name;
+//$in_db[$k] = $new_name;
                         $in_db[] = array(
                             'name' => $k,
                             'value' => $new_name
@@ -3693,8 +3925,8 @@ class items {
                 }
             }
 
-            // $db->sql_query('DELETE FROM `mitems-dops` WHERE `id_item` = \'' . $id_item . '\' AND (' . $dop_sql . ') ;');
-            // $db->sql_query('DELETE FROM `mitems-dops` WHERE `id_item` = \'' . $id_item . '\' ;');
+// $db->sql_query('DELETE FROM `mitems-dops` WHERE `id_item` = \'' . $id_item . '\' AND (' . $dop_sql . ') ;');
+// $db->sql_query('DELETE FROM `mitems-dops` WHERE `id_item` = \'' . $id_item . '\' ;');
 
             $ff = $db->prepare('DELETE FROM `mitems-dops` WHERE `id_item` = :item_id ;');
             $ff->execute(array(':item_id' => $id_item));
@@ -3712,14 +3944,14 @@ class items {
 //                    $in[] = array('name' => $k, 'value' => $v);
 //                    
 //                }
-            // \f\pa($in_db, 2, null, '$in_db');
-            // \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $id_item));
+// \f\pa($in_db, 2, null, '$in_db');
+// \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $id_item));
 
             \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, ['id_item' => $id_item]);
 
             self::clearCash($folder);
         }
-        // die();
+// die();
 
         return \f\end2('Изменения сохранены', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }

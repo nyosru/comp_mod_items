@@ -47,7 +47,17 @@ if (isset($_POST['addnew']{1})) {
 
     try {
 
-        Nyos\mod\items::addNew($db, $vv['folder'], $vv['now_level'], $_POST, $_FILES);
+        $new = [];
+        foreach ($_POST as $k => $v) {
+            if (isset($v{0}))
+                $new[$k] = $v;
+        }
+
+//        \f\pa($new,'','','new');
+//        \f\pa($_POST,'','','post');
+        
+        // Nyos\mod\items::addNew($db, $vv['folder'], $vv['now_level'], $_POST, $_FILES);
+        Nyos\mod\items::addNew($db, $vv['folder'], $vv['now_level'], $new, $_FILES);
         $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . 'Запись добавлена';
 
         // \f\Cash::deleteKeyPoFilter($vv['now_level']);
@@ -188,7 +198,6 @@ foreach ($vv['now_level'] as $k => $v) {
 //        \f\pa($v['import_2_module']);
 //        \f\pa($vv['v_data'][$v['import_2_module']],2);
     }
-
 }
 
 // \f\pa($vv['v_data']);

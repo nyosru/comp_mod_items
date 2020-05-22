@@ -59,6 +59,7 @@ else {
 //
 //
 //
+
 // трём метки
 if (!empty($_REQUEST['remove_cash']))
     \f\Cash::deleteKeyPoFilter($_REQUEST['remove_cash']);
@@ -152,14 +153,16 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'remove_item') {
     //ob_start('ob_gzhandler');
     // \f\pa($_REQUEST);
 
-    $res = \Nyos\mod\items::deleteId($db, $_REQUEST['id']);
+    $res = \Nyos\mod\items::deleteId($db, ( $_REQUEST['id'] ?? $_REQUEST['aj_id'] ) );
     // $res = \Nyos\mod\items::add($db, $_REQUEST['add_module'], $_REQUEST['add']);
     // \f\pa($res);
+
 //    $r = ob_get_contents();
 //    ob_end_clean();
     // \f\end2($res['html'].'<Br/>'.$r, true);
 
-    \f\end2($res['html'], true);
+    \f\end2( 'удалено', true );
+    //\f\end2($res['html'], true);
 }
 /**
  * изменение инфы в главном итемс

@@ -111,6 +111,8 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_dop_item') {
 
     if (isset($_REQUEST['itemsmod']{0}) && isset($_REQUEST['item_id']{0}) && isset($_REQUEST['new_status']{0})) {
 
+        \f\Cash::deleteKeyPoFilter([ $_REQUEST['itemsmod'] ]);
+        
         $ff = $db->prepare('UPDATE mitems SET status = :status WHERE id = :id ');
         $ff->execute(
                 array(

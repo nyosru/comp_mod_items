@@ -95,6 +95,13 @@ class items {
 
     /**
      * часть запроса в выборке главных items where ***
+     * ( AND mi.id = \'123\' )
+     * / первый запрос /
+     * SELECT mi.head, self::$select_var1 
+     * FROM `mitems` mi '. self::$join_where 
+     * WHERE mi.`module` = :module 
+     * + self::$where2
+     * + self::$sql_order
      * @var type 
      */
     public static $where2 = '';
@@ -1551,10 +1558,17 @@ class items {
             if (empty(self::$cash_var)) {
 
                 $dop_cash_var = (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '' )
+                        . '..'
+                        . (!empty(self::$where2) ? serialize(self::$where2) : '' )
+                        . '..'
                         . (!empty(self::$search) ? serialize(self::$search) : '' )
+                        . '..'
                         . (!empty(self::$join_where) ? serialize(self::$join_where) : '' )
+                        . '..'
                         . (!empty(self::$sql_vars) ? serialize(self::$sql_vars) : '' )
+                        . '..'
                         . (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '' )
+                        . '..'
                         . (!empty(self::$return_items_header) ? serialize(self::$return_items_header) : '' )
                 ;
 
@@ -1575,7 +1589,9 @@ class items {
 
 
             if (
-                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
+                    empty(self::$where2dop) && empty(self::$where2) 
+                    && empty(self::$need_polya_vars) && empty(self::$nocash) 
+                    && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
             ) {
 
                 $save_cash = true;
@@ -1592,9 +1608,7 @@ class items {
 //        
 //        if ( 1 == 1 || $module == '050.chekin_checkout') {
 
-
             $save_cash = false;
-
 
             if ($save_cash === true &&
                     (
@@ -1764,8 +1778,8 @@ class items {
                 `mitems` mi '
                         . ( self::$join_where ?? '' )
                         . ' WHERE '
-                        . ' mi.`module` = :module '
-                        . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '' )
+                        . ( !empty($module) ? ' mi.`module` = :module ' : '' )
+                        . (!empty($stat) ? ( !empty($module) ? ' AND ' : '' ).' mi.status = \'' . addslashes($stat) . '\' ' : '' )
                         . ( self::$where2 ?? '' )
                         . self::$sql_order ?? '';
 
@@ -1776,7 +1790,9 @@ class items {
 
                 $ff = $db->prepare($ff1);
 
+                if( !empty($module) )
                 self::$var_ar_for_1sql[':module'] = ( $module ?? '' );
+                
                 $ff->execute(self::$var_ar_for_1sql);
 
                 if (self::$show_sql === true)
@@ -1800,7 +1816,9 @@ class items {
 // while( \f\pa($ff->fetchAll(), '', '', 'все');
 
                 $re = [];
-                $sql = '';
+                $sql_1id = $sql = '';
+
+
 
                 while ($r = $ff->fetch()) {
 
@@ -1819,6 +1837,8 @@ class items {
 // \f\pa($r);
 // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
                         $sql .= (!empty($sql) ? ',' : '' ) . $r['id'];
+
+                        $sql_1id = $r['id'];
                     }
 
 //            $re[$r['id']][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
@@ -1915,7 +1935,7 @@ class items {
                             self::$search = [];
                         }
 
-                        if (1 == 2 && !empty(self::$between)) {
+                        if (1 == 1 && !empty(self::$between)) {
 
                             if (self::$show_sql === true)
                                 \f\pa(self::$between, '', '', 'self::$between');
@@ -1923,17 +1943,28 @@ class items {
                             $rebase = true;
 
                             foreach (self::$between as $k1 => $v1) {
-                                if (isset($v1[0]) && isset($v1[1])) {
 
-                                    self::$join_where2 .= ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
-                                            . ' midop' . $nn . '.id_item = midop.id_item '
-                                            . ' AND midop' . $nn . '.name = :i_name' . $nn . ' '
-                                            . ' AND midop' . $nn . '.value_date between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 '
+                                if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+
+                                    self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                                            . ' md' . $nn . '.id_item = midop.id_item '
+                                            . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                            . ' AND md' . $nn . '.value between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 '
                                     ;
+
+//                            self::$join_where .= ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
+//                                    . ' midop' . $nn . '.id_item = midop.id_item '
+//                                    . ' AND midop' . $nn . '.name = :i_name' . $nn . ' '
+//                                    . ' AND midop' . $nn . '.value_date >= :i_val' . $nn . '_0 '
+//                                    . ' AND midop' . $nn . '.value_date <= :i_val' . $nn . '_1 '
+//                            ;
+
                                     self::$vars_to_sql2[':i_name' . $nn] = $k1;
                                     self::$vars_to_sql2[':i_val' . $nn . '_0'] = $v1[0];
                                     self::$vars_to_sql2[':i_val' . $nn . '_1'] = $v1[1];
+
                                     $nn++;
+                                    $nn2++;
                                 }
                             }
                             self::$between = [];
@@ -2010,10 +2041,6 @@ class items {
                     }
 
 
-
-
-
-
                     $rebase_ar = [];
 
                     if ($rebase === true) {
@@ -2046,7 +2073,10 @@ class items {
                             . PHP_EOL
                             . ' WHERE '
                             . PHP_EOL
-                            . ' midop.id_item IN (' . $sql . ') '
+//                            . ' midop.id_item IN (' . $sql . ') '
+                            . (
+                            ( $sql_1id != $sql ) ? ' midop.id_item IN (' . $sql . ') ' : ' midop.id_item = \'' . $sql_1id . '\' '
+                            )
                             . PHP_EOL
                             . ' AND midop.status IS NULL '
                             . PHP_EOL
@@ -2206,8 +2236,6 @@ class items {
 //                    \f\Cash::setVar($cash_var, $re);
 ////                    // \f\pa($e,'','','$e');
 //              1  }
-
-                
 //                if (!empty(self::$cash_var)) {
 //                    \f\Cash::setVar(self::$cash_var, $re, ( self::$cash_time ?? 0));
 //                }
@@ -3466,7 +3494,9 @@ class items {
      * @return type
      */
     public static function addNew($db, string $folder, $cfg_mod, array $data, $files = array(), $add_all_dops = false) {
-
+        
+        \f\Cash::deleteKeyPoFilter([( $cfg_mod['cfg.level'] ?? $cfg_mod )]);
+        
 // \f\pa($data);
 // die;
 

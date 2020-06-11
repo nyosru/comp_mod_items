@@ -270,9 +270,11 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
         var $sp = $(this).attr('sp');
         var $date = $(this).attr('date');
 
-
         var $before_success_show_id = 0;
         var $get_query = [];
+
+        var $clear_cash = 0;
+
 
         // var $div_res = $('#' + $(this).attr('for_res'));
 
@@ -294,7 +296,11 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
 
                 } else if (this.name == 'before_success_show_id') {
                     $before_success_show_id = $('#' + this.value);
+                } else if (this.name == 'clear_cash' ) {
+                    $clear_cash = this.value;
                 }
+                
+                
 
             }
         });
@@ -323,7 +329,7 @@ $(document).ready(function () { // вся мaгия пoслe зaгрузки с�
             type: 'POST',
             url: '/vendor/didrive_mod/items/1/ajax.php',
             dataType: 'json',
-            data: "action=edit_pole&pole=" + $pole + "&id=" + $id + "&val=" + $val + "&s=" + $s,
+            data: "action=edit_pole&pole=" + $pole + "&id=" + $id + "&val=" + $val + "&s=" + $s + "&remove_cash[]="+$clear_cash ,
             // сoбытиe дo oтпрaвки
             beforeSend: function ($data) {
                 if (typeof $div_res !== 'undefined') {

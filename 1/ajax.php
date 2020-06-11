@@ -6,6 +6,8 @@ error_reporting(E_ALL); // E_ALL - отображаем ВСЕ ошибки
 date_default_timezone_set("Asia/Yekaterinburg");
 define('IN_NYOS_PROJECT', true);
 
+// header("Access-Control-Allow-Methods: GET");
+
 require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 require( $_SERVER['DOCUMENT_ROOT'] . '/all/ajax.start.php' );
 
@@ -21,6 +23,10 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 
 // проверяем секрет
 if (
+        (
+        isset($_REQUEST['action']) &&
+        $_REQUEST['action'] == 'get'
+        ) ||
         (
         isset($_REQUEST['aj_id']{0}) && isset($_REQUEST['aj_s']{5}) &&
         \Nyos\nyos::checkSecret($_REQUEST['aj_s'], $_REQUEST['aj_id']) === true
@@ -59,7 +65,6 @@ else {
 //
 //
 //
-
 // трём метки
 if (!empty($_REQUEST['remove_cash']))
     \f\Cash::deleteKeyPoFilter($_REQUEST['remove_cash']);
@@ -71,7 +76,6 @@ if (!empty($_REQUEST['remove_cash']))
 
 
 if (isset($_POST['action']) && $_POST['action'] == 'show_info_strings') {
-
 
     require_once '../../../../all/ajax.start.php';
     require_once dirname(__FILE__) . '/../class.php';
@@ -101,11 +105,11 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'didrive__items__new_edit
     $del = \Nyos\mod\items::deleteFromDops($db, $_REQUEST['items_module'], $dops);
     // \f\pa($we);
 
-    if( !empty($_REQUEST['value']) ){
-    $dops[$_REQUEST['edit_dop_name']] = $_REQUEST['value'];
+    if (!empty($_REQUEST['value'])) {
+        $dops[$_REQUEST['edit_dop_name']] = $_REQUEST['value'];
 
-    $res = \Nyos\mod\items::add($db, $_REQUEST['items_module'], $dops);
-    // \f\pa($res);
+        $res = \Nyos\mod\items::add($db, $_REQUEST['items_module'], $dops);
+        // \f\pa($res);
     }
 
     /*
@@ -153,58 +157,46 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'remove_item') {
     //ob_start('ob_gzhandler');
     // \f\pa($_REQUEST);
 
-    $res = \Nyos\mod\items::deleteId($db, ( $_REQUEST['id'] ?? $_REQUEST['aj_id'] ) );
+    $res = \Nyos\mod\items::deleteId($db, ( $_REQUEST['id'] ?? $_REQUEST['aj_id']));
     // $res = \Nyos\mod\items::add($db, $_REQUEST['add_module'], $_REQUEST['add']);
     // \f\pa($res);
-
 //    $r = ob_get_contents();
 //    ob_end_clean();
     // \f\end2($res['html'].'<Br/>'.$r, true);
 
-    \f\end2( 'удалено', true );
+    \f\end2('удалено', true);
     //\f\end2($res['html'], true);
 }
 /**
  * изменение инфы в главном итемс
  */
 //
-elseif (isset($_POST['action']) && $_POST['action'] == 'edit_pole') {
+elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_pole') {
 
-//    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'db.2.php' );
-//    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'txt.2.php' );
-// $_SESSION['status1'] = true;
-// $status = '';
+    try{
+        
+    if (!empty($_REQUEST['clear_cash']))
+        \f\Cash::deleteKeyPoFilter($_REQUEST['clear_cash']);
 
-    $e = array('id' => (int) $_POST['id']);
-    $e1 = array($_POST['pole'] => $_POST['val']);
-//    \f\pa($e);
-//    \f\pa($e1);
-//    exit;
+    $e = array('id' => (int) $_REQUEST['id']);
+    $e1 = array($_REQUEST['pole'] => $_REQUEST['val']);
 
     \f\db\db_edit2($db, 'mitems', $e, $e1);
 
-//$table = 'mitems';
-//    $polya = \f\db\pole_list($db, $table);
-//    \f\pa($polya);
-//    
-//$table = 'mitems_dop';    
-//    $polya = \f\db\pole_list($db, $table);
-//    \f\pa($polya);
-//$folder = \Nyos\nyos::getFolder($db);
-// папка для кеша данных
-//$dir_for_cash = $_SERVER['DOCUMENT_ROOT'] . '/9.site/' . $folder . '/';
-    $dir_for_cash = DR . dir_site;
+//    $dir_for_cash = DR . dir_site;
+//
+//    $list_cash = scandir($dir_for_cash);
+//    foreach ($list_cash as $k => $v) {
+//        if (strpos($v, 'cash.items.') !== false) {
+//            unlink($dir_for_cash . $v);
+//        }
+//    }
 
-    $list_cash = scandir($dir_for_cash);
-    foreach ($list_cash as $k => $v) {
-        if (strpos($v, 'cash.items.') !== false) {
-            unlink($dir_for_cash . $v);
-        }
+    \f\end2('новый статус ' . $_REQUEST['val']);
+    
+    } catch (Exception $ex) {
+        \f\end2('неописуемая Ex ситуация #'.__LINE__,false);
     }
-
-// \f\Cash::deleteKeyPoFilter( )
-// f\end2( 'новый статус ' . $status);
-    \f\end2('новый статус ' . $_POST['val']);
 }
 /**
  * изменение инфы в дополнительных итемсах
@@ -273,7 +265,10 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_dop_pole') {
 }
 /**
  * получаем перменные 1 записи
- */ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'show') {
+ */
+//
+elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'show') {
+
 
     if (isset($_REQUEST['module']{1})) {
 
@@ -321,6 +316,41 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_dop_pole') {
         }
     } else {
         f\end2('новый статус 1111111');
+    }
+}
+
+/**
+ * получаем перменные 1 записи
+ */
+//
+elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'get') {
+
+    // header("Access-Control-Allow-Methods: GET");
+
+    if (!empty($_REQUEST['module'])) {
+
+        // define('IN_NYOS_PROJECT', true);
+
+        require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
+        // require $_SERVER['DOCUMENT_ROOT'] . '/all/ajax.start.php';
+        // require_once $_SERVER['DOCUMENT_ROOT'] .'/all/ajax.start.php';
+        // require_once dirname(__FILE__) . '/../class.php';
+        // require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'db.2.php' );
+        // require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'txt.2.php' );
+        // $_SESSION['status1'] = true;
+        // $status = '';
+        // \f\db\db_edit2($db, 'mitems', array('id' => (int) $_POST['id']), array($_POST['pole'] => $_POST['val']));
+        // require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.site' . DS . 'exe' . DS . 'items' . DS . 'class.php' );
+
+        if (!empty($_REQUEST['add_secret']))
+            \Nyos\mod\items::$add_s_to_res = true;
+
+        $items = \Nyos\mod\items::get($db, $_REQUEST['module'], ($_REQUEST['status'] ?? 'show'), ($_REQUEST['sort'] ?? null));
+
+        \f\end2('окей', true, ['data' => $items]);
+    } else {
+
+        \f\end2('не указан модуль', false);
     }
 }
 

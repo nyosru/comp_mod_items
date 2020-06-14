@@ -13,6 +13,28 @@ require( $_SERVER['DOCUMENT_ROOT'] . '/all/ajax.start.php' );
 
 //require_once( DR.'/vendor/didrive/base/class/Nyos.php' );
 //require_once( dirname(__FILE__).'/../class.php' );
+ // if( !empty($_REQUEST['sys']) && $_REQUEST['sys'] == 'vue' ){
+//    \f\end2('ой', false, [
+//    'ses' => $_SESSION,
+//     'req' => $_REQUEST,
+//     'post' => $_POST,
+//     'get' => $_GET,
+//     'php' => file_get_contents('php://input'),
+//     'php2' => json_decode(file_get_contents('php://input'),true)
+//    ] );
+// }
+
+$input = json_decode(file_get_contents('php://input'),true);
+
+// if( !empty($in) ){}
+//
+//if( !empty( $e['sys'] ) && $e['sys'] == 'vue' ){
+//    $_REQUEST = $e;
+//}
+
+
+
+
 
 if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 
@@ -21,8 +43,17 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 }
 
 
+
 // проверяем секрет
 if (
+        (
+        isset($input['sys']) &&
+        $input['sys'] == 'vue'
+        ) ||
+        (
+        isset($_REQUEST['sys']) &&
+        $_REQUEST['sys'] == 'vue'
+        ) ||
         (
         isset($_REQUEST['action']) &&
         $_REQUEST['action'] == 'get'
@@ -132,16 +163,74 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'didrive__items__new_edit
     // \f\end2('asd', true, [ 'add' => ( $res ?? 'x' ), 'del' => ( $del ?? 'x' ) ] );
 }
 
-// добавить новый итем
-elseif (isset($_POST['action']) && $_POST['action'] == 'add_new') {
+// копируем запись в разные записи с доп параметром
+// pays из jobdesc
+elseif (
+    (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'pays_copy_to_sps') ||
+    (!empty($input['action']) && $input['action'] == 'pays_copy_to_sps') 
+        ){
 
-    if (empty($_REQUEST['add_module']) || empty($_REQUEST['add']))
+    $in = $input ?? $_REQUEST;
+        
+    
+
+//    echo '<div style="padding-left:200px;padding-top:200px;" >';
+//    \f\pa($_POST, '', '', 'post');
+    \Nyos\mod\items::$where2 = ' AND mi.id = :i ';
+    \Nyos\mod\items::$var_ar_for_1sql[':i'] = $in['item_id'];
+    \Nyos\mod\items::$limit1 = true;
+    $copy = \Nyos\mod\items::get($db, \Nyos\mod\JobDesc::$mod_salary);
+//    \f\pa($copy);
+
+    $new_date_blank = [];
+
+    foreach ($copy as $k => $v) {
+
+        if ($k == 'id')
+            continue;
+
+        if (!empty($v))
+            $new_date_blank[$k] = $v;
+    }
+
+    foreach ($in['to_sps'] as $v1) {
+
+        $v = $new_date_blank;
+        $v['sale_point'] = $v1;
+        $new_ids[] = $v;
+    }
+    
+// \f\pa($new_ids);
+    $e = \Nyos\mod\items::addNewSimples($db, \Nyos\mod\JobDesc::$mod_salary, $new_ids);
+    //\f\pa($e, '', '', 'res');
+    // echo '</div>';
+    // $vv['warn'] .= '<div class="alert-warning" style="padding: 10px;" >Скопировано</div>';
+
+
+
+
+    
+    
+    
+    \f\end2('скопировано',true, [ 'as' => $e ] );
+    
+}
+
+// добавить новый итем
+elseif (
+    (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'add_new') ||
+    (!empty($input['action']) && $input['action'] == 'add_new') 
+        ){
+
+    $dd = $input ?? $_REQUEST;
+    
+    if (empty($dd['add_module']) || empty($dd['add']))
         \f\end2('Что то пошло не так #' . __LINE__, false);
 
     //ob_start('ob_gzhandler');
     // \f\pa($_REQUEST);
 
-    $res = \Nyos\mod\items::add($db, $_REQUEST['add_module'], $_REQUEST['add']);
+    $res = \Nyos\mod\items::add($db, $dd['add_module'], $dd['add']);
     // \f\pa($res);
 //    $r = ob_get_contents();
 //    ob_end_clean();
@@ -173,15 +262,15 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'remove_item') {
 //
 elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_pole') {
 
-    try{
-        
-    if (!empty($_REQUEST['clear_cash']))
-        \f\Cash::deleteKeyPoFilter($_REQUEST['clear_cash']);
+    try {
 
-    $e = array('id' => (int) $_REQUEST['id']);
-    $e1 = array($_REQUEST['pole'] => $_REQUEST['val']);
+        if (!empty($_REQUEST['clear_cash']))
+            \f\Cash::deleteKeyPoFilter($_REQUEST['clear_cash']);
 
-    \f\db\db_edit2($db, 'mitems', $e, $e1);
+        $e = array('id' => (int) $_REQUEST['id']);
+        $e1 = array($_REQUEST['pole'] => $_REQUEST['val']);
+
+        \f\db\db_edit2($db, 'mitems', $e, $e1);
 
 //    $dir_for_cash = DR . dir_site;
 //
@@ -192,10 +281,9 @@ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_pole') {
 //        }
 //    }
 
-    \f\end2('новый статус ' . $_REQUEST['val']);
-    
+        \f\end2('новый статус ' . $_REQUEST['val']);
     } catch (Exception $ex) {
-        \f\end2('неописуемая Ex ситуация #'.__LINE__,false);
+        \f\end2('неописуемая Ex ситуация #' . __LINE__, false);
     }
 }
 /**
@@ -224,7 +312,7 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'edit_dop_pole') {
 //        echo $exc->getTraceAsString();
     }
 
-
+    
 
 //    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'db.2.php' );
 //    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'txt.2.php' );

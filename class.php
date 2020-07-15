@@ -1694,25 +1694,6 @@ class items {
 
             if (1 == 1) {
 
-                //        echo '<br/><br/>' . __FUNCTION__ . '<Br/>';
-                //        echo '<br/>' . $module;
-                // echo ' память ';
-                //        if ($module == '070.jobman' || $module == '061.dolgnost')
-                //            $file_cash = DR . dir_site_sd . 'getItemsSimple2_' . $module . '_' . $stat . (!empty($sort) ? md5($sort) : '' ) . '.cash.json';
-                //        echo '<Br/>'.$file_cash;
-
-                /**
-                 * читаем кеш контент
-                 */
-                //        if (1 == 2 && isset($file_cash) && file_exists($file_cash)) {
-                //            return json_decode(file_get_contents($file_cash), true);
-                //        }
-                //        $cash = $module . $stat . (!empty($sort) ? md5($sort) : '' );
-                //        if (!empty(self::$cash['itemsimple'][$cash]))
-                //            return self::$cash['itemsimple'][$cash];
-                //        $show_memory = false;
-                // $show_memory = true;
-                //
                 if (isset($show_memory) && $show_memory === true) {
 
                     echo '<hr>mod - ' . $module . '<br/>';
@@ -1730,30 +1711,6 @@ class items {
                     self::creatFolderImage($folder);
                 }
 
-                //        \f\timer::start(47);
-                // $ff1 = ' ( SELECT 
-                //            if (!empty(self::$need_polya_vars)) {
-                //                $sql_dop1 = '';
-                //                
-                //                    foreach( self::$need_polya_vars as $kk ){
-                //                        if( !isset($v[$kk]) ){
-                //                            
-                //                            $sql_dop1 = ' INNER JOIN ';
-                //                            
-                //                            // $skip = true;
-                //                            // break;
-                //                        }
-                //                        
-                //                    }
-                //
-                //            }else{
-                //                $sql_dop1 = '';
-                //            }
-                //            if ($sort == 'date_asc') {
-                //                self::$sql_order = ' ORDER BY midop.id ASC ';
-                //            }
-                //            //
-                //            else
                 if ($sort == 'date__desc') {
                     self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
                 }
@@ -1917,7 +1874,12 @@ class items {
                 if (self::$return_items_header === true) {
 
                     self::$return_items_header = false;
-                    return $ff->fetchAll();
+                    // return $ff->fetchAll();
+                    $return = [];
+                    while ($w = $ff->fetch()) {
+                        $return[$w['id']] = $w;
+                    }
+                    return $return;
                 }
 
 
@@ -3416,98 +3378,37 @@ class items {
         return \f\end3('удалёно', true, ['line' => __LINE__]);
     }
 
+    /**
+     * удаление 1 id из таблицы items
+     * @param type $db
+     * @param array $ids
+     * @return type
+     */
     public static function deleteId($db, int $id) {
 
         $ff = $db->prepare('UPDATE `mitems` SET `status` = \'delete\' WHERE id = :id ;');
         $ff->execute(array(':id' => $id));
 
         return \f\end3('удалёно', true, ['id' => $id]);
+    }
 
-        if (!empty($id)) {
+    /**
+     * удаление одномерного массива id из таблицы items
+     * @param type $db
+     * @param array $ids
+     * @return type
+     */
+    public static function deleteIds($db, array $ids) {
 
-            $ff = $db->prepare('UPDATE FROM mitems SET `status` = \'delete\' WHERE id = :id ');
-            $ff->execute(array(':id' => $id));
-            // $ff = $db->prepare('UPDATE FROM mitems-dops SET `status` = \'delete\' WHERE id_item = :id ');
-            // $ff->execute(array(':id' => $id));
-            return \f\end3('удалёно');
-        } else {
-
-            $vars = array(
-                ':mod' => $module_name,
-            );
-
-            $dopsql = '';
-            $nn = 1;
-            foreach ($data_dops as $k => $v) {
-                $dopsql .= PHP_EOL . ' AND id IN ( SELECT id_item FROM `mitems-dops` WHERE name = :k' . $nn . ' AND value = :v' . $nn . ' ) ';
-                $vars[':k' . $nn] = $k;
-                $vars[':v' . $nn] = $v;
-                $nn++;
-            }
-
-            $sql = 'UPDATE mitems 
-                    SET status = \'delete\'
-                    WHERE module = :mod '
-                    . PHP_EOL . ' AND status != \'delete2\' '
-                    // .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
-                    . $dopsql
-                    . ';';
-            //\f\pa($sql);
-            $ff = $db->prepare($sql);
-            $ff->execute($vars);
-
-
-
-            /*
-
-              $dopsql = '';
-              $nn = 1;
-              foreach ($data_dops as $k => $v) {
-              $dopsql .= ' INNER JOIN `mitems-dops` mid5' . $nn . ' ON mid5' . $nn . '.id_item = mi.id AND mid5' . $nn . '.name = \'' . addslashes($k) . '\' AND mid5' . $nn . '.value = \'' . addslashes($v) . '\' ';
-              $nn++;
-              }
-
-              $ff = $db->prepare('SELECT
-              mi.id
-              FROM
-              mitems mi
-
-              ' . $dopsql . '
-
-              WHERE
-              mi.module = :mod1 AND
-              mi.status != \'delete2\'
-              GROUP BY
-              mi.id
-              ');
-
-              $ff->execute(array(
-              // ':id_user' => 'f34d6d84-5ecb-4a40-9b03-71d03cb730cb',
-              ':mod1' => $module_name,
-              // ':date' => ' date(\'' . date('Y-m-d', $_SERVER['REQUEST_TIME'] - 3600*24*3 ) .'\') ',
-              // ':dates' => $start_date //date( 'Y-m-d', ($_SERVER['REQUEST_TIME'] - 3600 * 24 * 14 ) )
-              ));
-              //$e3 = $ff->fetchAll();
-
-              $sql2 = '';
-              while ($e = $ff->fetch()) {
-
-              $sql2 .= (!empty($sql2) ? ' OR ' : '' ) . ' `id` = \'' . $e['id'] . '\' ';
-              }
-
-              //echo '<br/>';
-              $er = 'UPDATE mitems SET `status` = \'delete\' WHERE ' . $sql2;
-              //echo '<br/>';
-              $f = $db->prepare($er);
-              $f->execute();
-
-              //self::clearCash();
-              //\f\pa($e);
-             * 
-             */
-        }
-
-        return \f\end3('Окей');
+        $sql = 'UPDATE `mitems` SET `status` = \'delete\' WHERE ( `id` = '.implode(' OR `id` = ', $ids).' ) ;';
+        // \f\pa($sql);
+        $ff = $db->prepare($sql);
+        //$in = [':ids' => implode(' OR `id` = ', $ids)];
+        //$ff->execute($in);
+        //\f\pa($in);
+        $ff->execute();
+            
+        return \f\end3('удалёно', true);
     }
 
     /**
@@ -3559,11 +3460,11 @@ class items {
                 $rows[] = $t2;
             }
         }
-        
+
         \f\db\sql_insert_mnogo($db, 'mitems-dops', $rows);
 
         self::$show_sql = false;
-        
+
         // return self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
     }
 

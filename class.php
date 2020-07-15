@@ -52,14 +52,12 @@ if (!defined('IN_NYOS_PROJECT'))
 
 
 
-class items
-{
+class items {
 
     /**
      * если true то добавляем секрет
      */
     public static $add_s_to_res = false;
-
     public static $nocash = false;
     public static $dir_img_server = false;
     public static $dir_img_uri = false;
@@ -212,8 +210,7 @@ class items
      */
     public static $cash_time = 0;
 
-    public static function setSort($a1, $a2)
-    {
+    public static function setSort($a1, $a2) {
         if ($a1 == 'head' && ($a2 == 'asc' || $a2 == 'desc')) {
             self::$sort_head = $a2;
         }
@@ -224,8 +221,7 @@ class items
      * @param type $folder
      * @return type
      */
-    public static function creatFolderImage($folder)
-    {
+    public static function creatFolderImage($folder) {
 
         self::$dir_img_uri_download = 'module_items_image' . DS;
         self::$dir_img_uri = dir_site_sd . self::$dir_img_uri_download;
@@ -242,8 +238,7 @@ class items
         }
     }
 
-    public static function creatFolderImage2(string $folder)
-    {
+    public static function creatFolderImage2(string $folder) {
 
         self::$dir_img_uri_download = 'module_items_image' . DS;
         self::$dir_img_uri = DS . '9.site' . DS . $folder . DS . 'download' . DS . self::$dir_img_uri_download;
@@ -270,8 +265,7 @@ class items
      * @param type $limit
      * @return type
      */
-    public static function getItems($db, string $folder, $module = null, $stat = 'show', $limit = 50)
-    {
+    public static function getItems($db, string $folder, $module = null, $stat = 'show', $limit = 50) {
 
 
         $r = self::getItemsSimple3($db, $module, $stat);
@@ -319,28 +313,28 @@ class items
         try {
 
             $f = 'SELECT * FROM `mitems` mi WHERE '
-                . ' mi.`status` != \'delete2\' '
-                // . ' AND mi.folder = :folder '
-                . (isset($module{
-                1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
-                . (isset($stat{
-                1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
-                . 'ORDER BY '
-                . (self::$sort_head == 'desc' ? ' mi.head DESC, ' : '')
-                . (self::$sort_head == 'asc' ? ' mi.head ASC, ' : '')
-                . ' mi.`sort` DESC, mi.`add_d` DESC, mi.`add_t` DESC '
-                . (isset($limit{
-                1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '')
-                . ';';
+                    . ' mi.`status` != \'delete2\' '
+                    // . ' AND mi.folder = :folder '
+                    . (isset($module{
+                            1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
+                    . (isset($stat{
+                            1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
+                    . 'ORDER BY '
+                    . (self::$sort_head == 'desc' ? ' mi.head DESC, ' : '')
+                    . (self::$sort_head == 'asc' ? ' mi.head ASC, ' : '')
+                    . ' mi.`sort` DESC, mi.`add_d` DESC, mi.`add_t` DESC '
+                    . (isset($limit{
+                            1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '')
+                    . ';';
 
             //            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
             //                echo '<br/>'.'<br/>'.$f;
 
             $ff = $db->prepare($f);
             $ff->execute(
-                array(
+                    array(
                     // ':folder' => $folder
-                )
+                    )
             );
 
             //$re1 = $ff->fetchAll();
@@ -381,18 +375,18 @@ class items
                 `mitems-dops` midop 
                 
             INNER JOIN `mitems` mi ON '
-            // .'mi.folder = :folder '
-            . ' mi.id = midop.id_item '
-            . (isset($module{
-            1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
-            . (isset($stat{
-            1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
-            . 'AND mi.`status` != \'delete2\' 
+                // .'mi.folder = :folder '
+                . ' mi.id = midop.id_item '
+                . (isset($module{
+                        1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
+                . (isset($stat{
+                        1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
+                . 'AND mi.`status` != \'delete2\' 
                 
             WHERE 
                 midop.status IS NULL 
                 ' . (isset(self::$sql_itemsdop_add_where{
-            3}) ? ' AND ' . self::$sql_itemsdop_add_where : '') . '                
+                        3}) ? ' AND ' . self::$sql_itemsdop_add_where : '') . '                
             ;';
         self::$sql_itemsdop_add_where = null;
 
@@ -445,8 +439,7 @@ class items
      * @param int $id
      * @return type
      */
-    public static function getItemSimple($db, int $id)
-    {
+    public static function getItemSimple($db, int $id) {
 
         try {
 
@@ -463,16 +456,16 @@ class items
                 `mitems-dops` midop 
                 
             INNER JOIN `mitems` mi ON '
-                // .' mi.folder = :folder '
-                // . ' mi.id = midop.id_item '
-                . ' mi.id = :id '
-                . ' AND '
-                . ' mi.id = midop.id '
+                    // .' mi.folder = :folder '
+                    // . ' mi.id = midop.id_item '
+                    . ' mi.id = :id '
+                    . ' AND '
+                    . ' mi.id = midop.id '
 
-                //            ' WHERE 
-                //                midop.status IS NULL '
-                . ' LIMIT 10 '
-                . ' ;';
+                    //            ' WHERE 
+                    //                midop.status IS NULL '
+                    . ' LIMIT 10 '
+                    . ' ;';
 
             //            $ff1 = 'SELECT 
             //                mi.*
@@ -521,10 +514,10 @@ class items
                 mi.*
             FROM 
                 `mitems` mi '
-                    . ' WHERE '
-                    . ' mi.id = :id '
-                    . ' LIMIT 1 '
-                    . ' ;';
+                        . ' WHERE '
+                        . ' mi.id = :id '
+                        . ' LIMIT 1 '
+                        . ' ;';
 
                 if (self::$show_sql === true) {
                     \f\pa($ff1);
@@ -554,10 +547,10 @@ class items
         catch (\PDOException $ex) {
 
             echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
-                . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
-                . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
-                . PHP_EOL . $ex->getTraceAsString()
-                . '</pre>';
+            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+            . PHP_EOL . $ex->getTraceAsString()
+            . '</pre>';
             // не найдена таблица, создаём значит её
             if (strpos($ex->getMessage(), 'no such table') !== false) {
 
@@ -577,8 +570,7 @@ class items
      * @param type $stat
      * @return type
      */
-    public static function getItemsSimple($db, $module = null, $stat = 'show', $sort = null)
-    {
+    public static function getItemsSimple($db, $module = null, $stat = 'show', $sort = null) {
 
         $show_memory = false;
         //        $show_memory = true;
@@ -665,27 +657,27 @@ class items
                 midop.`value_date`,
                 midop.`value_datetime`,
                 midop.`value_text` '
-                . (self::$sql_select_vars ?? '')
-                . '
+                    . (self::$sql_select_vars ?? '')
+                    . '
             FROM 
                 `mitems-dops` midop 
                 
             INNER JOIN `mitems` mi ON '
-                // .' mi.folder = :folder '
-                . ' mi.id = midop.id_item ' . PHP_EOL
-                // . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' ). PHP_EOL
-                . ' AND mi.`module` = :module '
-                . (!empty($stat) ? PHP_EOL . ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
-                . PHP_EOL . ' AND mi.`status` != \'delete2\' '
-                . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '')
-                . PHP_EOL
-                . (self::$sql_itemsdop2_add_where ?? '') . '
+                    // .' mi.folder = :folder '
+                    . ' mi.id = midop.id_item ' . PHP_EOL
+                    // . ( isset($module{1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '' ). PHP_EOL
+                    . ' AND mi.`module` = :module '
+                    . (!empty($stat) ? PHP_EOL . ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
+                    . PHP_EOL . ' AND mi.`status` != \'delete2\' '
+                    . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '')
+                    . PHP_EOL
+                    . (self::$sql_itemsdop2_add_where ?? '') . '
             WHERE 
                 midop.status IS NULL 
                 ' . (!empty(self::$sql_itemsdop_add_where) ? ' AND ' . self::$sql_itemsdop_add_where : '')
-                . ' ' . (self::$sql_order ?? '')
-                . ' ' . (self::$sql_limit ?? '')
-                . ';';
+                    . ' ' . (self::$sql_order ?? '')
+                    . ' ' . (self::$sql_limit ?? '')
+                    . ';';
 
             //            if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
             //                \f\pa($ff1);
@@ -713,7 +705,7 @@ class items
             $for_sql = self::$sql_itemsdop_add_where_array;
             // $for_sql[':folder'] = $folder;
             $for_sql[':module'] = (isset($module{
-            1})) ? $module : '';
+                            1})) ? $module : '';
             self::$sql_itemsdop_add_where_array = [];
 
             if (self::$show_sql === true) {
@@ -769,29 +761,29 @@ class items
                 }
 
                 $f = 'SELECT mi.* FROM `mitems` mi '
-                    //. ' INNER JOIN '
-                    // . ' LEFT JOIN `mitems-dops` mi2 ON mi.id = mi2.id_item '
-                    . 'WHERE '
-                    // . ' mi.folder = :folder '
-                    . 'mi.`status` != \'delete2\' '
-                    . $sql_dop
-                    . (isset($module{
-                    1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
-                    . (isset($stat{
-                    1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
-                    . 'ORDER BY '
-                    . (self::$sort_head == 'desc' ? ' mi.head DESC, ' : '')
-                    . (self::$sort_head == 'asc' ? ' mi.head ASC, ' : '')
-                    . ' mi.`sort` DESC, mi.`add_d` DESC, mi.`add_t` DESC '
-                    // . ( isset($limit{1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '' )
-                    . ';';
+                        //. ' INNER JOIN '
+                        // . ' LEFT JOIN `mitems-dops` mi2 ON mi.id = mi2.id_item '
+                        . 'WHERE '
+                        // . ' mi.folder = :folder '
+                        . 'mi.`status` != \'delete2\' '
+                        . $sql_dop
+                        . (isset($module{
+                                1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
+                        . (isset($stat{
+                                1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
+                        . 'ORDER BY '
+                        . (self::$sort_head == 'desc' ? ' mi.head DESC, ' : '')
+                        . (self::$sort_head == 'asc' ? ' mi.head ASC, ' : '')
+                        . ' mi.`sort` DESC, mi.`add_d` DESC, mi.`add_t` DESC '
+                        // . ( isset($limit{1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '' )
+                        . ';';
 
                 //            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
                 //                echo '<br/>'.'<br/>'.$f;
 
                 $ff = $db->prepare($f);
                 $ff->execute(
-                    //array( ':folder' => $folder )
+                //array( ':folder' => $folder )
                 );
 
                 while ($v = $ff->fetch()) {
@@ -823,24 +815,24 @@ class items
 
                 $ff1 = 'SELECT 
                         mi.* '
-                    . ' ' . (self::$sql_select_vars ?? '')
-                    . '
+                        . ' ' . (self::$sql_select_vars ?? '')
+                        . '
                     FROM 
                         `mitems` mi
                     WHERE '
-                    . ' mi.`status` != \'delete2\' '
-                    . $sql_dop
-                    // .' mi.folder = :folder '
-                    . (isset($module{
-                    1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
-                    . (isset($stat{
-                    1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
-                    . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '') . '
+                        . ' mi.`status` != \'delete2\' '
+                        . $sql_dop
+                        // .' mi.folder = :folder '
+                        . (isset($module{
+                                1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
+                        . (isset($stat{
+                                1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
+                        . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '') . '
                         ' . (self::$sql_itemsdop2_add_where ?? '') . '
                         ' . (!empty(self::$sql_itemsdop_add_where) ? ' AND ' . self::$sql_itemsdop_add_where : '')
-                    . ' ' . (self::$sql_order ?? '')
-                    . ' ' . (self::$sql_limit ?? '')
-                    . ';';
+                        . ' ' . (self::$sql_order ?? '')
+                        . ' ' . (self::$sql_limit ?? '')
+                        . ';';
 
                 //                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
                 //                    \f\pa($ff1);
@@ -951,8 +943,7 @@ class items
      * @param type $sort
      * @return type
      */
-    public static function getItemsSimple2($db, $module = null, $stat = 'show', $sort = null)
-    {
+    public static function getItemsSimple2($db, $module = null, $stat = 'show', $sort = null) {
 
         // echo ' память ';
 
@@ -1008,13 +999,13 @@ class items
                 `mitems` mi
 
             LEFT JOIN `mitems-dops` midop ON '
-            . ' mi.id = midop.id_item '
-            . ' AND midop.status IS NULL '
-            . ' WHERE '
-            . ' mi.`module` = :module '
-            . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '')
-            . (self::$where2 ?? '')
-            . self::$sql_order ?? '';
+                . ' mi.id = midop.id_item '
+                . ' AND midop.status IS NULL '
+                . ' WHERE '
+                . ' mi.`module` = :module '
+                . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '')
+                . (self::$where2 ?? '')
+                . self::$sql_order ?? '';
 
 
         //            \f\pa($ff1);
@@ -1158,8 +1149,7 @@ class items
      * date_asc sort_asc
      * @return type
      */
-    public static function getItemsSimple3($db, $module = null, $stat = 'show', $sort = null)
-    {
+    public static function getItemsSimple3($db, $module = null, $stat = 'show', $sort = null) {
 
         return self::get($db, $module, $stat, $sort);
 
@@ -1325,12 +1315,12 @@ class items
                 ' . self::$select_var1 . '
             FROM 
                 `mitems` mi '
-                    . (self::$join_where ?? '')
-                    . ' WHERE '
-                    . ' mi.`module` = :module '
-                    . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '')
-                    . (self::$where2 ?? '')
-                    . self::$sql_order ?? '';
+                        . (self::$join_where ?? '')
+                        . ' WHERE '
+                        . ' mi.`module` = :module '
+                        . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '')
+                        . (self::$where2 ?? '')
+                        . self::$sql_order ?? '';
 
                 if (self::$show_sql === true)
                     \f\pa($ff1);
@@ -1415,19 +1405,19 @@ class items
                     $ff1 = ' SELECT
 
                 midop.id_item id, '
-                        // .' midop.id dops_id, '
-                        . ' midop.`name`,
+                            // .' midop.id dops_id, '
+                            . ' midop.`name`,
                 midop.`value`,
                 midop.`value_date`,
                 midop.`value_datetime`,
                 midop.`value_text` '
-                        . (self::$sql_select_vars ?? '')
-                        . '
+                            . (self::$sql_select_vars ?? '')
+                            . '
             FROM `mitems-dops` midop '
-                        . ' WHERE '
-                        . ' midop.id_item IN (' . $sql . ') '
-                        . ' AND midop.status IS NULL '
-                        . (self::$where2dop ?? '');
+                            . ' WHERE '
+                            . ' midop.id_item IN (' . $sql . ') '
+                            . ' AND midop.status IS NULL '
+                            . (self::$where2dop ?? '');
 
                     //            \f\pa($ff1);
 
@@ -1492,9 +1482,9 @@ class items
                         $sm2 = 0;
                         $sm2 = memory_get_usage();
                         echo '<br/>'
-                            . 's' . __LINE__ . 's > ' . round(($sm2 - $sm) / 1024, 2) . ' Kb = '
-                            . '<br/>'
-                            . 'timer:' . \f\timer::stop('str', 123) . ' - ';
+                        . 's' . __LINE__ . 's > ' . round(($sm2 - $sm) / 1024, 2) . ' Kb = '
+                        . '<br/>'
+                        . 'timer:' . \f\timer::stop('str', 123) . ' - ';
                     }
                 }
             }
@@ -1547,10 +1537,10 @@ class items
         catch (\PDOException $ex) {
 
             echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
-                . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
-                . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
-                . PHP_EOL . $ex->getTraceAsString()
-                . '</pre>';
+            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+            . PHP_EOL . $ex->getTraceAsString()
+            . '</pre>';
             // не найдена таблица, создаём значит её
             if (strpos($ex->getMessage(), 'no such table') !== false) {
 
@@ -1571,11 +1561,10 @@ class items
      * @param строка $sort
      * @return массив
      */
-    public static function get($db, $module = null, $stat = 'show', $sort = null)
-    {
+    public static function get($db, $module = null, $stat = 'show', $sort = null) {
 
-        if( $stat == 'all' )
-        $stat = '';
+        if ($stat == 'all')
+            $stat = '';
 
         // echo '<br/>'.__FUNCTION__.' '.$module;
 
@@ -1584,19 +1573,19 @@ class items
             if (empty(self::$cash_var)) {
 
                 $dop_cash_var = (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '')
-                    . '..'
-                    . (!empty(self::$where2) ? serialize(self::$where2) : '')
-                    . '..'
-                    . (!empty(self::$search) ? serialize(self::$search) : '')
-                    . '..'
-                    . (!empty(self::$join_where) ? serialize(self::$join_where) : '')
-                    . '..'
-                    . (!empty(self::$sql_vars) ? serialize(self::$sql_vars) : '')
-                    . '..'
-                    . (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '')
-                    . '..'
-                    . (!empty(self::$return_items_header) ? serialize(self::$return_items_header) : '')
-                    . '.s.' . ($sort ?? '');
+                        . '..'
+                        . (!empty(self::$where2) ? serialize(self::$where2) : '')
+                        . '..'
+                        . (!empty(self::$search) ? serialize(self::$search) : '')
+                        . '..'
+                        . (!empty(self::$join_where) ? serialize(self::$join_where) : '')
+                        . '..'
+                        . (!empty(self::$sql_vars) ? serialize(self::$sql_vars) : '')
+                        . '..'
+                        . (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '')
+                        . '..'
+                        . (!empty(self::$return_items_header) ? serialize(self::$return_items_header) : '')
+                        . '.s.' . ($sort ?? '');
 
                 self::$cash_var = 'item_get_' . $module . '_' . $stat . '_' . $sort . '_' . (!empty($dop_cash_var) ? md5($dop_cash_var) : '');
             }
@@ -1615,7 +1604,7 @@ class items
 
 
             if (
-                empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
+                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
             ) {
 
                 $save_cash = true;
@@ -1635,8 +1624,8 @@ class items
             $save_cash = false;
 
             if (
-                $save_cash === true &&
-                ($module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp || $module == \Nyos\mod\JobDesc::$mod_dolgn
+                    $save_cash === true &&
+                    ($module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp || $module == \Nyos\mod\JobDesc::$mod_dolgn
                     // || $module == \Nyos\mod\JobDesc::$mod_salary
                     || $module == \Nyos\mod\JobDesc::$mod_sp_link_timeo)
             ) {
@@ -1782,7 +1771,7 @@ class items
                 }
                 //
                 elseif (
-                    $sort == 'sort_asc' || $sort == 'sort'
+                        $sort == 'sort_asc' || $sort == 'sort'
                 ) {
                     self::$sql_order = ' ORDER BY mi.sort ASC ';
                 }
@@ -1790,6 +1779,103 @@ class items
                 elseif ($sort == 'sort_desc') {
                     self::$sql_order = ' ORDER BY mi.sort DESC ';
                 }
+
+                $search_id = '';
+                $nnt = 1;
+                if (!empty(self::$search['id'])) {
+                    foreach (self::$search['id'] as $v) {
+                        self::$var_ar_for_1sql[':search_id' . $nnt] = $v;
+                        $search_id .= (!empty($search_id) ? ' OR ' : '' ) . ' mi.id = :search_id' . $nnt . ' ';
+                        $nnt++;
+                    }
+                    $search_id = ' AND ( ' . $search_id . ' ) ';
+                    unset(self::$search['id']);
+                }
+
+                $nn = 99;
+                $nn2 = 99;
+
+                if (1 == 1 && !empty(self::$between)) {
+
+                    if (self::$show_sql === true)
+                        \f\pa(self::$between, '', '', 'self::$between');
+
+                    // $rebase = true;
+
+                    foreach (self::$between as $k1 => $v1) {
+
+                        if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+
+                            self::$join_where .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                                    . ' md' . $nn . '.id_item = mi.id '
+                                    . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                    . ' AND md' . $nn . '.value between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
+
+                            self::$var_ar_for_1sql[':i_name' . $nn] = $k1;
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = $v1[0];
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = $v1[1];
+
+                            $nn++;
+                            $nn2++;
+                        }
+                    }
+                    self::$between = [];
+                }
+
+                if (1 == 1 && !empty(self::$between_date)) {
+
+                    if (self::$show_sql === true)
+                        \f\pa(self::$between_date, '', '', 'self::$between_date');
+
+                    // $rebase = true;
+
+                    foreach (self::$between_date as $k1 => $v1) {
+
+                        if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+
+                            self::$join_where .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                                    . ' md' . $nn . '.id_item = mi.id '
+                                    . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                    . ' AND md' . $nn . '.value_date between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
+
+                            self::$var_ar_for_1sql[':i_name' . $nn] = $k1;
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = $v1[0];
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = $v1[1];
+
+                            $nn++;
+                            $nn2++;
+                        }
+                    }
+                    self::$between_date = [];
+                }
+
+                if (1 == 1 && !empty(self::$between_datetime)) {
+
+                    if (self::$show_sql === true)
+                        \f\pa(self::$between_datetime, '', '', 'self::$between_datetime');
+
+                    // $rebase = true;
+
+                    foreach (self::$between_date as $k1 => $v1) {
+
+                        if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+
+                            self::$join_where .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                                    . ' md' . $nn . '.id_item = mi.id '
+                                    . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                    . ' AND md' . $nn . '.value_datetime between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
+
+                            self::$var_ar_for_1sql[':i_name' . $nn] = $k1;
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = date('Y-m-d H:i:s', strtotime($v1[0]));
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = date('Y-m-d H:i:s', strtotime($v1[1]));
+
+                            $nn++;
+                            $nn2++;
+                        }
+                    }
+                    self::$between_datetime = [];
+                }
+
 
                 $ff1 = ' SELECT 
                 mi.id,
@@ -1799,12 +1885,13 @@ class items
                 ' . self::$select_var1 . '
             FROM 
                 `mitems` mi '
-                    . (self::$join_where ?? '')
-                    . ' WHERE '
-                    . (!empty($module) ? ' mi.`module` = :module ' : '')
-                    . (!empty($stat) ? (!empty($module) ? ' AND ' : '') . ' mi.status = \'' . addslashes($stat) . '\' ' : '')
-                    . (self::$where2 ?? '')
-                    . self::$sql_order ?? '';
+                        . (self::$join_where ?? '')
+                        . ' WHERE '
+                        . (!empty($module) ? ' mi.`module` = :module ' : '')
+                        . $search_id
+                        . (!empty($stat) ? (!empty($module) ? ' AND ' : '') . ' mi.status = \'' . addslashes($stat) . '\' ' : '')
+                        . (self::$where2 ?? '')
+                        . self::$sql_order ?? '';
 
                 if (self::$show_sql === true)
                     \f\pa($ff1, '', '', '$ff1 sql1');
@@ -1931,9 +2018,9 @@ class items
                                 // if (isset($v1[0]) && isset($v1[1])) {
 
                                 self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
-                                    . ' midop' . $nn . '.id_item = midop.id_item '
-                                    . ' AND midop' . $nn . '.name = :i_name' . $nn
-                                    . ' AND ';
+                                        . ' midop' . $nn . '.id_item = midop.id_item '
+                                        . ' AND midop' . $nn . '.name = :i_name' . $nn
+                                        . ' AND ';
 
                                 self::$vars_to_sql2[':i_name' . $nn] = $k1;
 
@@ -1977,9 +2064,9 @@ class items
                                 if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
 
                                     self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
-                                        . ' md' . $nn . '.id_item = midop.id_item '
-                                        . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
-                                        . ' AND md' . $nn . '.value between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
+                                            . ' md' . $nn . '.id_item = midop.id_item '
+                                            . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                            . ' AND md' . $nn . '.value between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
 
                                     //                            self::$join_where .= ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
                                     //                                    . ' midop' . $nn . '.id_item = midop.id_item '
@@ -2011,9 +2098,9 @@ class items
                                 if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
 
                                     self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
-                                        . ' md' . $nn . '.id_item = midop.id_item '
-                                        . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
-                                        . ' AND md' . $nn . '.value_date between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
+                                            . ' md' . $nn . '.id_item = midop.id_item '
+                                            . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                            . ' AND md' . $nn . '.value_date between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
 
                                     //                            self::$join_where .= ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
                                     //                                    . ' midop' . $nn . '.id_item = midop.id_item '
@@ -2045,9 +2132,9 @@ class items
                                 if (isset($v1[0]) && isset($v1[1])) {
 
                                     self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
-                                        . ' md' . $nn . '.id_item = midop.id_item '
-                                        . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn2 . ' '
-                                        . ' AND md' . $nn . '.value_datetime between :i_val' . $nn2 . '_0 and :i_val' . $nn2 . '_1 ';
+                                            . ' md' . $nn . '.id_item = midop.id_item '
+                                            . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn2 . ' '
+                                            . ' AND md' . $nn . '.value_datetime between :i_val' . $nn2 . '_0 and :i_val' . $nn2 . '_1 ';
 
                                     //                            self::$join_where .= ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
                                     //                                    . ' midop' . $nn . '.id_item = midop.id_item '
@@ -2086,27 +2173,27 @@ class items
                     $ff1 = ' SELECT
 
                 midop.id_item id, '
-                        // .' midop.id dops_id, '
-                        . ' midop.`name`,
+                            // .' midop.id dops_id, '
+                            . ' midop.`name`,
                 midop.`value`,
                 midop.`value_date`,
                 midop.`value_datetime`,
                 midop.`value_text` '
-                        . (self::$sql_select_vars ?? '')
-                        . PHP_EOL
-                        . ' FROM `mitems-dops` midop '
-                        . PHP_EOL
-                        . self::$join_where2
-                        . PHP_EOL
-                        . ' WHERE '
-                        . PHP_EOL
-                        //                            . ' midop.id_item IN (' . $sql . ') '
-                        . (
+                            . (self::$sql_select_vars ?? '')
+                            . PHP_EOL
+                            . ' FROM `mitems-dops` midop '
+                            . PHP_EOL
+                            . self::$join_where2
+                            . PHP_EOL
+                            . ' WHERE '
+                            . PHP_EOL
+                            //                            . ' midop.id_item IN (' . $sql . ') '
+                            . (
                             ($sql_1id != $sql) ? ' midop.id_item IN (' . $sql . ') ' : ' midop.id_item = \'' . $sql_1id . '\' ')
-                        . PHP_EOL
-                        . ' AND midop.status IS NULL '
-                        . PHP_EOL
-                        . (self::$where2dop ?? '');
+                            . PHP_EOL
+                            . ' AND midop.status IS NULL '
+                            . PHP_EOL
+                            . (self::$where2dop ?? '');
 
                     self::$join_where2 = self::$where2dop = '';
 
@@ -2210,9 +2297,9 @@ class items
                         $sm2 = 0;
                         $sm2 = memory_get_usage();
                         echo '<br/>'
-                            . 's' . __LINE__ . 's > ' . round(($sm2 - $sm) / 1024, 2) . ' Kb = '
-                            . '<br/>'
-                            . 'timer:' . \f\timer::stop('str', 123) . ' - ';
+                        . 's' . __LINE__ . 's > ' . round(($sm2 - $sm) / 1024, 2) . ' Kb = '
+                        . '<br/>'
+                        . 'timer:' . \f\timer::stop('str', 123) . ' - ';
                     }
                 }
             }
@@ -2280,10 +2367,10 @@ class items
         catch (\PDOException $ex) {
 
             echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
-                . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
-                . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
-                . PHP_EOL . $ex->getTraceAsString()
-                . '</pre>';
+            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+            . PHP_EOL . $ex->getTraceAsString()
+            . '</pre>';
 
             // не найдена таблица, создаём значит её
             if (strpos($ex->getMessage(), 'no such table') !== false) {
@@ -2306,8 +2393,7 @@ class items
      * @param строка $sort
      * @return массив
      */
-    public static function get2($db, string $module, $stat = 'show', $sort = null)
-    {
+    public static function get2($db, string $module, $stat = 'show', $sort = null) {
 
         // echo '<br/>'.__FUNCTION__.' '.$module;
 
@@ -2325,11 +2411,21 @@ class items
                     $dop_in_cash_var1 = '';
                     if (!empty(self::$search))
                         $dop_in_cash_var1 .= serialize(self::$search);
+                    if (!empty(self::$between))
+                        $dop_in_cash_var1 .= serialize(self::$between);
+                    if (!empty(self::$between_date))
+                        $dop_in_cash_var1 .= serialize(self::$between_date);
+                    if (!empty(self::$between_datetime))
+                        $dop_in_cash_var1 .= serialize(self::$between_datetime);
                     if (!empty(self::$join_where))
                         $dop_in_cash_var1 .= serialize(self::$join_where);
                     if (!empty(self::$sql_vars))
                         $dop_in_cash_var1 .= serialize(self::$sql_vars);
-                    $cash_var = 'items__' . $module . '_' . md5('stat' . ($stat ?? '') . '_sort' . ($sort ?? '') . '_' . ($dop_in_cash_var1 ?? ''));
+
+                    $cash_var = 'items__' . $module . '_'
+                            . md5('stat' . ($stat ?? '')
+                                    . '_sort' . ($sort ?? '') . '_'
+                                    . ( $dop_in_cash_var1 ?? '' ));
                 }
 
                 // $cash_time = 0;
@@ -2374,6 +2470,7 @@ class items
             //                return \f\end3('выборка готова (кеш)', true, $return);
 
             if (1 == 2) {
+                
             } else {
 
                 // если есть то что ищем ( ключ - значение )
@@ -2384,9 +2481,9 @@ class items
                     foreach (self::$search as $k1 => $v1) {
 
                         self::$join_where .= ' INNER JOIN `mitems-dops` midop1 ON '
-                            . ' midop1.id_item = mi.id '
-                            . ' AND midop1.name = :i_name' . $nn . ' '
-                            . ' AND midop1.value = :i_val' . $nn . ' ';
+                                . ' midop1.id_item = mi.id '
+                                . ' AND midop1.name = :i_name' . $nn . ' '
+                                . ' AND midop1.value = :i_val' . $nn . ' ';
                         self::$sql_vars[':i_name' . $nn] = $k1;
                         self::$sql_vars[':i_val' . $nn] = $v1;
                         $nn++;
@@ -2395,26 +2492,26 @@ class items
                 }
 
                 $ff1 = ' SELECT '
-                    . ' mi.id item_id, '
-                    . ' mi.head, '
-                    . ' mi.sort, '
-                    . ' mi.status, '
-                    . ' midop.name, '
-                    . ' midop.value, '
-                    . ' midop.value_date, '
-                    . ' midop.value_datetime, '
-                    . ' midop.value_int, '
-                    . ' midop.value_text '
-                    . ' FROM '
-                    . ' `mitems-dops` midop '
-                    //
-                    . ' INNER JOIN `mitems` mi ON '
-                    . ' mi.`module` = :module '
-                    . ' AND mi.id = midop.id_item '
-                    . (!empty($stat) ? ' AND mi.status = :status ' : '')
-                    //
-                    . (self::$join_where ?? '')
-                    //.' LIMIT 10 '
+                        . ' mi.id item_id, '
+                        . ' mi.head, '
+                        . ' mi.sort, '
+                        . ' mi.status, '
+                        . ' midop.name, '
+                        . ' midop.value, '
+                        . ' midop.value_date, '
+                        . ' midop.value_datetime, '
+                        . ' midop.value_int, '
+                        . ' midop.value_text '
+                        . ' FROM '
+                        . ' `mitems-dops` midop '
+                        //
+                        . ' INNER JOIN `mitems` mi ON '
+                        . ' mi.`module` = :module '
+                        . ' AND mi.id = midop.id_item '
+                        . (!empty($stat) ? ' AND mi.status = :status ' : '')
+                        //
+                        . (self::$join_where ?? '')
+                //.' LIMIT 10 '
                 ;
 
                 // \f\pa($ff1);
@@ -2498,10 +2595,10 @@ class items
         catch (\PDOException $ex) {
 
             echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
-                . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
-                . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
-                . PHP_EOL . $ex->getTraceAsString()
-                . '</pre>';
+            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+            . PHP_EOL . $ex->getTraceAsString()
+            . '</pre>';
 
             // не найдена таблица, создаём значит её
             if (strpos($ex->getMessage(), 'no such table') !== false) {
@@ -2514,8 +2611,7 @@ class items
         }
     }
 
-    public static function getItemsSimple3_old($db, $module = null, $stat = 'show', $sort = null)
-    {
+    public static function getItemsSimple3_old($db, $module = null, $stat = 'show', $sort = null) {
 
         //        $show_memory = true;
 
@@ -2543,10 +2639,10 @@ class items
                 `mitems` mi
 
             WHERE '
-            . ' mi.`module` = :module '
-            . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '')
-            . (self::$where2 ?? '')
-            . self::$sql_order ?? '';
+                . ' mi.`module` = :module '
+                . (!empty($stat) ? ' AND mi.status = \'' . addslashes($stat) . '\' ' : '')
+                . (self::$where2 ?? '')
+                . self::$sql_order ?? '';
 
         //            \f\pa($ff1);
 
@@ -2614,19 +2710,19 @@ class items
         $ff1 = ' SELECT
 
           midop.id_item id, '
-            // .' midop.id dops_id, '
-            . ' midop.`name`,
+                // .' midop.id dops_id, '
+                . ' midop.`name`,
           midop.`value`,
           midop.`value_date`,
           midop.`value_datetime`,
           midop.`value_text` '
-            . (self::$sql_select_vars ?? '')
-            . '
+                . (self::$sql_select_vars ?? '')
+                . '
 
           FROM `mitems-dops` midop '
-            . ' WHERE '
-            . ' midop.id_item IN (' . $sql . ') '
-            . ' AND midop.status IS NULL ';
+                . ' WHERE '
+                . ' midop.id_item IN (' . $sql . ') '
+                . ' AND midop.status IS NULL ';
 
         //            \f\pa($ff1);
 
@@ -2658,9 +2754,9 @@ class items
             $sm2 = 0;
             $sm2 = memory_get_usage();
             echo '<br/>'
-                . 's' . __LINE__ . 's > ' . round(($sm2 - $sm) / 1024, 2) . ' Kb = '
-                . '<br/>'
-                . 'timer:' . \f\timer::stop('str', 123) . ' - ';
+            . 's' . __LINE__ . 's > ' . round(($sm2 - $sm) / 1024, 2) . ' Kb = '
+            . '<br/>'
+            . 'timer:' . \f\timer::stop('str', 123) . ' - ';
         }
 
         // \f\pa($re);
@@ -2675,8 +2771,7 @@ class items
          */
     }
 
-    public static function getItems_old190605($db, string $folder, $module = null, $stat = 'show', $limit = 50)
-    {
+    public static function getItems_old190605($db, string $folder, $module = null, $stat = 'show', $limit = 50) {
 
 
         //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' ){
@@ -2702,15 +2797,15 @@ class items
         try {
 
             $f = 'SELECT * FROM `mitems` WHERE `folder` = \'' . $folder . '\' '
-                . (isset($module{
-                1}) ? ' AND `module` = \'' . addslashes($module) . '\' ' : '')
-                . (isset($stat{
-                1}) ? ' AND `status` = \'' . addslashes($stat) . '\' ' : '')
-                . 'AND `status` != \'delete2\' '
-                . 'ORDER BY `sort` DESC, `add_d` DESC, `add_t` DESC '
-                . (isset($limit{
-                1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '')
-                . ';';
+                    . (isset($module{
+                            1}) ? ' AND `module` = \'' . addslashes($module) . '\' ' : '')
+                    . (isset($stat{
+                            1}) ? ' AND `status` = \'' . addslashes($stat) . '\' ' : '')
+                    . 'AND `status` != \'delete2\' '
+                    . 'ORDER BY `sort` DESC, `add_d` DESC, `add_t` DESC '
+                    . (isset($limit{
+                            1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '')
+                    . ';';
 
             if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info')
                 echo '<br/>' . '<br/>' . $f;
@@ -2747,15 +2842,15 @@ class items
 
             $return[$r['id']] = $r;
             $in_sql2 .= (isset($in_sql2{
-            3}) ? ' OR ' : '') . ' `id_item` = \'' . $r['id'] . '\' ';
+                            3}) ? ' OR ' : '') . ' `id_item` = \'' . $r['id'] . '\' ';
         }
 
         // $sql2 = $db->sql_query('SELECT `id_item`, `name`, `value`,`value_text` FROM `mitems-dops` WHERE (' . $in_sql2 . ') AND `status` IS NULL ;');
 
         $ff1 = 'SELECT `id_item`, `name`, `value`,`value_text` FROM `mitems-dops` WHERE '
-            . (isset($in_sql2{
-            5}) ? ' (' . $in_sql2 . ') AND ' : '')
-            . ' `status` IS NULL ;';
+                . (isset($in_sql2{
+                        5}) ? ' (' . $in_sql2 . ') AND ' : '')
+                . ' `status` IS NULL ;';
 
         if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
             echo '<br/>' . '<br/>' . $ff1;
@@ -2780,10 +2875,10 @@ class items
                 $return[$r['id_item']]['dop'] = array();
 
             if (isset($r['value_text']{
-            0})) {
+                            0})) {
                 $return[$r['id_item']]['dop'][$r['name']] = $r['value_text'];
             } elseif (isset($r['value']{
-            0})) {
+                            0})) {
 
                 $return[$r['id_item']]['dop'][$r['name']] = $r['value'];
             }
@@ -2804,8 +2899,7 @@ class items
         return f\end2('Достали список', 'ok', $out, 'array');
     }
 
-    public static function creatTable($db)
-    {
+    public static function creatTable($db) {
 
 
         $ff = $db->prepare('CREATE TABLE mitems (
@@ -2853,8 +2947,7 @@ class items
      * @param int $limit
      * @return type
      */
-    public static function getItems2($db, string $folder, string $module = null, string $stat = 'show', int $limit = null)
-    {
+    public static function getItems2($db, string $folder, string $module = null, string $stat = 'show', int $limit = null) {
 
         //        if( $_SERVER['HTTP_HOST'] == 'p-shop.uralweb.info' ){
         //            global $status;
@@ -2864,15 +2957,15 @@ class items
         $cash_dir = DR . dir_site;
 
         $cash_file = 'items.'
-            . (isset($folder{
-            1}) ? (string) $folder . '.' : '')
-            . (isset($module{
-            1}) ? (string) $module . '.' : '')
-            . (isset($stat{
-            1}) ? (string) $stat . '.' : '')
-            . (isset($limit{
-            1}) ? (string) $limit . '.' : '')
-            . '.cash';
+                . (isset($folder{
+                        1}) ? (string) $folder . '.' : '')
+                . (isset($module{
+                        1}) ? (string) $module . '.' : '')
+                . (isset($stat{
+                        1}) ? (string) $stat . '.' : '')
+                . (isset($limit{
+                        1}) ? (string) $limit . '.' : '')
+                . '.cash';
 
         if (file_exists($cash_dir . $cash_file))
             return unserialize(file_get_contents($cash_dir . $cash_file));
@@ -2881,15 +2974,15 @@ class items
             self::creatFolderImage2($folder);
 
         $out = array('data' => \f\db\getSql($db, 'SELECT * FROM `mitems` WHERE `folder` = \'' . addslashes($folder) . '\' '
-            . (isset($module{
-            1}) ? ' AND `module` = \'' . addslashes($module) . '\' ' : '')
-            . (isset($stat{
-            1}) ? ' AND `status` = \'' . addslashes($stat) . '\' ' : '')
-            . 'AND `status` != \'delete2\' '
-            . 'ORDER BY `sort` DESC, `add_d` DESC, `add_t` DESC '
-            . (isset($limit{
-            1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '')
-            . ';'));
+                    . (isset($module{
+                            1}) ? ' AND `module` = \'' . addslashes($module) . '\' ' : '')
+                    . (isset($stat{
+                            1}) ? ' AND `status` = \'' . addslashes($stat) . '\' ' : '')
+                    . 'AND `status` != \'delete2\' '
+                    . 'ORDER BY `sort` DESC, `add_d` DESC, `add_t` DESC '
+                    . (isset($limit{
+                            1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '')
+                    . ';'));
 
         $sql2 = $db->sql_query('SELECT 
 
@@ -2908,9 +3001,9 @@ class items
                 i.id = d.id_item 
                 AND i.folder = \'' . addslashes($folder) . '\' 
                 AND i.module = \'' . addslashes($module) . '\' ' .
-            (isset($stat{
-            1}) ? ' AND i.status = \'' . addslashes($stat) . '\' ' : '')
-            . ' WHERE 
+                (isset($stat{
+                        1}) ? ' AND i.status = \'' . addslashes($stat) . '\' ' : '')
+                . ' WHERE 
                 d.`status` IS NULL 
 
             ;');
@@ -2946,8 +3039,7 @@ class items
      * @param type $now_page
      * @return type
      */
-    public static function itemsPage($db, $folder, $module, $on1page = 10, $now_page = 1)
-    {
+    public static function itemsPage($db, $folder, $module, $on1page = 10, $now_page = 1) {
 
         //$_SESSION['status1'] = true;
         //$status = '';
@@ -2963,12 +3055,12 @@ class items
         //    $status = '';
         //}
         $sql = $db->sql_query('SELECT COUNT(id) kolvo FROM `mitems` '
-            . 'WHERE '
-            . ' `folder` = \'' . $folder . '\' '
-            . ' AND `module` = \'' . addslashes($module) . '\' '
-            . ' AND `status` = \'show\' '
-            . ' GROUP BY `folder` '
-            . ';');
+                . 'WHERE '
+                . ' `folder` = \'' . $folder . '\' '
+                . ' AND `module` = \'' . addslashes($module) . '\' '
+                . ' AND `status` = \'show\' '
+                . ' GROUP BY `folder` '
+                . ';');
         //if ($shows === true) {
         //    $_SESSION['status1'] = false;
         //    echo $status;
@@ -3010,8 +3102,7 @@ class items
      * @param type $data
      * @return type
      */
-    public static function addNew_old($db, $folder, $cfg_mod, $data)
-    {
+    public static function addNew_old($db, $folder, $cfg_mod, $data) {
 
         // \f\pa($cfg_mod);
         // \f\pa($data);
@@ -3037,7 +3128,7 @@ class items
             //$status = '';
             $new_id = db\db2_insert($db, 'mitems', array(
                 'folder' => $folder, 'module' => $cfg_mod['cfg.level'], 'head' => $data['head'], 'add_d' => 'NOW', 'add_t' => 'NOW'
-            ), 'da', 'last_id');
+                    ), 'da', 'last_id');
             //echo $status;
             //
             //echo '<br/>#'.__LINE__;
@@ -3048,8 +3139,8 @@ class items
             foreach ($cfg_mod as $k => $v) {
 
                 if (isset($data[$k]{
-                0}) && isset($v['name_rus']{
-                0})) {
+                                0}) && isset($v['name_rus']{
+                                0})) {
 
                     if (isset($v['type']) && ($v['type'] == 'textarea' || $v['type'] == 'textarea_html')) {
 
@@ -3058,7 +3149,7 @@ class items
                             'value_text' => $data[$k]
                         );
                     } elseif (isset($v['type']) && $v['type'] == 'translit' && isset($v['var_in']{
-                    0}) && isset($data[$v['var_in']])) {
+                                    0}) && isset($data[$v['var_in']])) {
 
                         $in_db[] = array(
                             'name' => $k,
@@ -3127,8 +3218,7 @@ class items
      * @param string $module_name
      * @param type $data_dops
      */
-    public static function deleteItems2($db, string $module_name, array $datas)
-    {
+    public static function deleteItems2($db, string $module_name, array $datas) {
         foreach ($datas as $k => $v) {
             self::deleteItems($db, \Nyos\Nyos::$folder_now, $module_name, $v);
         }
@@ -3143,8 +3233,7 @@ class items
      * @param type $id
      * @return type
      */
-    public static function deleteItems($db, string $folder, string $module_name, $data_dops = [], $id = null)
-    {
+    public static function deleteItems($db, string $folder, string $module_name, $data_dops = [], $id = null) {
 
         if (!empty($id)) {
 
@@ -3171,10 +3260,10 @@ class items
             $sql = 'UPDATE mitems 
                     SET status = \'delete\'
                     WHERE module = :mod '
-                . PHP_EOL . ' AND status != \'delete2\' '
-                // .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
-                . $dopsql
-                . ';';
+                    . PHP_EOL . ' AND status != \'delete2\' '
+                    // .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
+                    . $dopsql
+                    . ';';
             //\f\pa($sql);
             $ff = $db->prepare($sql);
             $ff->execute($vars);
@@ -3244,8 +3333,7 @@ class items
      * [ 'dop1' => $val, 'dop2' => $val ]
      * @return массив
      */
-    public static function deleteFromDops($db, $module, $dops = [])
-    {
+    public static function deleteFromDops($db, $module, $dops = []) {
 
         // echo '<br/>' . __FILE__ . ' - ' . __LINE__ . ' - ' . $module;
         // \f\pa($dops);
@@ -3262,6 +3350,11 @@ class items
             return \f\end3('удалёно (всё)', true, ['line' => __LINE__]);
         }
         // удаляем с фильтром
+        elseif (1 == 1) {
+
+            // \Nyos\mod\items::$search[':module'] = $module;
+        }
+        // удаляем с фильтром
         else {
 
             $var_in_sql = [
@@ -3274,15 +3367,15 @@ class items
             if (!empty($dops))
                 foreach ($dops as $k => $v) {
                     $dop_sql .= ' INNER JOIN `mitems-dops` md' . $nn . ' '
-                        . ' ON '
-                        . ' md' . $nn . '.id_item = mi.id '
-                        . ' AND md' . $nn . '.name = :name' . $nn . ' '
-                        . ' AND '
-                        . ' ( '
-                        . ' md' . $nn . '.value = :var' . $nn . ' '
-                        . ' OR md' . $nn . '.value_date = :var' . $nn . ' '
-                        . ' OR md' . $nn . '.value_datetime = :var' . $nn . ' '
-                        . ' ) ';
+                            . ' ON '
+                            . ' md' . $nn . '.id_item = mi.id '
+                            . ' AND md' . $nn . '.name = :name' . $nn . ' '
+                            . ' AND '
+                            . ' ( '
+                            . ' md' . $nn . '.value = :var' . $nn . ' '
+                            . ' OR md' . $nn . '.value_date = :var' . $nn . ' '
+                            . ' OR md' . $nn . '.value_datetime = :var' . $nn . ' '
+                            . ' ) ';
                     $var_in_sql[':name' . $nn] = $k;
                     $var_in_sql[':var' . $nn] = $v;
                     $nn++;
@@ -3309,9 +3402,9 @@ class items
                     $var_in_sql = [':module' => $module];
 
                     $sql = 'UPDATE `mitems` mi '
-                        . ' SET `mi`.`status` = \'delete\' '
-                        . ' WHERE mi.`module` = :module AND mi.`id` IN (' . $ids . ') '
-                        . ' ;';
+                            . ' SET `mi`.`status` = \'delete\' '
+                            . ' WHERE mi.`module` = :module AND mi.`id` IN (' . $ids . ') '
+                            . ' ;';
                     // \f\pa($sql);
                     $ff = $db->prepare($sql);
                     // \f\pa($var_in_sql);
@@ -3323,8 +3416,7 @@ class items
         return \f\end3('удалёно', true, ['line' => __LINE__]);
     }
 
-    public static function deleteId($db, int $id)
-    {
+    public static function deleteId($db, int $id) {
 
         $ff = $db->prepare('UPDATE `mitems` SET `status` = \'delete\' WHERE id = :id ;');
         $ff->execute(array(':id' => $id));
@@ -3356,10 +3448,10 @@ class items
             $sql = 'UPDATE mitems 
                     SET status = \'delete\'
                     WHERE module = :mod '
-                . PHP_EOL . ' AND status != \'delete2\' '
-                // .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
-                . $dopsql
-                . ';';
+                    . PHP_EOL . ' AND status != \'delete2\' '
+                    // .' AND `id` IN ( SELECT mid.id_item FROM `mitems-dops` mid WHERE mid.name = \'jobman\' AND mid.value = :id_user ) '
+                    . $dopsql
+                    . ';';
             //\f\pa($sql);
             $ff = $db->prepare($sql);
             $ff->execute($vars);
@@ -3427,12 +3519,52 @@ class items
      * @param array $data
      * @return type
      */
-    public static function add($db, string $mod_name, array $data, $files = array(), $add_all_dops = false)
-    {
+    public static function add($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
         \f\Cash::deleteKeyPoFilter([$mod_name]);
 
         return self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
+    }
+
+    public static function edits($db, string $mod_name, array $items_id, $new_dop = []) {
+
+        \f\Cash::deleteKeyPoFilter([$mod_name]);
+
+        $for_sql = [
+            ':items' => implode(',', $items_id),
+            ':name_dops' => implode(',', array_keys($new_dop))
+        ];
+
+        $sql = 'UPDATE `mitems-dops` SET `status` = \'delete\', `date_status` = NOW() WHERE id_item in ( :items ) AND `name` in ( :name_dops );';
+
+        if (self::$show_sql === true)
+            \f\pa($sql);
+
+        $ff = $db->prepare($sql);
+
+        if (self::$show_sql === true)
+            \f\pa($for_sql);
+
+        $ff->execute($for_sql);
+
+        $rows = [];
+
+        foreach ($items_id as $id) {
+            $t = $new_dop;
+            $t['id_item'] = $id;
+            foreach ($new_dop as $k => $v) {
+                $t2 = $t;
+                $t2['name'] = $k;
+                $t2['value'] = $v;
+                $rows[] = $t2;
+            }
+        }
+        
+        \f\db\sql_insert_mnogo($db, 'mitems-dops', $rows);
+
+        self::$show_sql = false;
+        
+        // return self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
     }
 
     /**
@@ -3444,8 +3576,7 @@ class items
      * @param array $data
      * @return type
      */
-    public static function addNewSimple($db, string $mod_name, array $data, $files = array(), $add_all_dops = false)
-    {
+    public static function addNewSimple($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
         \f\Cash::deleteKeyPoFilter([$mod_name]);
 
@@ -3482,8 +3613,7 @@ class items
     //        
     //    }
 
-    public static function addNewSimples($db, string $mod_name, array $data, $files = array(), $add_all_dops = false)
-    {
+    public static function addNewSimples($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
         if (empty($data))
             return false;
@@ -3530,8 +3660,7 @@ class items
      * @param array $data
      * @return type
      */
-    public static function addNew($db, string $folder, $cfg_mod, array $data, $files = array(), $add_all_dops = false)
-    {
+    public static function addNew($db, string $folder, $cfg_mod, array $data, $files = array(), $add_all_dops = false) {
 
         \f\Cash::deleteKeyPoFilter([($cfg_mod['cfg.level'] ?? $cfg_mod)]);
 
@@ -3546,7 +3675,7 @@ class items
             throw new \Exception('Ошибка, папка для файлов не создана');
 
         if (!isset($data['head']{
-        0}))
+                        0}))
             $data['head'] = 1;
 
         //echo '<Br/>'.__FILE__.' '.__LINE__;
@@ -3584,6 +3713,7 @@ class items
                 // \f\pa($v, 2, null, '$cfg_mod $v');
 
                 if (!empty($cfg_mod['items_type']) && $cfg_mod['items_type'] === 'free') {
+                    
                 } elseif ($add_all_dops === false && empty($v['name_rus']))
                     continue;
 
@@ -3613,8 +3743,8 @@ class items
                         $in_db[] = array(
                             'name' => $k,
                             'value_datetime' => date('Y-m-d H:i:s', isset($data[$k]{
-                            1}) ?
-                                strtotime($data[$k] . ' ' . (isset($data[$k . '_time']) ? $data[$k . '_time'] : '')) : ((!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : $v['default']))
+                                            1}) ?
+                                    strtotime($data[$k] . ' ' . (isset($data[$k . '_time']) ? $data[$k . '_time'] : '')) : ((!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : $v['default']))
                         );
                     }
                     //
@@ -3623,7 +3753,7 @@ class items
                         $in_db[] = array(
                             'name' => $k,
                             'value_date' => date('Y-m-d', isset($data[$k]{
-                            2}) ? strtotime($data[$k]) : ((!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : null))
+                                            2}) ? strtotime($data[$k]) : ((!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : null))
                         );
                     }
                     //
@@ -3645,8 +3775,8 @@ class items
                 }
                 //
                 elseif (!empty($v['type']) && $v['type'] == 'translit' && isset($v['var_in']{
-                0}) && isset($data[$v['var_in']]{
-                0})) {
+                                0}) && isset($data[$v['var_in']]{
+                                0})) {
 
                     $in_db[] = array(
                         'name' => $v['var_in'] . '_translit',
@@ -3747,8 +3877,7 @@ class items
         return \f\end2('Окей, запись добавлена', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }
 
-    public static function clearCash($folder = null)
-    {
+    public static function clearCash($folder = null) {
 
         if ($folder === null)
             $folder = \Nyos\Nyos::$folder_now;
@@ -3768,8 +3897,7 @@ class items
      * @param type $array
      * @return type
      */
-    public static function saveNewDop($db, $array)
-    {
+    public static function saveNewDop($db, $array) {
 
         if (empty($array))
             return \f\end3('нет данных для сохранения', false);
@@ -3810,13 +3938,13 @@ class items
         // $sql1 = 'UPDATE `mitems-dops` SET `status` = \'delete\', `date_status` = NOW() WHERE `status` != \'delete\' AND ( ' . $sql . ' ) ';
 
         $sql1 = 'UPDATE '
-            . ' `mitems-dops` '
-            . ' SET '
-            . ' `status` = \'delete\''
-            . ' ,`date_status` = NOW() '
-            . ' WHERE '
-            . ' `date_status` IS NULL '
-            . ' AND ( ' . $sql . ' ) ';
+                . ' `mitems-dops` '
+                . ' SET '
+                . ' `status` = \'delete\''
+                . ' ,`date_status` = NOW() '
+                . ' WHERE '
+                . ' `date_status` IS NULL '
+                . ' AND ( ' . $sql . ' ) ';
 
         //        $sql1 = 'DELETE FROM `mitems-dops` '
         //                // . 'SET `status` = \'delete\''
@@ -3850,8 +3978,7 @@ class items
      * @param type $data
      * @return type
      */
-    public static function saveEdit($db, $id_item, $folder, $cfg_mod, $data)
-    {
+    public static function saveEdit($db, $id_item, $folder, $cfg_mod, $data) {
 
 
         if (self::$dir_img_server === false)
@@ -3876,7 +4003,7 @@ class items
         //        echo 'tt'. \f\CalcMemory::stop( 778 );
 
         if (isset($data['head']{
-        0}) && $data_old[$id_item]['head'] != $data['head']) {
+                        0}) && $data_old[$id_item]['head'] != $data['head']) {
 
             // echo '<br/>' . __FILE__ . ' ' . __LINE__;
             \f\db\db_edit2($db, 'mitems', array('id' => $id_item), array('head' => $data['head']), false, 1, 'da');
@@ -3918,7 +4045,7 @@ class items
                 //echo '<br/>'.__LINE__;
                 //if (isset($data[$k]{0}) && is_array($v) && !empty($v['name_rus']) ) {
                 if (isset($data[$k]{
-                0}) && !empty($v['name_rus'])) {
+                                0}) && !empty($v['name_rus'])) {
 
                     //echo '<br/>'.__LINE__;
                     // $dop_sql .= ( isset($dop_sql{1}) ? ' OR ' : '' ) . ' `name` = \'' . addslashes($k) . '\' ';
@@ -4026,4 +4153,5 @@ class items
 
         return \f\end2('Изменения сохранены', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }
+
 }

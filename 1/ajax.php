@@ -8,6 +8,8 @@ define('IN_NYOS_PROJECT', true);
 
 // header("Access-Control-Allow-Methods: GET");
 
+header("Access-Control-Allow-Origin: *");
+
 require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 require( $_SERVER['DOCUMENT_ROOT'] . '/all/ajax.start.php' );
 
@@ -42,13 +44,12 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 //cron_scan_new_datafile();
 }
 
-if( empty($_REQUEST) && !empty($input) )
-$_REQUEST = $input;
+if (empty($_REQUEST) && !empty($input))
+    $_REQUEST = $input;
 
 //\f\pa($input,'','','in');
 //\f\pa($_REQUEST,'','','req');
 //\f\pa($_POST,'','','pos');
-
 // проверяем секрет
 if (
         (
@@ -421,6 +422,9 @@ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'get') {
 
     if (!empty($_REQUEST['module'])) {
 
+//        if( $_REQUEST['module'] == '050.chekin_checkout' )
+//        \f\pa($_REQUEST);
+        
         // define('IN_NYOS_PROJECT', true);
 
         require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
@@ -437,12 +441,82 @@ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'get') {
         if (!empty($_REQUEST['add_secret']))
             \Nyos\mod\items::$add_s_to_res = true;
 
+        if (!empty($_REQUEST['search']))
+            \Nyos\mod\items::$search = $_REQUEST['search'];
+
+        if (!empty($_REQUEST['between_date']))
+            \Nyos\mod\items::$between_date = $_REQUEST['between_date'];
+
+        if (!empty($_REQUEST['between_datetime']))
+            \Nyos\mod\items::$between_datetime = $_REQUEST['between_datetime'];
+
+        if (!empty($_REQUEST['between_month'])) {
+            foreach ($_REQUEST['between_month'] as $pole => $val) {
+                $ds = date('Y-m-01', strtotime($val));
+                \Nyos\mod\items::$between_date[$pole] = [$ds, date('Y-m-d', strtotime($ds . ' +1 month -1 day'))];
+            }
+        }
+
+        if (!empty($_REQUEST['between_dt_month'])) {
+            foreach ($_REQUEST['between_dt_month'] as $pole => $val) {
+                $ds = date('Y-m-01 03:00:00', strtotime($val));
+                \Nyos\mod\items::$between_datetime[$pole] = [$ds, date('Y-m-d 03:00:00', strtotime($ds . ' +1 month '))];
+            }
+        }
+
+        // \Nyos\mod\items::$show_sql = true;
         $items = \Nyos\mod\items::get($db, $_REQUEST['module'], ($_REQUEST['status'] ?? 'show'), ($_REQUEST['sort'] ?? null));
 
-        \f\end2('окей', true, ['data' => $items]);
+/**
+ * доп обработка после выборки
+ */
+    if( isset( $_REQUEST['load_after'] ) && $_REQUEST['load_after'] == 'jobman_fio' ){
+        
+//        $list_jm = [];
+//        foreach( $items as $v ){
+//            $list_jm[$v['jobman']] = 1;
+//        }
+//        
+//        // \Nyos\mod\items::$search['jobman']
+//        $items = \Nyos\mod\items::get($db, $_REQUEST['module'], ($_REQUEST['status'] ?? 'show'), ($_REQUEST['sort'] ?? null));
+        
+    }
+        
+        
+        if (isset($_REQUEST['group']) && ( $_REQUEST['group'] == 'jobman__date_now__ar' 
+                || $_REQUEST['group'] == 'jobman__start_smena__ar' 
+                || $_REQUEST['group'] == 'jobman__date__ar' 
+                )) {
+
+            $re = [];
+
+            foreach ($items as $k => $v) {
+
+                // группируем рабочие смены
+                if ($_REQUEST['group'] == 'jobman__start_smena__ar') {
+
+                    if (!empty($v['jobman']) && !empty($v['start']))
+                        $re[$v['jobman']][date('Y-m-d', strtotime( $v['start'] .' -4 hour' ) )][] = $v;
+
+                } elseif ($_REQUEST['group'] == 'jobman__date_now__ar') {
+
+                    if (!empty($v['jobman']) && !empty($v['date_now']))
+                        $re[$v['jobman']][$v['date_now']][] = $v;
+                } elseif ($_REQUEST['group'] == 'jobman__date__ar') {
+
+                    if (!empty($v['jobman']) && !empty($v['date']))
+                        $re[$v['jobman']][$v['date']][] = $v;
+                }
+            }
+
+            \f\end2('окей #'.__LINE__, true, ['data' => $re]);
+        }
+
+
+        \f\end2('окей #'.__LINE__, true, ['data' => $items]);
     } else {
 
-        \f\end2('не указан модуль', false);
+        \f\end2('не указан модуль #'.__LINE__, false);
     }
 }
 

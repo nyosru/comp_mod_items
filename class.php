@@ -1604,7 +1604,9 @@ class items {
 
 
             if (
-                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
+                    empty(self::$where2dop) && empty(self::$where2) 
+                    && empty(self::$need_polya_vars) && empty(self::$nocash) 
+                    && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
             ) {
 
                 $save_cash = true;
@@ -1781,6 +1783,8 @@ class items {
 
                 if (1 == 1 && !empty(self::$between_date)) {
 
+                    echo '<br/>#'.__LINE__;
+                    
                     if (self::$show_sql === true)
                         \f\pa(self::$between_date, '', '', 'self::$between_date');
 
@@ -1789,6 +1793,8 @@ class items {
                     foreach (self::$between_date as $k1 => $v1) {
 
                         if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+
+                            echo '<br/>#'.__LINE__;
 
                             self::$join_where .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
                                     . ' md' . $nn . '.id_item = mi.id '
@@ -1806,6 +1812,8 @@ class items {
                     self::$between_date = [];
                 }
 
+                // self::$join_where .= ' /* */ ';
+                
                 if (1 == 1 && !empty(self::$between_datetime)) {
 
                     if (self::$show_sql === true)
@@ -1813,13 +1821,18 @@ class items {
 
                     // $rebase = true;
 
-                    foreach (self::$between_date as $k1 => $v1) {
+                    foreach (self::$between_datetime as $k1 => $v1) {
 
-                        if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+                        if ( sizeof($v1) > 0 && isset($v1[0]) && isset($v1[1])) {
 
-                            self::$join_where .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                            self::$join_where .= PHP_EOL 
+                                    . ' INNER JOIN `mitems-dops` md' . $nn 
+                                    . PHP_EOL 
+                                    . ' ON '
                                     . ' md' . $nn . '.id_item = mi.id '
-                                    . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                    . PHP_EOL 
+                                    . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                    . PHP_EOL 
                                     . ' AND md' . $nn . '.value_datetime between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
 
                             self::$var_ar_for_1sql[':i_name' . $nn] = $k1;
@@ -1833,6 +1846,7 @@ class items {
                     self::$between_datetime = [];
                 }
 
+                //self::$sql_order = ' LIMIT 0,100 ';
 
                 $ff1 = ' SELECT 
                 mi.id,
@@ -3400,6 +3414,9 @@ class items {
      */
     public static function deleteIds($db, array $ids) {
 
+        if( empty($ids) )
+        return \f\end3('нечего удалять', false);
+        
         $sql = 'UPDATE `mitems` SET `status` = \'delete\' WHERE ( `id` = '.implode(' OR `id` = ', $ids).' ) ;';
         // \f\pa($sql);
         $ff = $db->prepare($sql);

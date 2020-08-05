@@ -7,11 +7,10 @@ use f as f;
 
 //echo __FILE__.'<br/>';
 // строки безопасности
-if (!defined('IN_NYOS_PROJECT'))
-    die('<center><h1><br><br><br><br>Cтудия Сергея</h1><p>Сработала защита <b>TPL</b> от злостных розовых хакеров.</p>
-    <a href="http://www.uralweb.info" target="_blank">Создание, дизайн, вёрстка и программирование сайтов.</a><br />
-    <a href="http://www.nyos.ru" target="_blank">Только отдельные услуги: Дизайн, вёрстка и программирование сайтов.</a>');
-
+//if (!defined('IN_NYOS_PROJECT'))
+//    die('<center><h1><br><br><br><br>Cтудия Сергея</h1><p>Сработала защита <b>TPL</b> от злостных розовых хакеров.</p>
+//    <a href="http://www.uralweb.info" target="_blank">Создание, дизайн, вёрстка и программирование сайтов.</a><br />
+//    <a href="http://www.nyos.ru" target="_blank">Только отдельные услуги: Дизайн, вёрстка и программирование сайтов.</a>');
 //    \Nyos\mod\items::$join_where = ' INNER JOIN `mitems-dops` mid '
 //            . ' ON mid.id_item = mi.id '
 //            . ' AND mid.name = \'date\' '
@@ -53,6 +52,12 @@ if (!defined('IN_NYOS_PROJECT'))
 
 
 class items {
+
+    /**
+     * тип модуля (для перезода от 1 к 3 )
+     * @var type 
+     */
+    public static $type_module = 1;
 
     /**
      * если true то добавляем секрет
@@ -1563,6 +1568,19 @@ class items {
      */
     public static function get($db, $module = null, $stat = 'show', $sort = null) {
 
+        // запись строки в файл лога
+        if (1 == 2) {
+            $log_file = $_SERVER['DOCUMENT_ROOT'] . '/log_mov.log';
+            // `\f\pa($log_file);
+            $e = debug_backtrace();
+            $debug_line = $e[0]['file'] . ' #' . $e[0]['line'];
+            file_put_contents($log_file
+                    , PHP_EOL . date('Y-m-d H:i:s') . ' items get module ' . $module . ' ' . $stat . ' ' . $sort
+                    . PHP_EOL . '           ' . $debug_line
+                    . PHP_EOL . '           ' . __FILE__ . ' #' . __LINE__
+                    , FILE_APPEND);
+        }
+
         if ($stat == 'all')
             $stat = '';
 
@@ -1604,9 +1622,7 @@ class items {
 
 
             if (
-                    empty(self::$where2dop) && empty(self::$where2) 
-                    && empty(self::$need_polya_vars) && empty(self::$nocash) 
-                    && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
+                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
             ) {
 
                 $save_cash = true;
@@ -1778,13 +1794,14 @@ class items {
                             $nn2++;
                         }
                     }
+
                     self::$between = [];
                 }
 
                 if (1 == 1 && !empty(self::$between_date)) {
 
-                    echo '<br/>#'.__LINE__;
-                    
+                    // echo '<br/>#'.__LINE__;
+
                     if (self::$show_sql === true)
                         \f\pa(self::$between_date, '', '', 'self::$between_date');
 
@@ -1794,7 +1811,7 @@ class items {
 
                         if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
 
-                            echo '<br/>#'.__LINE__;
+                            // echo '<br/>#'.__LINE__;
 
                             self::$join_where .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
                                     . ' md' . $nn . '.id_item = mi.id '
@@ -1813,7 +1830,7 @@ class items {
                 }
 
                 // self::$join_where .= ' /* */ ';
-                
+
                 if (1 == 1 && !empty(self::$between_datetime)) {
 
                     if (self::$show_sql === true)
@@ -1823,16 +1840,16 @@ class items {
 
                     foreach (self::$between_datetime as $k1 => $v1) {
 
-                        if ( sizeof($v1) > 0 && isset($v1[0]) && isset($v1[1])) {
+                        if (sizeof($v1) > 0 && isset($v1[0]) && isset($v1[1])) {
 
-                            self::$join_where .= PHP_EOL 
-                                    . ' INNER JOIN `mitems-dops` md' . $nn 
-                                    . PHP_EOL 
+                            self::$join_where .= PHP_EOL
+                                    . ' INNER JOIN `mitems-dops` md' . $nn
+                                    . PHP_EOL
                                     . ' ON '
                                     . ' md' . $nn . '.id_item = mi.id '
-                                    . PHP_EOL 
+                                    . PHP_EOL
                                     . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
-                                    . PHP_EOL 
+                                    . PHP_EOL
                                     . ' AND md' . $nn . '.value_datetime between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
 
                             self::$var_ar_for_1sql[':i_name' . $nn] = $k1;
@@ -2339,6 +2356,16 @@ class items {
              *
              */
         }
+
+
+        //
+        catch (\Exception $ex) {
+            \f\pa($ex);
+        }
+        //
+        catch (\Throwable $ex) {
+            \f\pa($ex);
+        }
         //
         catch (\PDOException $ex) {
 
@@ -2359,6 +2386,183 @@ class items {
         }
     }
 
+    public static function get2007($db, string $module, $stat = 'show', $sort = null) {
+
+        // echo '<br/>'.__FUNCTION__.' '.$module;
+        // try {
+
+        if (1 == 1) {
+
+            $folder = \Nyos\nyos::$folder_now;
+
+            if (self::$dir_img_server === false) {
+                self::creatFolderImage($folder);
+            }
+
+            if (
+                    $sort == 'sort_asc' || $sort == 'sort'
+            ) {
+                self::$sql_order = ' ORDER BY sort ASC ';
+            }
+            //
+            elseif ($sort == 'sort_desc') {
+                self::$sql_order = ' ORDER BY sort DESC ';
+            }
+
+            $search_id = '';
+            $nnt = 1;
+            if (!empty(self::$search['id'])) {
+                foreach (self::$search['id'] as $v) {
+                    self::$var_ar_for_1sql[':search_id' . $nnt] = $v;
+                    $search_id .= (!empty($search_id) ? ' OR ' : '' ) . ' id = :search_id' . $nnt;
+                    $nnt++;
+                }
+                $search_id = ' AND ( ' . $search_id . ' ) ';
+                unset(self::$search['id']);
+            }
+
+            $nn = 99;
+            $nn2 = 99;
+
+            if (1 == 1 && !empty(self::$between)) {
+
+                if (self::$show_sql === true)
+                    \f\pa(self::$between, '', '', 'self::$between');
+
+                foreach (self::$between as $k1 => $v1) {
+                    if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+
+                        self::$where2 .= PHP_EOL . ' AND `' . \f\translit($k1, 'uri2') . '` BETWEEN :i_val' . $nn . '_0 AND :i_val' . $nn . '_1 ';
+                        self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = $v1[0];
+                        self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = $v1[1];
+
+                        $nn++;
+                        $nn2++;
+                    }
+                }
+
+                self::$between = [];
+            }
+
+            if (1 == 1 && !empty(self::$between_date)) {
+
+                if (self::$show_sql === true)
+                    \f\pa(self::$between_date, '', '', 'self::$between_date');
+
+                foreach (self::$between_date as $k1 => $v1) {
+                    if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+
+                        self::$where2 .= PHP_EOL . ' AND `' . \f\translit($k1, 'uri2') . '` BETWEEN :i_val' . $nn . '_0 AND :i_val' . $nn . '_1 ';
+                        self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = $v1[0];
+                        self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = $v1[1];
+
+                        $nn++;
+                        $nn2++;
+                    }
+                }
+
+                self::$between_date = [];
+            }
+
+            if (1 == 1 && !empty(self::$between_datetime)) {
+
+                if (self::$show_sql === true)
+                    \f\pa(self::$between_datetime, '', '', 'self::$between_datetime');
+
+                foreach (self::$between_datetime as $k1 => $v1) {
+                    if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+
+                        self::$where2 .= PHP_EOL . ' AND `' . \f\translit($k1, 'uri2') . '` BETWEEN :i_val' . $nn . '_0 AND :i_val' . $nn . '_1 ';
+                        self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = $v1[0];
+                        self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = $v1[1];
+
+                        $nn++;
+                        $nn2++;
+                    }
+                }
+
+                self::$between_datetime = [];
+            }
+
+            //self::$sql_order = ' LIMIT 0,100 ';
+
+            $ff1 = ' SELECT *
+                    FROM 
+                        `mod_' . \f\translit($module, 'uri2') . '` mi '
+                    . ' WHERE '
+                    . $search_id
+                    . (!empty($stat) ? ' mi.status = \'' . addslashes($stat) . '\' ' : '' )
+                    . (self::$where2 ?? '')
+                    . ( self::$sql_order ?? '' );
+
+            if (self::$show_sql === true)
+                \f\pa($ff1, '', '', '$ff1 sql1');
+
+            self::$join_where = self::$where2 = '';
+
+            $ff = $db->prepare($ff1);
+
+//                if (!empty($module))
+//                    self::$var_ar_for_1sql[':module'] = ($module ?? '');
+
+            $ff->execute(self::$var_ar_for_1sql);
+
+            if (self::$show_sql === true)
+                \f\pa(self::$var_ar_for_1sql, '', '', 'self::$var_ar_for_1sql');
+
+            self::$var_ar_for_1sql = [];
+            self::$join_where = self::$select_var1 = self::$sql_order = '';
+
+            if (!empty(self::$sql_order))
+                return $ff->fetchAll();
+
+            $return = [];
+            while ($w = $ff->fetch()) {
+
+//                        if (!empty(self::$need_polya_vars)) {
+//                        }
+
+                if (self::$add_s_to_res === true) {
+                    $w['s'] = \Nyos\Nyos::creatSecret($w['id']);
+                }
+
+                $return[$w['id']] = $w;
+            }
+            return $return;
+        }
+
+        // } elseif (self::$limit1 === true) {
+        // self::$limit1 = false;
+//        }
+//
+//        //
+//        catch (\Exception $ex) {
+//            \f\pa($ex);
+//        }
+//        //
+//        catch (\Throwable $ex) {
+//            \f\pa($ex);
+//        }
+//        //
+//        catch (\PDOException $ex) {
+//
+//            echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
+//            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+//            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+//            . PHP_EOL . $ex->getTraceAsString()
+//            . '</pre>';
+//
+//            // не найдена таблица, создаём значит её
+//            if (strpos($ex->getMessage(), 'no such table') !== false) {
+//
+//                // self::creatTable($db);
+//                // \f\redirect( '/' );
+//            }
+//
+//            return \f\end3('ошибка', false);
+//        }
+    }
+
     /**
      * получаем данные, 
      * новая версия от 2004112344
@@ -2370,6 +2574,20 @@ class items {
      * @return массив
      */
     public static function get2($db, string $module, $stat = 'show', $sort = null) {
+
+        // запись строки в файл лога
+        if (1 == 1) {
+            $log_file = $_SERVER['DOCUMENT_ROOT'] . '/log_mov.log';
+            // `\f\pa($log_file);
+            $e = debug_backtrace();
+            $debug_line = $e[0]['file'] . ' #' . $e[0]['line'];
+            file_put_contents($log_file
+                    , PHP_EOL . date('Y-m-d H:i:s') . ' items get2 module ' . $module . ' ' . $stat . ' ' . $sort
+                    . PHP_EOL . '           ' . $debug_line
+                    . PHP_EOL . '           ' . __FILE__ . ' #' . __LINE__
+                    , FILE_APPEND);
+        }
+
 
         // echo '<br/>'.__FUNCTION__.' '.$module;
 
@@ -3328,6 +3546,46 @@ class items {
         // удаляем с фильтром
         elseif (1 == 1) {
 
+            if (!empty($dops)) {
+                
+                $delete_ids = [];
+                
+                $res = self::get($db, $module);
+                foreach ($res as $k => $v) {
+                    $delete = true;
+                    foreach ($dops as $k1 => $v1) {
+                        if( $v[$k1] != $v1 ){
+                            $delete = false;
+                            break;
+                        }
+                    }
+                    
+                    if( $delete === true ){
+                        $delete_ids[] = $v['id'];
+                    }
+                    
+                }
+                
+                if( !empty($delete_ids ) ){
+                
+                    $var_in_sql = [ ':module' => $module ];
+                    
+                    $sql = 'UPDATE `mitems` mi '
+                            . ' SET `mi`.`status` = \'delete\' '
+                            . ' WHERE mi.`module` = :module AND mi.`id` IN (' . implode( ' , ', $delete_ids) . ') '
+                            . ' ;';
+                
+                    $ff = $db->prepare($sql);
+                    // \f\pa($var_in_sql);
+                    $ff->execute($var_in_sql);
+                    
+                }
+                
+            }
+
+
+
+
             // \Nyos\mod\items::$search[':module'] = $module;
         }
         // удаляем с фильтром
@@ -3407,6 +3665,34 @@ class items {
     }
 
     /**
+     * версия 2007
+     * удаление итемов по доп полям
+     * @param type $db
+     * @param type $module
+     * @param type $dops
+     * @return type
+     */
+    public static function deleteItemForDops($db, $module, $dops) {
+
+        $var_in = [];
+        $nn = 1;
+        $sql_in = '';
+
+        foreach ($dops as $k => $v) {
+            $var_in[':v' . $nn] = $v;
+            $sql_in .= (!empty($sql_in) ? ' AND ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` = :v' . $nn;
+            $nn++;
+        }
+
+        $sql = 'UPDATE `mod_' . \f\translit($module, 'uri2') . '` SET `status` = \'delete\' WHERE ' . $sql_in . ' ;';
+        // \f\pa($sql);
+        $ff = $db->prepare($sql);
+        $ff->execute($var_in);
+
+        return \f\end3('удалёно', true);
+    }
+
+    /**
      * удаление одномерного массива id из таблицы items
      * @param type $db
      * @param array $ids
@@ -3414,17 +3700,17 @@ class items {
      */
     public static function deleteIds($db, array $ids) {
 
-        if( empty($ids) )
-        return \f\end3('нечего удалять', false);
-        
-        $sql = 'UPDATE `mitems` SET `status` = \'delete\' WHERE ( `id` = '.implode(' OR `id` = ', $ids).' ) ;';
+        if (empty($ids))
+            return \f\end3('нечего удалять', false);
+
+        $sql = 'UPDATE `mitems` SET `status` = \'delete\' WHERE ( `id` = ' . implode(' OR `id` = ', $ids) . ' ) ;';
         // \f\pa($sql);
         $ff = $db->prepare($sql);
         //$in = [':ids' => implode(' OR `id` = ', $ids)];
         //$ff->execute($in);
         //\f\pa($in);
         $ff->execute();
-            
+
         return \f\end3('удалёно', true);
     }
 
@@ -3439,9 +3725,22 @@ class items {
      */
     public static function add($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
-        \f\Cash::deleteKeyPoFilter([$mod_name]);
+        // переходаня модель пишем и туда и туда
+        if (self::$type_module == 2) {
 
-        return self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
+            // \f\pa( [ $mod_name, $data, $files , $add_all_dops ] );
+
+            $in = \f\db\db2_insert($db, 'mod_' . \f\translit($mod_name, 'uri2'), $data, '', 'last_id');
+            // \f\pa($in);
+
+            $ee = self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
+
+            return $ee;
+        } else {
+
+            \f\Cash::deleteKeyPoFilter([$mod_name]);
+            return self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
+        }
     }
 
     public static function edits($db, string $mod_name, array $items_id, $new_dop = []) {
@@ -3536,15 +3835,11 @@ class items {
         if (empty($data))
             return false;
 
-        // \f\pa($data, 2);
-        // echo '<br/>#' . __LINE__;
-
         \f\Cash::deleteKeyPoFilter([$mod_name]);
 
         $folder = \Nyos\Nyos::$folder_now;
         $cfg_mod = \Nyos\Nyos::$menu[$mod_name];
 
-        // \f\pa($data);
         // если свободный тип, то добавляем все ключи во всех элементах что хотим добавить
         if (!empty($cfg_mod['items_type']) && $cfg_mod['items_type'] === 'free') {
             foreach ($data as $k => $v) {
@@ -3555,14 +3850,10 @@ class items {
             }
         }
 
-
-
-
         $nn = 0;
 
         foreach ($data as $k => $v) {
             self::addNew($db, $folder, $cfg_mod, $v);
-            // break;
             $nn++;
         }
 
@@ -3582,9 +3873,6 @@ class items {
 
         \f\Cash::deleteKeyPoFilter([($cfg_mod['cfg.level'] ?? $cfg_mod)]);
 
-        // \f\pa($data);
-        // die;
-
         if (empty(self::$dir_img_server)) {
             self::creatFolderImage($folder);
         }
@@ -3592,207 +3880,168 @@ class items {
         if (self::$dir_img_server === false)
             throw new \Exception('Ошибка, папка для файлов не создана');
 
-        if (!isset($data['head']{
-                        0}))
+        if (empty($data['head']))
             $data['head'] = 1;
 
-        //echo '<Br/>'.__FILE__.' '.__LINE__;
-        // \f\pa($data);
+        $arin = array(
+            'module' => ($cfg_mod['cfg.level'] ?? $cfg_mod),
+            'head' => $data['head'],
+            'add_d' => date('Y-m-d', $_SERVER['REQUEST_TIME']),
+            'add_t' => date('H:i:s', $_SERVER['REQUEST_TIME'])
+        );
 
-        if (isset($data['head'])) {
+        if (!empty($folder))
+            $arin['folder'] = $folder;
 
-            // echo '<Br/>'.__FILE__.' '.__LINE__;
+        if (!empty($data['status']))
+            $arin['status'] = $data['status'];
 
-            $arin = array(
-                'module' => ($cfg_mod['cfg.level'] ?? $cfg_mod), 'head' => $data['head'], 'add_d' => date('Y-m-d', $_SERVER['REQUEST_TIME']), 'add_t' => date('H:i:s', $_SERVER['REQUEST_TIME'])
-            );
+        $new_id = \f\db\db2_insert($db, 'mitems', $arin, 'da', 'last_id');
+        $in_db = array();
 
-            if (!empty($folder))
-                $arin['folder'] = $folder;
+        foreach ($cfg_mod as $k => $v) {
 
-            if (!empty($data['status']))
-                $arin['status'] = $data['status'];
+            if (!empty($cfg_mod['items_type']) && $cfg_mod['items_type'] === 'free') {
+                
+            } elseif ($add_all_dops === false && empty($v['name_rus']))
+                continue;
 
-            // \f\pa($arin);
-            $new_id = \f\db\db2_insert($db, 'mitems', $arin, 'da', 'last_id');
+            if (isset($data[$k]) || isset($v['default'])) {
 
-            // echo 'новый id '.$new_id;
-
-            $in_db = array();
-
-            // \f\pa($cfg_mod,2,null,'$cfg_mod');
-            //            if (isset($cfg_mod) && is_array($cfg_mod) && sizeof($cfg_mod) > 0)
-            //                \f\pa($cfg_mod);
-            // \f\pa( $cfg_mod );
-            // \f\pa( \Nyos\Nyos::$menu );
-            //foreach (\Nyos\Nyos::$all_menu as $k => $v) {
-            foreach ($cfg_mod as $k => $v) {
-                // \f\pa($v, 2, null, '$cfg_mod $v');
-                // \f\pa($v, 2, null, '$cfg_mod $v');
-
-                if (!empty($cfg_mod['items_type']) && $cfg_mod['items_type'] === 'free') {
-                    
-                } elseif ($add_all_dops === false && empty($v['name_rus']))
-                    continue;
-
-                //                echo '<hr><hr>';
-                //                \f\pa($k);
-                //                \f\pa($v);
-                //                \f\pa($data[$k]);
-                //if (isset($data[$k]{0}) && isset($v['name_rus']{0})) {
-                // \f\pa($k);
-                // \f\pa($data[$k]);
-                //if ( isset($data[$k]{0})) {
-
-                if (isset($data[$k]) || isset($v['default'])) {
-
-                    // echo '<br>' . __LINE__;
-
-                    if (isset($v['type']) && ($v['type'] == 'textarea' || $v['type'] == 'textarea_html')) {
-
-                        $in_db[] = array(
-                            'name' => $k,
-                            'value_text' => $data[$k] ?? $v['default']
-                        );
-                    }
-                    //
-                    elseif (isset($v['type']) && $v['type'] == 'datetime') {
-
-                        $in_db[] = array(
-                            'name' => $k,
-                            'value_datetime' => date('Y-m-d H:i:s', isset($data[$k]{
-                                            1}) ?
-                                    strtotime($data[$k] . ' ' . (isset($data[$k . '_time']) ? $data[$k . '_time'] : '')) : ((!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : $v['default']))
-                        );
-                    }
-                    //
-                    elseif (isset($v['type']) && $v['type'] == 'date') {
-
-                        $in_db[] = array(
-                            'name' => $k,
-                            'value_date' => date('Y-m-d', isset($data[$k]{
-                                            2}) ? strtotime($data[$k]) : ((!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : null))
-                        );
-                    }
-                    //
-                    elseif (isset($v['type']) && $v['type'] == 'number') {
-
-                        $in_db[] = array(
-                            'name' => $k,
-                            'value' => $data[$k] ?? $v['default']
-                        );
-                    }
-                    //
-                    else {
-
-                        $in_db[] = array(
-                            'name' => $k,
-                            'value' => $data[$k] ?? $v['default']
-                        );
-                    }
-                }
-                //
-                elseif (!empty($v['type']) && $v['type'] == 'translit' && isset($v['var_in']{
-                                0}) && isset($data[$v['var_in']]{
-                                0})) {
+                if (isset($v['type']) && ($v['type'] == 'textarea' || $v['type'] == 'textarea_html')) {
 
                     $in_db[] = array(
-                        'name' => $v['var_in'] . '_translit',
-                        'value_text' => \f\translit($data[$v['var_in']], 'uri2')
+                        'name' => $k,
+                        'value_text' => $data[$k] ?? $v['default']
+                    );
+                }
+                //
+                elseif (isset($v['type']) && $v['type'] == 'datetime') {
+
+                    $in_db[] = array(
+                        'name' => $k,
+                        'value_datetime' => date('Y-m-d H:i:s',
+                                !empty($data[$k]) ? strtotime($data[$k] . ' ' . (!empty($data[$k . '_time']) ? $data[$k . '_time'] : '')) :
+                                ( (!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : $v['default'] )
+                        )
+                    );
+                }
+                //
+                elseif (isset($v['type']) && $v['type'] == 'date') {
+
+                    $in_db[] = array(
+                        'name' => $k,
+                        'value_date' => date('Y-m-d',
+                                !empty($data[$k]) ? strtotime($data[$k]) :
+                                ((!empty($v['default']) && $v['default'] == 'now') ? $_SERVER['REQUEST_TIME'] : null))
+                    );
+                }
+                //
+                elseif (isset($v['type']) && $v['type'] == 'number') {
+
+                    $in_db[] = array(
+                        'name' => $k,
+                        'value' => $data[$k] ?? $v['default']
+                    );
+                }
+                //
+                else {
+
+                    $in_db[] = array(
+                        'name' => $k,
+                        'value' => $data[$k] ?? $v['default']
                     );
                 }
             }
-
-            //          \f\pa($files, 2, '', 'files');
-            //          \f\pa($cfg_mod);
-            //\f\pa($in_db);
-            //          если много файлов
-
-            if (isset($files['name']) && sizeof($files['name']) > 0) {
-
-                $nn = 0;
-                foreach ($files['name'] as $k0 => $v0) {
-
-                    //                    \f\pa($k0);
-                    //                    \f\pa($v0);
-                    // \f\pa($k1);
-                    // \f\pa($v1);
-
-                    if (!empty($v0) && isset($files['error'][$k0]) && $files['error'][$k0] == 0 && isset($cfg_mod[$k0])) {
-
-                        $nn++;
-                        // echo '<br/>' . __LINE__;
-                        $new_name = $k0 . '_' . $nn . '_' . substr(\f\translit($v0, 'uri2'), 0, 30) . '_' . rand(10, 99) . '.' . \f\get_file_ext($v0);
-
-                        //                                if ( !function_exists('\Nyos\nyos_image::autoJpgRotate') && file_exists(DR . '/vendor/didrive/base/Nyos_image.php') )
-                        //                                    require_once DR . '/vendor/didrive/base/Nyos_image.php';
-
-                        $save_file = self::$dir_img_server . $new_name;
-
-                        // echo '<Br/>111: ' . $save_file;
-
-                        if (!file_exists($save_file)) {
-
-                            $e = \Nyos\nyos_image::autoJpgRotate($files['tmp_name'][$k0], $save_file);
-
-                            if (!file_exists($save_file))
-                                copy($files['tmp_name'][$k0], $save_file);
-
-                            if (file_exists($save_file))
-                                $in_db[] = array(
-                                    'name' => $k0,
-                                    'value' => $new_name
-                                );
-                        }
-                    }
-                }
+            //
+            elseif (!empty($v['type']) && $v['type'] == 'translit' && !empty($v['var_in']{0}) && !empty($data[$v['var_in']]{0})) {
+                $in_db[] = array(
+                    'name' => $v['var_in'] . '_translit',
+                    'value_text' => \f\translit($data[$v['var_in']], 'uri2')
+                );
             }
-            // если один файл
-            else {
-
-                // \f\pa($files);
-                //echo '<br/>#'.__LINE__;
-                $nn = 1;
-
-                foreach ($files as $k => $v) {
-
-                    //f\pa($v);
-
-                    if (isset($cfg_mod[$k]) && is_array($v) && isset($v['size']) && $v['size'] > 100 && isset($v['error']) && $v['error'] == 0) {
-
-                        $new_name = $new_id . '_' . $nn . '_' . substr(\f\translit($v['name'], 'uri2'), 0, 50) . '_' . rand(10, 99) . '.' . f\get_file_ext($v['name']);
-
-                        if (!function_exists('\Nyos\nyos_image::autoJpgRotate') && file_exists(DR . '/vendor/didrive/base/Nyos_image.php'))
-                            require_once DR . '/vendor/didrive/base/Nyos_image.php';
-
-                        $e = \Nyos\nyos_image::autoJpgRotate($v['tmp_name'], self::$dir_img_server . $new_name);
-
-                        if (!file_exists(self::$dir_img_server . $new_name)) {
-                            copy($v['tmp_name'], self::$dir_img_server . $new_name);
-                        }
-
-                        $in_db[] = array(
-                            'name' => $k,
-                            'value' => $new_name
-                        );
-                    }
-                }
-            }
-
-            // \f\pa($in_db);
-            // echo '<Br/>db\sql_insert_mnogo - ' .$new_id ;
-            //$status = '';
-            \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
-            // \f\pa($in_db,2,null,'items что пишем в базу');
-            // db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
-            //echo $status;
         }
 
-        // отключил 191208
-        if (1 == 2)
-            self::clearCash($folder);
+        if (isset($files['name']) && sizeof($files['name']) > 0) {
 
-        return \f\end2('Окей, запись добавлена', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
+            $nn = 0;
+            foreach ($files['name'] as $k0 => $v0) {
+
+                if (!empty($v0) && isset($files['error'][$k0]) && $files['error'][$k0] == 0 && isset($cfg_mod[$k0])) {
+
+                    $nn++;
+                    $new_name = $k0 . '_' . $nn . '_' . substr(\f\translit($v0, 'uri2'), 0, 30) . '_' . rand(10, 99) . '.' . \f\get_file_ext($v0);
+
+                    $save_file = self::$dir_img_server . $new_name;
+
+                    if (!file_exists($save_file)) {
+
+                        $e = \Nyos\nyos_image::autoJpgRotate($files['tmp_name'][$k0], $save_file);
+
+                        if (!file_exists($save_file))
+                            copy($files['tmp_name'][$k0], $save_file);
+
+                        if (file_exists($save_file))
+                            $in_db[] = array(
+                                'name' => $k0,
+                                'value' => $new_name
+                            );
+                    }
+                }
+            }
+        }
+        // если один файл
+        else {
+            $nn = 1;
+
+            foreach ($files as $k => $v) {
+
+                if (isset($cfg_mod[$k]) && is_array($v) && isset($v['size']) && $v['size'] > 100 && isset($v['error']) && $v['error'] == 0) {
+
+                    $new_name = $new_id . '_' . $nn . '_' . substr(\f\translit($v['name'], 'uri2'), 0, 50) . '_' . rand(10, 99) . '.' . f\get_file_ext($v['name']);
+
+                    if (!function_exists('\Nyos\nyos_image::autoJpgRotate') && file_exists(DR . '/vendor/didrive/base/Nyos_image.php'))
+                        require_once DR . '/vendor/didrive/base/Nyos_image.php';
+
+                    $e = \Nyos\nyos_image::autoJpgRotate($v['tmp_name'], self::$dir_img_server . $new_name);
+
+                    if (!file_exists(self::$dir_img_server . $new_name)) {
+                        copy($v['tmp_name'], self::$dir_img_server . $new_name);
+                    }
+
+                    $in_db[] = array(
+                        'name' => $k,
+                        'value' => $new_name
+                    );
+                }
+            }
+        }
+
+        \f\db\sql_insert_mnogo($db, 'mitems-dops', $in_db, array('id_item' => $new_id));
+
+
+// добавление в новую базу
+        if (1 == 2) {
+
+            // \f\pa($arin);
+            \f\pa($in_db);
+
+            $var_array = [];
+            foreach ($in_db as $v) {
+
+                $var = $v['value'] ?? $v['value_date'] ?? $v['value_datetime'] ?? null;
+
+                if ($var !== null)
+                    $var_array[$v['name']] = $var;
+            }
+
+            \f\db\db2_insert($db, 'mod_' . \f\translit($arin['module'], 'uri2'), $var_array, true);
+            \f\pa('mod_' . \f\translit($arin['module'], 'uri2'));
+        }
+
+
+
+        return \f\end3('Окей, запись добавлена', 'ok', array('file' => __FILE__, 'line' => __LINE__), 'array');
     }
 
     public static function clearCash($folder = null) {

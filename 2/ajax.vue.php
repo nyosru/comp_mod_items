@@ -8,35 +8,11 @@ define('IN_NYOS_PROJECT', true);
 
 // header("Access-Control-Allow-Methods: GET");
 
-header("Access-Control-Allow-Origin: *");
-
 require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 require( $_SERVER['DOCUMENT_ROOT'] . '/all/ajax.start.php' );
 
 //require_once( DR.'/vendor/didrive/base/class/Nyos.php' );
 //require_once( dirname(__FILE__).'/../class.php' );
-// if( !empty($_REQUEST['sys']) && $_REQUEST['sys'] == 'vue' ){
-//    \f\end2('ой', false, [
-//    'ses' => $_SESSION,
-//     'req' => $_REQUEST,
-//     'post' => $_POST,
-//     'get' => $_GET,
-//     'php' => file_get_contents('php://input'),
-//     'php2' => json_decode(file_get_contents('php://input'),true)
-//    ] );
-// }
-
-$input = json_decode(file_get_contents('php://input'), true);
-
-// if( !empty($in) ){}
-//
-//if( !empty( $e['sys'] ) && $e['sys'] == 'vue' ){
-//    $_REQUEST = $e;
-//}
-
-
-
-
 
 if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 
@@ -44,22 +20,10 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 //cron_scan_new_datafile();
 }
 
-if (empty($_REQUEST) && !empty($input))
-    $_REQUEST = $input;
 
-//\f\pa($input,'','','in');
-//\f\pa($_REQUEST,'','','req');
-//\f\pa($_POST,'','','pos');
+
 // проверяем секрет
 if (
-        (
-        isset($input['sys']) &&
-        $input['sys'] == 'vue'
-        ) ||
-        (
-        isset($_REQUEST['sys']) &&
-        $_REQUEST['sys'] == 'vue'
-        ) ||
         (
         isset($_REQUEST['action']) &&
         $_REQUEST['action'] == 'get'
@@ -169,73 +133,16 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'didrive__items__new_edit
     // \f\end2('asd', true, [ 'add' => ( $res ?? 'x' ), 'del' => ( $del ?? 'x' ) ] );
 }
 
-// копируем запись в разные записи с доп параметром
-// pays из jobdesc
-elseif (
-        (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'pays_copy_to_sps') ||
-        (!empty($input['action']) && $input['action'] == 'pays_copy_to_sps')
-) {
-
-    $in = $input ?? $_REQUEST;
-
-
-
-//    echo '<div style="padding-left:200px;padding-top:200px;" >';
-//    \f\pa($_POST, '', '', 'post');
-    \Nyos\mod\items::$where2 = ' AND mi.id = :i ';
-    \Nyos\mod\items::$var_ar_for_1sql[':i'] = $in['item_id'];
-    \Nyos\mod\items::$limit1 = true;
-    $copy = \Nyos\mod\items::get($db, \Nyos\mod\JobDesc::$mod_salary);
-//    \f\pa($copy);
-
-    $new_date_blank = [];
-
-    foreach ($copy as $k => $v) {
-
-        if ($k == 'id')
-            continue;
-
-        if (!empty($v))
-            $new_date_blank[$k] = $v;
-    }
-
-    foreach ($in['to_sps'] as $v1) {
-
-        $v = $new_date_blank;
-        $v['sale_point'] = $v1;
-        $new_ids[] = $v;
-    }
-
-// \f\pa($new_ids);
-    $e = \Nyos\mod\items::addNewSimples($db, \Nyos\mod\JobDesc::$mod_salary, $new_ids);
-    //\f\pa($e, '', '', 'res');
-    // echo '</div>';
-    // $vv['warn'] .= '<div class="alert-warning" style="padding: 10px;" >Скопировано</div>';
-
-
-
-
-
-
-
-    \f\end2('скопировано', true, ['as' => $e]);
-}
-
 // добавить новый итем
-elseif (
-        (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'add_new') ||
-        (!empty($input['action']) && $input['action'] == 'add_new')
-) {
+elseif (isset($_POST['action']) && $_POST['action'] == 'add_new') {
 
-    $dd = $input ?? $_REQUEST;
-
-    if (empty($dd['add_module']) || empty($dd['add']))
+    if (empty($_REQUEST['add_module']) || empty($_REQUEST['add']))
         \f\end2('Что то пошло не так #' . __LINE__, false);
 
     //ob_start('ob_gzhandler');
     // \f\pa($_REQUEST);
 
-    $res = \Nyos\mod\items::add($db, $dd['add_module'], $dd['add']);
+    $res = \Nyos\mod\items::add($db, $_REQUEST['add_module'], $_REQUEST['add']);
     // \f\pa($res);
 //    $r = ob_get_contents();
 //    ob_end_clean();
@@ -267,15 +174,15 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'remove_item') {
 //
 elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_pole') {
 
-    try {
+    try{
+        
+    if (!empty($_REQUEST['clear_cash']))
+        \f\Cash::deleteKeyPoFilter($_REQUEST['clear_cash']);
 
-        if (!empty($_REQUEST['clear_cash']))
-            \f\Cash::deleteKeyPoFilter($_REQUEST['clear_cash']);
+    $e = array('id' => (int) $_REQUEST['id']);
+    $e1 = array($_REQUEST['pole'] => $_REQUEST['val']);
 
-        $e = array('id' => (int) $_REQUEST['id']);
-        $e1 = array($_REQUEST['pole'] => $_REQUEST['val']);
-
-        \f\db\db_edit2($db, 'mitems', $e, $e1);
+    \f\db\db_edit2($db, 'mitems', $e, $e1);
 
 //    $dir_for_cash = DR . dir_site;
 //
@@ -286,9 +193,10 @@ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_pole') {
 //        }
 //    }
 
-        \f\end2('новый статус ' . $_REQUEST['val']);
+    \f\end2('новый статус ' . $_REQUEST['val']);
+    
     } catch (Exception $ex) {
-        \f\end2('неописуемая Ex ситуация #' . __LINE__, false);
+        \f\end2('неописуемая Ex ситуация #'.__LINE__,false);
     }
 }
 /**
@@ -422,9 +330,6 @@ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'get') {
 
     if (!empty($_REQUEST['module'])) {
 
-//        if( $_REQUEST['module'] == '050.chekin_checkout' )
-//        \f\pa($_REQUEST);
-        
         // define('IN_NYOS_PROJECT', true);
 
         require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
@@ -441,89 +346,12 @@ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'get') {
         if (!empty($_REQUEST['add_secret']))
             \Nyos\mod\items::$add_s_to_res = true;
 
-        if (!empty($_REQUEST['search']))
-            \Nyos\mod\items::$search = $_REQUEST['search'];
-
-        if (!empty($_REQUEST['between_date']))
-            \Nyos\mod\items::$between_date = $_REQUEST['between_date'];
-
-        if (!empty($_REQUEST['between_datetime']))
-            \Nyos\mod\items::$between_datetime = $_REQUEST['between_datetime'];
-
-        if (!empty($_REQUEST['between_month'])) {
-            foreach ($_REQUEST['between_month'] as $pole => $val) {
-                $ds = date('Y-m-01', strtotime($val));
-                \Nyos\mod\items::$between_date[$pole] = [$ds, date('Y-m-d', strtotime($ds . ' +1 month -1 day'))];
-            }
-        }
-
-        if (!empty($_REQUEST['between_dt_month'])) {
-            foreach ($_REQUEST['between_dt_month'] as $pole => $val) {
-                $ds = date('Y-m-01 03:00:00', strtotime($val));
-                \Nyos\mod\items::$between_datetime[$pole] = [$ds, date('Y-m-d 03:00:00', strtotime($ds . ' +1 month '))];
-            }
-        }
-
-        // \Nyos\mod\items::$show_sql = true;
         $items = \Nyos\mod\items::get($db, $_REQUEST['module'], ($_REQUEST['status'] ?? 'show'), ($_REQUEST['sort'] ?? null));
 
-/**
- * доп обработка после выборки
- */
-    if( isset( $_REQUEST['load_after'] ) && $_REQUEST['load_after'] == 'jobman_fio' ){
-        
-//        $list_jm = [];
-//        foreach( $items as $v ){
-//            $list_jm[$v['jobman']] = 1;
-//        }
-//        
-//        // \Nyos\mod\items::$search['jobman']
-//        $items = \Nyos\mod\items::get($db, $_REQUEST['module'], ($_REQUEST['status'] ?? 'show'), ($_REQUEST['sort'] ?? null));
-        
-    }
-        
-        
-        if (isset($_REQUEST['group']) && ( 
-                $_REQUEST['group'] == 'jobman__date_now__ar' 
-                || $_REQUEST['group'] == 'jobman__start_smena__ar' 
-                || $_REQUEST['group'] == 'jobman__date__ar' 
-                || $_REQUEST['group'] == 'date1__sale_point' 
-                )) {
-
-            $re = [];
-
-            foreach ($items as $k => $v) {
-
-                // группируем рабочие смены
-                if ($_REQUEST['group'] == 'jobman__start_smena__ar') {
-
-                    if (!empty($v['jobman']) && !empty($v['start']))
-                        $re[$v['jobman']][date('Y-m-d', strtotime( $v['start'] .' -4 hour' ) )][] = $v;
-
-                } elseif ($_REQUEST['group'] == 'date1__sale_point') {
-
-                    if ( !empty($v['date']) && !empty($v['sale_point']) )
-                        $re[$v['date']] = $v['sale_point'];
-                    
-                } elseif ($_REQUEST['group'] == 'jobman__date_now__ar') {
-
-                    if (!empty($v['jobman']) && !empty($v['date_now']))
-                        $re[$v['jobman']][$v['date_now']][] = $v;
-                } elseif ($_REQUEST['group'] == 'jobman__date__ar') {
-
-                    if (!empty($v['jobman']) && !empty($v['date']))
-                        $re[$v['jobman']][$v['date']][] = $v;
-                }
-            }
-
-            \f\end2('окей #'.__LINE__, true, ['data' => $re]);
-        }
-
-
-        \f\end2('окей #'.__LINE__, true, ['data' => $items]);
+        \f\end2('окей', true, ['data' => $items]);
     } else {
 
-        \f\end2('не указан модуль #'.__LINE__, false);
+        \f\end2('не указан модуль', false);
     }
 }
 

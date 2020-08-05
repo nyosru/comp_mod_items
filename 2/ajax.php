@@ -34,10 +34,6 @@ $input = json_decode(file_get_contents('php://input'), true);
 //    $_REQUEST = $e;
 //}
 
-
-
-
-
 if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'scan_new_datafile') {
 
     scanNewData($db);
@@ -235,11 +231,14 @@ elseif (
     //ob_start('ob_gzhandler');
     // \f\pa($_REQUEST);
 
+    \Nyos\mod\items::$type_module = 2;
     $res = \Nyos\mod\items::add($db, $dd['add_module'], $dd['add']);
+
     // \f\pa($res);
 //    $r = ob_get_contents();
 //    ob_end_clean();
     // \f\end2($res['html'].'<Br/>'.$r, true);
+
     \f\end2($res['html'], true);
 }
 
@@ -251,14 +250,47 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'remove_item') {
     //ob_start('ob_gzhandler');
     // \f\pa($_REQUEST);
 
-    $res = \Nyos\mod\items::deleteId($db, ( $_REQUEST['id'] ?? $_REQUEST['aj_id']));
-    // $res = \Nyos\mod\items::add($db, $_REQUEST['add_module'], $_REQUEST['add']);
-    // \f\pa($res);
-//    $r = ob_get_contents();
-//    ob_end_clean();
-    // \f\end2($res['html'].'<Br/>'.$r, true);
+    if (!empty($_REQUEST['id']) || !empty($_REQUEST['aj_id']))
+        $res = \Nyos\mod\items::deleteId($db, ( $_REQUEST['id'] ?? $_REQUEST['aj_id']));
 
-    \f\end2('удалено', true);
+    // удаляем из старой версии
+    if (!empty($_REQUEST['r_module']) && !empty($_REQUEST['remove'])) {
+        $list = \Nyos\mod\items::get($db, $_REQUEST['r_module']);
+
+        $for_sql = '';
+
+        foreach ($list as $k => $v) {
+            $delete = true;
+
+            foreach ($_REQUEST['remove'] as $k1 => $v1) {
+                if (isset($v[$k1])) {
+                    if ($v[$k1] != $v1) {
+                        $delete = false;
+                        break;
+                    }
+                }
+            }
+
+            if ($delete === true) {
+                \f\pa($v);
+                $for_sql .= (!empty($for_sql) ? ' OR ' : '' ) . ' `id` = \'' . $v['id'] . '\' ';
+            }
+        }
+
+        if (!empty($for_sql)) {
+            $sql = 'UPDATE `mitems` SET `status` = \'delete\' WHERE ' . $for_sql . ' ;';
+            // \f\pa($sql);
+            $ff = $db->prepare($sql);
+            $ff->execute($var_in);
+        }
+        
+    }
+
+    // новая версия 2007
+    if (!empty($_REQUEST['r_module']) && !empty($_REQUEST['remove']))
+        $res2 = \Nyos\mod\items::deleteItemForDops($db, $_REQUEST['r_module'], $_REQUEST['remove']);
+
+    \f\end2('удалено', true, ['r1' => $res, 'r2' => $res2]);
     //\f\end2($res['html'], true);
 }
 /**
@@ -424,7 +456,6 @@ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'get') {
 
 //        if( $_REQUEST['module'] == '050.chekin_checkout' )
 //        \f\pa($_REQUEST);
-        
         // define('IN_NYOS_PROJECT', true);
 
         require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
@@ -467,11 +498,11 @@ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'get') {
         // \Nyos\mod\items::$show_sql = true;
         $items = \Nyos\mod\items::get($db, $_REQUEST['module'], ($_REQUEST['status'] ?? 'show'), ($_REQUEST['sort'] ?? null));
 
-/**
- * доп обработка после выборки
- */
-    if( isset( $_REQUEST['load_after'] ) && $_REQUEST['load_after'] == 'jobman_fio' ){
-        
+        /**
+         * доп обработка после выборки
+         */
+        if (isset($_REQUEST['load_after']) && $_REQUEST['load_after'] == 'jobman_fio') {
+
 //        $list_jm = [];
 //        foreach( $items as $v ){
 //            $list_jm[$v['jobman']] = 1;
@@ -479,15 +510,11 @@ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'get') {
 //        
 //        // \Nyos\mod\items::$search['jobman']
 //        $items = \Nyos\mod\items::get($db, $_REQUEST['module'], ($_REQUEST['status'] ?? 'show'), ($_REQUEST['sort'] ?? null));
-        
-    }
-        
-        
-        if (isset($_REQUEST['group']) && ( 
-                $_REQUEST['group'] == 'jobman__date_now__ar' 
-                || $_REQUEST['group'] == 'jobman__start_smena__ar' 
-                || $_REQUEST['group'] == 'jobman__date__ar' 
-                || $_REQUEST['group'] == 'date1__sale_point' 
+        }
+
+
+        if (isset($_REQUEST['group']) && (
+                $_REQUEST['group'] == 'jobman__date_now__ar' || $_REQUEST['group'] == 'jobman__start_smena__ar' || $_REQUEST['group'] == 'jobman__date__ar' || $_REQUEST['group'] == 'date1__sale_point'
                 )) {
 
             $re = [];
@@ -498,13 +525,11 @@ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'get') {
                 if ($_REQUEST['group'] == 'jobman__start_smena__ar') {
 
                     if (!empty($v['jobman']) && !empty($v['start']))
-                        $re[$v['jobman']][date('Y-m-d', strtotime( $v['start'] .' -4 hour' ) )][] = $v;
-
+                        $re[$v['jobman']][date('Y-m-d', strtotime($v['start'] . ' -4 hour'))][] = $v;
                 } elseif ($_REQUEST['group'] == 'date1__sale_point') {
 
-                    if ( !empty($v['date']) && !empty($v['sale_point']) )
+                    if (!empty($v['date']) && !empty($v['sale_point']))
                         $re[$v['date']] = $v['sale_point'];
-                    
                 } elseif ($_REQUEST['group'] == 'jobman__date_now__ar') {
 
                     if (!empty($v['jobman']) && !empty($v['date_now']))
@@ -516,326 +541,16 @@ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'get') {
                 }
             }
 
-            \f\end2('окей #'.__LINE__, true, ['data' => $re]);
+            \f\end2('окей #' . __LINE__, true, ['data' => $re]);
         }
 
 
-        \f\end2('окей #'.__LINE__, true, ['data' => $items]);
+        \f\end2('окей #' . __LINE__, true, ['data' => $items]);
     } else {
 
-        \f\end2('не указан модуль #'.__LINE__, false);
+        \f\end2('не указан модуль #' . __LINE__, false);
     }
 }
 
 
-f\end2('Произошла неописуемая ситуация #' . __LINE__ . ' обратитесь к администратору', 'error');
-
-
-// печать купона
-if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'print' && isset($_REQUEST['kupon']{0}) && is_numeric($_REQUEST['kupon']{0})) {
-    
-}
-
-if (1 == 2) {
-
-// печать купона
-    if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'print' && isset($_REQUEST['kupon']{0}) && is_numeric($_REQUEST['kupon']{0})) {
-
-        require( $_SERVER['DOCUMENT_ROOT'] . DS . '0.site' . DS . 'exe' . DS . 'kupons' . DS . 'class.php' );
-
-        $folder = Nyos\nyos::getFolder($db);
-// echo $folder;
-
-        die(Nyos\mod\kupons::showHtmlPrintKupon($db, $folder, $_REQUEST['kupon']));
-    }
-
-//<input type='hidden' name='get_cupon' value='da' />
-    elseif (isset($_REQUEST['get_cupon']) && $_REQUEST['get_cupon'] == 'da') {
-
-        require( $_SERVER['DOCUMENT_ROOT'] . DS . '0.site' . DS . 'exe' . DS . 'kupons' . DS . 'class.php' );
-        require( $_SERVER['DOCUMENT_ROOT'] . '/0.all/f/txt.2.php' );
-
-        $get = $_REQUEST;
-
-        $get['phone'] = f\translit($get['phone'], 'cifr');
-        $get['kupon'] = $get['id'];
-        $get['email'] = trim(strtolower($get['email']));
-
-        $res = Nyos\mod\kupons::addPoluchatel($db, $get);
-
-        if (isset($_COOKIE['fio']{0}) && $_COOKIE['fio'] != $get['fio'])
-            setcookie("fio", $get['fio'], time() + 24 * 31 * 3600, '/');
-
-        if (isset($_COOKIE['tel']{0}) && $_COOKIE['tel'] != $get['phone'])
-            setcookie("tel", $get['phone'], time() + 24 * 31 * 3600, '/');
-
-        if (isset($_COOKIE['email']{0}) && $_COOKIE['email'] != $get['email'])
-            setcookie("email", $get['email'], time() + 24 * 31 * 3600, '/');
-
-        setcookie("cupon" . $get['kupon'], $res['number_kupon'], time() + 24 * 31 * 3600, '/');
-
-        if ($_REQUEST['id'] == 2) {
-            f\end2('<h3>Добро пожаловать</h3>'
-                    . '<Br/>'
-                    . '<p>Регистрация проведена успешно</p>'
-                    . '<Br/>'
-                    . '<Br/>'
-                    , 'ok');
-        } else {
-// f\pa($res);
-            f\end2('<h3>Липон получен !<br/><br/>№' . $res['number_kupon'] . '</h3>'
-                    . '<Br/>'
-                    . '<p>Сообщите номер липона в магазине и воспользуйтесь скидкой!</p>'
-                    . '<Br/>'
-                    . '<Br/>'
-                    , 'ok', array('number_kupon' => $res['number_kupon'])
-            );
-        }
-    }
-
-// получение купона по новому (сразу по кнопе)
-    elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'get_cupon17711') {
-
-// echo '<pre>'; print_r($_COOKIE); echo '</pre>';    exit;
-
-        $vname = 'fio';
-        if (isset($_REQUEST[$vname]{0})) {
-            $$vname = $_REQUEST[$vname];
-        } elseif (isset($_COOKIE[$vname]{0})) {
-            $$vname = $_COOKIE[$vname];
-        }
-
-        $vname = 'tel';
-        if (isset($_REQUEST[$vname]{0})) {
-            $$vname = $_REQUEST[$vname];
-        } elseif (isset($_COOKIE[$vname]{0})) {
-            $$vname = $_COOKIE[$vname];
-        }
-
-        $vname = 'email';
-        if (isset($_REQUEST[$vname]{0})) {
-            $$vname = $_REQUEST[$vname];
-        } elseif (isset($_COOKIE[$vname]{0})) {
-            $$vname = $_COOKIE[$vname];
-        }
-
-        $vname = 'kupon';
-        if (isset($_REQUEST[$vname]{0})) {
-            $$vname = $_REQUEST[$vname];
-        }
-
-        if (
-                isset($fio{0}) &&
-                isset($tel{0}) &&
-                isset($email{0}) &&
-                isset($kupon{0})
-        ) {
-
-            require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.site' . DS . 'exe' . DS . 'kupons' . DS . 'class.php' );
-            require_once( $_SERVER['DOCUMENT_ROOT'] . '/0.all/f/txt.2.php' );
-
-            $get['fio'] = $fio;
-            $get['phone'] = f\translit($tel, 'cifr');
-            $get['kupon'] = $kupon;
-            $get['email'] = trim(strtolower($email));
-
-//получаем менюшку
-            if (1 == 1) {
-                $folder = Nyos\nyos::getFolder($db);
-                $mnu = Nyos\nyos::creat_menu($folder);
-// f\pa($mnu);
-
-                foreach ($mnu[1] as $k => $v) {
-//f\pa($v);
-                    if ($v['type'] == 'kupons') {
-                        $get['now_level'] = $v;
-                        break;
-                    }
-                }
-            }
-
-//f\pa($get);
-
-            $res = Nyos\mod\kupons::addPoluchatel($db, $get, $folder);
-// f\pa($res);
-
-            if ($res['status'] == 'error') {
-                f\end2($res['html'], 'error', array('line' => __LINE__));
-            }
-
-// echo '<pre>'; print_r($res); echo '</pre>';
-
-            foreach ($_COOKIE as $k => $v) {
-                if ($k == 'fio' || $k == 'tel' || $k == 'email')
-                    setcookie($k, $v, time() + 24 * 31 * 3600, '/');
-            }
-
-//setcookie("cupon" . $get['kupon'], $res['number_kupon'], time() + 24 * 31 * 3600, '/');
-
-            if (isset($res['number_kupon']{0})) {
-
-// отправяляем письмо сданными липона пользователю
-// $vars = Nyos\mod\kupons::getItem($folder, $db, $res['number_kupon'], null);
-
-                setcookie("cupon" . $kupon, $res['number_kupon'], time() + 24 * 31 * 3600, '/');
-
-//f\pa($vars);
-
-                foreach ($_COOKIE as $k => $v) {
-                    if ($k == 'fio' || $k == 'tel' || $k == 'email')
-                        $vars[$k] = $v;
-                }
-
-                /*
-                  require_once( $_SERVER['DOCUMENT_ROOT'] . '/0.all/class/mail.2.php' );
-                  //require_once( $_SERVER['DOCUMENT_ROOT'] . '/0.all/f/smarty.php' );
-                  // Nyos\mod\mailpost::$body = f\compileSmarty( 'lipon_get_lipon.smarty.htm', $vars, $_SERVER['DOCUMENT_ROOT'].DS.'template-mail' );
-                  Nyos\mod\mailpost::$sendpulse_id = $_ss['sendpulse_id'];
-                  Nyos\mod\mailpost::$sendpulse_id = '1';
-                  Nyos\mod\mailpost::$sendpulse_key = $_ss['sendpulse_key'];
-                  Nyos\mod\mailpost::sendNow($db, $_ss['mail_from'], $email, ( isset($_ss['mail_head_newcupon']{2}) ? $_ss['mail_head_newcupon'] : 'Получен купон'), 'lipon_get_lipon.smarty.htm', $vars);
-                 */
-
-// sleep(3);
-// f\pa($res);
-                f\end2('<h3>Липон получен !<br/><br/>№' . $res['number_kupon'] . '</h3>'
-                        . '<Br/>'
-                        . '<p>Сообщите номер липона в магазине и воспользуйтесь скидкой!</p>'
-                        . '<Br/>'
-                        . '<Br/>'
-                        , 'ok', array('number_kupon' => $res['number_kupon'])
-                );
-            }
-        } else {
-
-//require_once($_SERVER['DOCUMENT_ROOT'] . '/0.all/f/smarty.php');
-//f\end2(f\compileSmarty('ajax_form_enter.htm', array(), dirname(__FILE__) . '/../../lk/3/tpl_smarty/')
-            /*
-              f\end2( '1111111111111'
-              , 'ok', array(
-              'need_reg' => 'yes',
-              'line' => __LINE__
-              ));
-             */
-
-//return false;
-        }
-
-        f\end2('Нужно войти в лк или зарегистрироваться'
-                . '<Br/>'
-                . '<Br/>'
-                , 'error', array(
-            'need_reg' => 'yes',
-            'line' => __LINE__
-        ));
-    }
-
-//<input type='hidden' name='get_cupon' value='da' />
-    elseif (isset($_REQUEST['reg']) && $_REQUEST['reg'] == 'da') {
-
-        require( $_SERVER['DOCUMENT_ROOT'] . DS . '0.site' . DS . 'exe' . DS . 'kupons' . DS . 'class.php' );
-        require( $_SERVER['DOCUMENT_ROOT'] . '/0.all/f/txt.2.php' );
-
-        $get = $_REQUEST;
-
-// $get['kupon'] = $get['id'];
-        $get['name'] = $get['fio'];
-        $get['mail'] = trim(strtolower($get['email']));
-        $get['phone'] = f\translit($get['phone'], 'cifr');
-        $get['pass'] = Nyos\nyos::creat_pass(5, 2);
-
-// $res = Nyos\mod\kupons::addPoluchatel($db, $get);
-
-        setcookie("fio", $get['fio'], $_SERVER['REQUEST_TIME'] + 24 * 31 * 3600, '/');
-        setcookie("tel", $get['phone'], $_SERVER['REQUEST_TIME'] + 24 * 31 * 3600, '/');
-        setcookie("email", $get['mail'], $_SERVER['REQUEST_TIME'] + 24 * 31 * 3600, '/');
-
-// setcookie("cupon" . $get['kupon'], $get['number_kupon'], $_SERVER['REQUEST_TIME'] + 24 * 31 * 3600, '/');
-// шлём майл, шаблон такой-то
-// $get['send_reg_mail'] = 'kupon_reg';
-
-        require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.site' . DS . 'exe' . DS . 'lk' . DS . 'class.php' );
-        require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'db.2.php' );
-
-        /*
-         * $indb['reg_mail_head'] - тема письма о регистрации,
-         * $indb['reg_mail_template'] - шаблон письма о регистрации
-         * $indb['reg_mail_from_mail'] - майл отправителя
-         * $indb['reg_mail_sendpulse_id'] - id sendpulse api
-         * $indb['reg_mail_sendpulse_key'] - key sendpulse api
-         */
-
-
-        require_once( DirAll . 'class' . DS . 'nyos.2.php' );
-        $now = Nyos\nyos::domain($db, $_SERVER['HTTP_HOST']);
-
-        require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '9.site' . DS . $now['folder'] . DS . 'index.php' );
-
-        foreach ($_ss as $k => $v) {
-            if (!isset($get[$k]))
-                $get[$k] = $v;
-        }
-
-        $get['head'] = 'Регистрация';
-        $ee = Nyos\mod\lk::regUser($db, $now['folder'], $get, 'array');
-
-        if (isset($ee['reg_mail_sendpulse_id']))
-            unset($ee['reg_mail_sendpulse_id']);
-
-        if (isset($ee['reg_mail_sendpulse_key']))
-            unset($ee['reg_mail_sendpulse_key']);
-
-        if ($ee['status'] == 'ok') {
-            f\end2($ee['html'], 'ok', $ee);
-        } else {
-            f\end2($ee['html'], $ee['status'], $ee);
-        }
-    }
-
-// удалить город
-    elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'del_city') {
-
-//$status = '';
-        $db->sql_query('UPDATE `g_city` SET `show` = \'no\' WHERE `id` = \'' . $_REQUEST['id'] . '\' LIMIT 1 ;');
-// $db->sql_query('DELETE FROM `mpeticii_cat` WHERE `id` = 2 LIMIT 1;');
-
-        f\end2('Город удалён');
-    }
-
-// удаляем каталог в дидрайве
-    elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'del1') {
-
-//$status = '';
-        $db->sql_query('UPDATE `gm_katalogi` SET `status` = \'hide\' WHERE `id` = \'' . $_REQUEST['id'] . '\' LIMIT 1 ;');
-// $db->sql_query('DELETE FROM `mpeticii_cat` WHERE `id` = 2 LIMIT 1;');
-
-        f\end2('Каталог удалён');
-    }
-//
-    elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'del_item') {
-
-        $db->sql_query('UPDATE `mpeticii_item` SET `status` = \'cancel\' WHERE `id` = \'' . $_REQUEST['id'] . '\' LIMIT 1 ;');
-// $db->sql_query('DELETE FROM `mpeticii_cat` WHERE `id` = 2 LIMIT 1;');
-
-        f\end2('Петиция удалёна');
-    }
-//
-    elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'activated') {
-
-        $db->sql_query('UPDATE `gm_katalogi` SET `status` = \'show\' WHERE `id` = \'' . $_REQUEST['id'] . '\' LIMIT 1 ;');
-// $db->sql_query('DELETE FROM `mpeticii_cat` WHERE `id` = 2 LIMIT 1;');
-
-        f\end2('Восстановлен');
-    }
-    /**
-     * удаление каталога совсем
-     */ elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'del2') {
-
-        $db->sql_query('DELETE FROM `gm_katalogi` WHERE `id` = \'' . $_REQUEST['id'] . '\' LIMIT 1;');
-
-        f\end2('Каталог удалён совсем');
-    }
-}
-
-f\end2('Произошла неописуемая ситуация #' . __LINE__ . ' обратитесь к администратору', 'error');
-exit;
+\f\end2('Произошла неописуемая ситуация #' . __LINE__ . ' обратитесь к администратору', 'error');

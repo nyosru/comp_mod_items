@@ -7,13 +7,43 @@ try {
 //    if (empty($date))
 //        throw new \Exception('нет даты');
 
-if (isset($skip_start) && $skip_start === true) {
-    
-} else {
-    require_once '0start.php';
-}
+    if (isset($skip_start) && $skip_start === true) {
+        
+    } else {
+        require_once '0start.php';
+    }
 
     // \f\pa($_REQUEST);
+
+    if (!empty($_REQUEST['id']) && !empty($_REQUEST['s']) && \Nyos\Nyos::checkSecret($_REQUEST['s'], $_REQUEST['id']) !== false) {
+        
+    } else {
+        \f\end3('что то пошло не так', false, [__FILE__, __LINE__]);
+    }
+
+    $error2 = '';
+    $sql2 = '';
+    
+    try {
+
+        $ff = $db->prepare('UPDATE `mod_'.\f\translit( $_REQUEST['ajax_module'], 'uri2' ).'` SET `'. \f\translit($_REQUEST['dop_name'],'uri2').'` = :val WHERE `id` = :id ');
+        $ff->execute(
+                array(
+                    // ':table' => 'mod_'.\f\translit( $_REQUEST['ajax_module'], 'uri2' ),
+                    ':id' => $_REQUEST['item_id'],
+                    // ':pole' => $_REQUEST['dop_name'],
+                    ':val' => $_REQUEST['new_val']
+                )
+        );
+
+        $sql2 = 'ок2';
+        
+    } catch (\PDOException $exc) {
+        $error2 = $exc->getMessage();
+    }
+
+
+
 
 //    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'db.2.php' );
 //    require_once( $_SERVER['DOCUMENT_ROOT'] . DS . '0.all' . DS . 'f' . DS . 'txt.2.php' );
@@ -52,7 +82,15 @@ if (isset($skip_start) && $skip_start === true) {
 //        }
 //    }
 // f\end2( 'новый статус ' . $status);
-    f\end2('ок');
+
+
+
+
+
+
+
+    f\end2( 'ок', true, [ 'sql2' => $sql2, '$error2' => $error2 ]  );
+    
 } catch (Exception $exc) {
 
     echo '<pre>';

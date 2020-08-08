@@ -1,0 +1,15 @@
+{% spaceless %}
+
+    <input id='i_{{ k }}' type="date" name="{{ k }}" 
+
+           {% if edit_item is defined and list[edit_item][k] is defined %}
+               value="{{ list[edit_item][k] }}" 
+           {% elseif get['edit__'~k] is defined %}
+               value="{{ get['edit__'~k] }}" 
+           {% endif %}
+
+           {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+
+           class="form-control" />
+
+{% endspaceless %}

@@ -1,0 +1,18 @@
+{% spaceless %}
+
+
+
+    <input id='i_{{ k }}' type="checkbox" name="{{ k }}" value='da'
+           xvalue="{% if edit_item is defined and list[edit_item][k] is defined %}{{ list[edit_item][k] }}{% endif %}" 
+           xclass="form-control" 
+
+           {% if edit_item is defined and list[edit_item][k] is defined and list[edit_item][k] == 'da' %}
+               checked='checked'
+           {% endif %}
+
+           {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+
+           />
+
+
+{% endspaceless %}

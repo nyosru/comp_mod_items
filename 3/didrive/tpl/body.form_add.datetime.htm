@@ -1,0 +1,23 @@
+{% spaceless %}
+
+    <input id='i_{{ k }}' type="date" name="{{ k }}" 
+
+           {% if edit_item is defined and list[edit_item][k] is defined %}
+               value="{{ list[edit_item][k][:10] }}" 
+           {% endif %}
+
+           {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+
+           class="form-control" style="width: 200px;" />
+
+    <input id='i_{{ k }}_time' type="time" name="{{ k }}_time" 
+
+           {% if edit_item is defined and list[edit_item][k] is defined %}
+               value="{{ list[edit_item][k][11:8] }}" 
+           {% endif %}
+
+           {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+
+           class="form-control"  style="width: 200px;" />
+    
+{% endspaceless %}

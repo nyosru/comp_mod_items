@@ -1,0 +1,105 @@
+{% spaceless %}
+
+    {# формирумем массив для пропуска #}
+    {% set skip = [] %}
+    {% for k4,v4 in v if k4[:4] == 'skip' %}
+        {% set skip = skip|merge( { (v4): '1' } ) %}
+    {% endfor %}
+
+    <span>
+
+        {#        {{ pa(k) }}
+                {{ pa(v) }}
+        #}
+
+        {#{{ pa(v,2) }}#}
+        {#{{ pa(v_data,2) }}#}
+
+        <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
+                {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+                />
+
+        {% if v.obayz is not defined %}
+            <option value="">можете выбрать</option>
+        {% endif %}
+
+        {% if v_data[v.import_1_module] is defined %}
+
+            {% for k1, v1 in v_data[v.import_1_module] %} 
+
+                {% if skip[v1.head] is not defined %}
+
+                    <option value='{{ k1 }}' 
+                            {% if edit_item is defined and list[edit_item][k] is defined and list[edit_item][k] == k1 %}
+                                selected="selected" 
+                            {% elseif get.var[k] is defined and get.var[k] == k1 %}
+                                selected="selected" 
+                            {% elseif get['edit__'~k] is defined and get['edit__'~k] == k1 %}
+                                selected="selected" 
+                            {% endif %} 
+                            >
+
+                        {# % if v.import_1_module_link_var is defined  
+                        and v1.dop[v.import_1_module_link_var] is defined 
+                        and v.import_2_module is defined and v_data[v.import_2_module][  v1.dop[v.import_1_module_link_var]  ]['head'] is defined % #} 
+
+                        {# % if v_data[v.import_2_module][  v1.dop[v.import_1_module_link_var]  ]['status'] == 'hide' } (скрыто) {% endif % #}
+
+                        {# { v_data[v.import_2_module][  v1.dop[v.import_1_module_link_var]  ]['head'] } #} 
+
+
+                        {#                    {% set up = v_data[v.import_1_module][v1.cat_up] ?? [] %} 
+                                            {{ v_data[v.import_1_module][up['cat_up']]['head'] ?? '' }} /
+                                            {{ v_data[v.import_1_module][v1.cat_up]['head'] ?? '' }} /
+                        #}                  
+
+                        {% set v01 = 0 %}
+                        {% set v02 = 0 %}
+                        {% set v03 = 0 %}
+
+                        {% if v_data[v.import_1_module][ v1[v.import_1_module_var] ] is defined %}
+                            {% set v01 = v_data[v.import_1_module][ v1[v.import_1_module_var] ] %}
+
+                            {% if v_data[v.import_1_module][ v01[v.import_1_module_var] ] is defined %}
+                                {% set v02 = v_data[v.import_1_module][ v01[v.import_1_module_var] ] %}
+                                {% if v_data[v.import_1_module][ v02[v.import_1_module_var] ] is defined %}
+                                    {% set v03 = v_data[v.import_1_module][ v02[v.import_1_module_var] ] %}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+
+                        {% if v03 != 0 %}
+                            {{ v03['head'] ?? '' }} /
+                        {% endif %}
+                        
+                        {% if v_data[v.import_1_module][v_data[v.import_1_module][v1[k]][k]]['head'] %}
+                            {{ v_data[v.import_1_module][v_data[v.import_1_module][v1[k]][k]]['head'] ?? '' }} /
+                            {#{% elseif v_data[v.import_1_module][ v_data[v.import_1_module][ v1[v.import_1_module_var] ] ]['head'] is defined %}#}
+                            {#{{ v_data[v.import_1_module][v1[v.import_1_module_var]]['head'] ?? '' }} /#}
+                        {% elseif v02 != 0 %}
+                            {{ v02['head'] ?? '' }} /
+                        {% endif %}
+
+                        {% if v_data[v.import_1_module][v1[k]]['head'] is defined %}
+                            {{ v_data[v.import_1_module][v1[k]]['head'] ?? '' }} /
+                        {% elseif v01 != 0 %}
+                            {{ v01['head'] ?? '' }} /
+                        {% endif %}
+
+                        {{ v1.head }}
+
+                        {#{{ v1 }}#}
+                        {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
+
+                    </option>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+    </select>
+
+    <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
+
+</span>
+
+{% endspaceless %}

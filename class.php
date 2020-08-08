@@ -3725,8 +3725,29 @@ class items {
      */
     public static function add($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
-        // переходаня модель пишем и туда и туда
-        if (self::$type_module == 2) {
+        // новая модель пишем только в новую бд
+        if (self::$type_module == 3) {
+            
+            if( !isset(\Nyos\Nyos::$menu[$mod_name]) )
+            \Nyos\Nyos::getMenu();
+
+            $data_in = [];
+            
+            foreach( $data as $k => $v ){
+                if( isset( \Nyos\Nyos::$menu[$mod_name][$k]['name_rus'] ) ){
+                    $data_in[$k] = $v;
+                }
+            }
+            
+            // \f\pa($data_in);
+            
+            $in = \f\db\db2_insert($db, 'mod_' . \f\translit($mod_name, 'uri2') , $data_in, '', 'last_id');
+
+            // \f\pa($in);
+            // $ee = self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
+
+            return $in;
+        }elseif (self::$type_module == 2) {
 
             // \f\pa( [ $mod_name, $data, $files , $add_all_dops ] );
 

@@ -91,7 +91,7 @@
 
                                             {% if now_level.head_skip is defined and now_level.head_skip == 'da' %}{% else %}
                                                 <span onclick="$(this).hide();
-                                                    $('#head{{ v1.id }}').show('slow');">{{ v1.head }}</span>
+                                                        $('#head{{ v1.id }}').show('slow');">{{ v1.head }}</span>
                                             {% endif %}
 
                                             <span><input type='text' id='head{{ v1.id }}' value="{{ v1.head|escape }}" name="head" style="display:none;width: 100%;" 
@@ -115,38 +115,39 @@
 
                                             </div>
 
-                                            <input class="edit_item" type="button" rel="{{ v1.id }}" alt="status" rev="show" value="показать" s='{{ creatSecret(v1.id) }}' for_res="shows{{ v1.id }}"  />
-                                            <input class="edit_item" type="button" rel="{{ v1.id }}" alt="status" rev="hide" value="скрыть"  s='{{ creatSecret(v1.id) }}' for_res="shows{{ v1.id }}"  />
-                                            <input class="edit_item" type="button" rel="{{ v1.id }}" alt="status" rev="delete" s='{{ creatSecret(v1.id) }}' for_res="shows{{ v1.id }}" value="Удалить" />
+                                            {% if 1 == 2 %}
+                                                <input class="edit_item" type="button" rel="{{ v1.id }}" alt="status" rev="show" value="показать" s='{{ creatSecret(v1.id) }}' for_res="shows{{ v1.id }}"  />
+                                                <input class="edit_item" type="button" rel="{{ v1.id }}" alt="status" rev="hide" value="скрыть"  s='{{ creatSecret(v1.id) }}' for_res="shows{{ v1.id }}"  />
+                                                <input class="edit_item" type="button" rel="{{ v1.id }}" alt="status" rev="delete" s='{{ creatSecret(v1.id) }}' for_res="shows{{ v1.id }}" value="Удалить" />
+                                            {% endif %}
 
                                         </span>
 
-                                        <br/>
+                                        {#<br/>#}
 
-                                        <label>
-                                            Сортировка <span>
-                                                <input 
-                                                    type="number" 
-                                                    min="0" max="99" 
-                                                    class="edit_pole edit_sort" 
-                                                    rel="{{ v1.id }}" 
-                                                    name="sort" 
-                                                    s='{{ creatSecret(v1.id) }}' for_res="shows{{ v1.id }}" 
-                                                    value="{{ v1.sort }}" 
-                                                    />
-                                            </span>
+                                        {% if 1 == 2 %}
+                                            <label>
 
-                                        </label>
+                                                Сортировка <span>
+                                                    <input 
+                                                        type="number" min="0" max="99" class="edit_pole edit_sort" 
+                                                        rel="{{ v1.id }}" name="sort" 
+                                                        s='{{ creatSecret(v1.id) }}' for_res="shows{{ v1.id }}" 
+                                                        value="{{ v1.sort }}" 
+                                                        />
+                                                </span>
 
-                                        <a href="?level={{ get.level }}&edit_id={{ v1.id }}" class="btn btn-xs btn-info">редактировать</a>
-
+                                            </label>
+                                        {% endif %}
+                                        
+                                        <a href="?level={{ get.level }}&edit_id={{ v1.id }}" class="xbtn xbtn-xs xbtn-info">редактировать</a>
                                         {#{ pa(v1) }}
                                         {{ pa(now_level) }}
                                         {{ pa(list) }#}
-                                        
+
                                     </td>
 
-                                    
+
                                     {% for k, v in now_level if v.name_rus is defined and ( v.skip_didr_list is not defined or ( v.skip_didr_list is defined and v.skip_didr_list != 'da' ) ) %}
 
                                         <td class="va-top">

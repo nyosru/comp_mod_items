@@ -5,6 +5,8 @@
  */
 
 
+$__twig['items__get'] = 1;
+
 $function = new Twig_SimpleFunction('items__get', function ( $db, $module, $stat = 'show', $sort = '' ) {
 
     try {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Nyos\mod\items_v1;
+namespace Nyos\mod\items_v3;
 
 //echo __FILE__.'<br/>';
 // строки безопасности

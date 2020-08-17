@@ -36,11 +36,6 @@ if( 1 == 1 ){
 //}
 //\f\pa($_REQUEST);
 
-/**
- * удаляем из кеша всегда когда открываем страницу или что нить делаем
- */
-// \f\pa([$vv['now_level']]);
-\f\Cash::deleteKeyPoFilter([$_GET['level']]);
 
 /**
  * добавление записи
@@ -55,48 +50,20 @@ if (isset($_POST['addnew']{1})) {
                 $new[$k] = $v;
         }
 
-//        \f\pa($new,'','','new');
-//        \f\pa($_POST,'','','post');
-        
-        // Nyos\mod\items::addNew($db, $vv['folder'], $vv['now_level'], $_POST, $_FILES);
-        Nyos\mod\items::addNew($db, $vv['folder'], $vv['now_level'], $new, $_FILES);
+        Nyos\mod\items::$type_module = 3;
+        Nyos\mod\items::add($db, $vv['now_level']['cfg.level'], $new );
         $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . 'Запись добавлена';
-
-        // \f\Cash::deleteKeyPoFilter($vv['now_level']);
 
         if (isset($_GET['goto_start']))
             \f\redirect('/', 'i.didrive.php', array('warn' => 'Запись добавлена'));
+        
     } catch (Exception $e) {
 
         $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . 'Произошла неописуемая ситуация #' . $e->getCode() . '.' . $e->getLine() . ' (ошибка: ' . $e->getMessage() . ' )';
     }
 }
 //
-elseif (1 == 2 && isset($_REQUEST['addnew']{1})) {
-
-    // $_SESSION['status1'] = true;
-    // $status = '';
-    // echo '<br/>'.__FILE__.'['.__LINE__.']';
-    $r = Nyos\mod\items::addNew($db, $vv['folder'], $vv['now_level'], array('head' => $_REQUEST['head']));
-    //echo '<br/>'.__FILE__.'['.__LINE__.']';
-    // f\pa($r);
-
-    if (isset($r['status']) && $r['status'] == 'ok') {
-        $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . $r['html'];
-    }
-
-    // echo $status;
-}
-//
 elseif (isset($_REQUEST['delete_item_head']{1})) {
-
-    // $_SESSION['status1'] = true;
-    // $status = '';
-    // echo '<br/>'.__FILE__.'['.__LINE__.']';
-    // $r = Nyos\mod\items::saveEdit($db, $id_item, $folder, $cfg_mod, $data);
-    // addNew( $db, $vv['folder'], $vv['now_level'], array( 'head' => $_REQUEST['head'] ) );
-    //echo '<br/>'.__FILE__.'['.__LINE__.']';
-    // f\pa($r);
 
     $db->sql_Query('UPDATE mitems SET `status` = \'delete\' 
         WHERE 
@@ -105,26 +72,14 @@ elseif (isset($_REQUEST['delete_item_head']{1})) {
         AND `folder` = \'' . addslashes($vv['folder']) . '\' 
         ;');
 
-    // echo $status;
-
     Nyos\mod\items::clearCash($vv['folder']);
 
     if (isset($r['status']) && $r['status'] == 'ok') {
         $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . $r['html'];
     }
-
-    // echo $status;
 }
 //
 elseif (isset($_POST['delete_item_id']{1})) {
-
-    // $_SESSION['status1'] = true;
-    // $status = '';
-    // echo '<br/>'.__FILE__.'['.__LINE__.']';
-    // $r = Nyos\mod\items::saveEdit($db, $id_item, $folder, $cfg_mod, $data);
-    // addNew( $db, $vv['folder'], $vv['now_level'], array( 'head' => $_REQUEST['head'] ) );
-    //echo '<br/>'.__FILE__.'['.__LINE__.']';
-    // f\pa($r);
 
     $db->sql_Query('UPDATE mitems SET `status` = \'delete2\' 
         WHERE 
@@ -133,15 +88,11 @@ elseif (isset($_POST['delete_item_id']{1})) {
         AND `folder` = \'' . addslashes($vv['folder']) . '\' 
         ;');
 
-    // echo $status;
-
     Nyos\mod\items::clearCash($vv['folder']);
 
     if (isset($r['status']) && $r['status'] == 'ok') {
         $vv['warn'] .= ( isset($vv['warn']{3}) ? '<br/>' : '' ) . $r['html'];
     }
-
-    // echo $status;
 }
 // сохранение редактирования
 elseif (isset($_REQUEST['save_id']) && is_numeric($_REQUEST['save_id']) && isset($_REQUEST['save_edit'])) {
@@ -152,6 +103,7 @@ elseif (isset($_REQUEST['save_id']) && is_numeric($_REQUEST['save_id']) && isset
 
     // \f\pa($d);
     // \Nyos\mod\items::$show_sql = true;
+    $r = \Nyos\mod\items::edit( $db, );
     $r = \Nyos\mod\items::saveEdit($db, $_REQUEST['save_id'], $vv['folder'], $vv['now_level'], $d);
 
     if (isset($r['status']) && $r['status'] == 'ok') {

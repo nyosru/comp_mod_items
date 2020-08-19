@@ -1152,7 +1152,7 @@ class items {
         // self::$show_sql = true;
 //        \f\pa(\Nyos\Nyos::$menu[$module]['version']);
 // тащим только с новой базы
-        if (self::$type_module == 3) {
+        if (!empty(self::$type_module) && self::$type_module == 3) {
 
             self::$var_ar_for_1sql = [];
 
@@ -1246,309 +1246,249 @@ class items {
                     self::creatTable($db, $module);
                 }
             }
-        } else {
+        }
 
-            echo '<Br/>#' . __LINE__;
-            return [];
+        // echo __FILE__ .' #'.__LINE__;
 
-            try {
+        return self::get_older($db, $module, $stat, $sort);
+    }
 
-// запись строки в файл лога
-                if (1 == 2) {
-                    $log_file = $_SERVER['DOCUMENT_ROOT'] . '/log_mov.log';
-// `\f\pa($log_file);
-                    $e = debug_backtrace();
-                    $debug_line = $e[0]['file'] . ' #' . $e[0]['line'];
-                    file_put_contents($log_file
-                            , PHP_EOL . date('Y-m-d H:i:s') . ' items get module ' . $module . ' ' . $stat . ' ' . $sort
-                            . PHP_EOL . '           ' . $debug_line
-                            . PHP_EOL . '           ' . __FILE__ . ' #' . __LINE__
-                            , FILE_APPEND);
-                }
+    /**
+     * работа get с версиями модуля 1 и 2 items
+     * @param type $db
+     * @param type $module
+     * @param string $stat
+     * @param type $sort
+     * @return boolean|string
+     */
+    public static function get_older($db, $module = null, $stat = 'show', $sort = null) {
 
-                if ($stat == 'all')
-                    $stat = '';
+        if ($stat == 'all')
+            $stat = '';
 
-// echo '<br/>'.__FUNCTION__.' '.$module;
+        try {
 
-                if (empty(self::$cash_var)) {
+            if (empty(self::$cash_var)) {
 
-                    $dop_cash_var = (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '')
-                            . '..'
-                            . (!empty(self::$where2) ? serialize(self::$where2) : '')
-                            . '..'
-                            . (!empty(self::$search) ? serialize(self::$search) : '')
-                            . '..'
-                            . (!empty(self::$join_where) ? serialize(self::$join_where) : '')
-                            . '..'
-                            . (!empty(self::$sql_vars) ? serialize(self::$sql_vars) : '')
-                            . '..'
-                            . (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '')
-                            . '..'
-                            . (!empty(self::$return_items_header) ? serialize(self::$return_items_header) : '')
-                            . '.s.' . ($sort ?? '');
+                $dop_cash_var = (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '')
+                        . '..'
+                        . (!empty(self::$where2) ? serialize(self::$where2) : '')
+                        . '..'
+                        . (!empty(self::$search) ? serialize(self::$search) : '')
+                        . '..'
+                        . (!empty(self::$join_where) ? serialize(self::$join_where) : '')
+                        . '..'
+                        . (!empty(self::$sql_vars) ? serialize(self::$sql_vars) : '')
+                        . '..'
+                        . (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '')
+                        . '..'
+                        . (!empty(self::$return_items_header) ? serialize(self::$return_items_header) : '')
+                        . '.s.' . ($sort ?? '');
 
-                    self::$cash_var = 'item_get_' . $module . '_' . $stat . '_' . $sort . '_' . (!empty($dop_cash_var) ? md5($dop_cash_var) : '');
-                }
+                self::$cash_var = 'item_get_' . $module . '_' . $stat . '_' . $sort . '_' . (!empty($dop_cash_var) ? md5($dop_cash_var) : '');
+            }
 
-// self::$cash_var = '';
+            // self::$cash_var = '';
 
-                if (!empty(self::$cash_var)) {
+            if (!empty(self::$cash_var)) {
 
-                    $re = false;
-// $re = \f\Cash::getVar(self::$cash_var);
+                $re = false;
+                // $re = \f\Cash::getVar(self::$cash_var);
 
-                    if ($re !== false)
-                        return $re;
-                }
+                if ($re !== false)
+                    return $re;
+            }
 
 
 
-                if (
-                        empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
-                ) {
+            if (
+                    empty(self::$where2dop) && empty(self::$where2) && empty(self::$need_polya_vars) && empty(self::$nocash) && empty(self::$join_where) && empty(self::$var_ar_for_1sql)
+            ) {
 
-                    $save_cash = true;
-// echo '<br/>#'.__LINE__;
-                } else {
-
-                    $save_cash = false;
-// echo '<br/>#'.__LINE__;
-                }
-
-// echo '<br/>-- ' . $cash_var;
-//        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
-//            echo '<br/>a - '.$module;
-//        
-//        if ( 1 == 1 || $module == '050.chekin_checkout') {
+                $save_cash = true;
+                // echo '<br/>#'.__LINE__;
+            } else {
 
                 $save_cash = false;
+                // echo '<br/>#'.__LINE__;
+            }
 
-                if (
-                        $save_cash === true &&
-                        ($module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp || $module == \Nyos\mod\JobDesc::$mod_dolgn
-// || $module == \Nyos\mod\JobDesc::$mod_salary
-                        || $module == \Nyos\mod\JobDesc::$mod_sp_link_timeo)
+            // echo '<br/>-- ' . $cash_var;
+            //        if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
+            //            echo '<br/>a - '.$module;
+            //        
+            //        if ( 1 == 1 || $module == '050.chekin_checkout') {
+
+            $save_cash = false;
+
+            if (
+                    $save_cash === true &&
+                    ($module == \Nyos\mod\JobDesc::$mod_jobman || $module == \Nyos\mod\JobDesc::$mod_man_job_on_sp || $module == \Nyos\mod\JobDesc::$mod_dolgn
+                    // || $module == \Nyos\mod\JobDesc::$mod_salary
+                    || $module == \Nyos\mod\JobDesc::$mod_sp_link_timeo)
+            ) {
+
+                $cash_var = 'items__mod' . $module . '_' . $stat . '_' . $sort;
+                $e = \f\Cash::getVar($cash_var);
+                // \f\pa($e, '', '', '$e');
+                // echo '<br/>#'.__LINE__;
+
+                if (!empty($e))
+                    return $e;
+            } else {
+                $save_cash = false;
+            }
+
+            /**
+             * запускаем мемкеш и тащим если есть кеш
+             */
+            $memcache = false;
+
+            if (1 == 1) {
+
+                $folder = \Nyos\nyos::$folder_now;
+
+                if (self::$dir_img_server === false) {
+                    self::creatFolderImage($folder);
+                }
+
+                if ($sort == 'date__desc') {
+                    self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
+                }
+                //
+                elseif ($sort == 'add__asc') {
+                    self::$sql_order = ' ORDER BY mi.add_d ASC, mi.add_t ASC ';
+                }
+                //
+                elseif ($sort == 'add__desc') {
+                    self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
+                }
+                //
+                elseif ($sort == 'add_date__desc') {
+                    self::$sql_order = ' ORDER BY mi.add_d DESC ';
+                }
+                //
+                elseif (
+                        $sort == 'sort_asc' || $sort == 'sort'
                 ) {
-
-                    $cash_var = 'items__mod' . $module . '_' . $stat . '_' . $sort;
-                    $e = \f\Cash::getVar($cash_var);
-// \f\pa($e, '', '', '$e');
-// echo '<br/>#'.__LINE__;
-
-                    if (!empty($e))
-                        return $e;
-                } else {
-                    $save_cash = false;
+                    self::$sql_order = ' ORDER BY mi.sort ASC ';
+                }
+                //
+                elseif ($sort == 'sort_desc') {
+                    self::$sql_order = ' ORDER BY mi.sort DESC ';
                 }
 
-                /**
-                 * запускаем мемкеш и тащим если есть кеш
-                 */
-                $memcache = false;
-                if (1 == 2) {
-                    $memcache = true;
-
-                    if (isset($memcache) && $memcache === true && $save_cash === true) {
-                        if (1 == 1 && class_exists('memcache')) {
-
-                            $cash_var = $module . '__' . $stat . '__' . $sort;
-// echo '<br/>'.$cash_var;
-
-                            $memcache_obj = new \Memcache;
-//Соединяемся с нашим сервером
-                            $memcache_obj->connect('127.0.0.1', 11211) or die("Could not connect");
-
-//Попытаемся получить объект с ключом our_var
-                            $var_key = @$memcache_obj->get($cash_var);
-
-                            if (!empty($var_key)) {
-
-//                if ($_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info') {
-//                    echo '<Br/>есть рез';
-//                }
-
-                                $memcache_obj->close();
-//Если объект закэширован, выводим его значение
-
-                                if (self::$style_old === true) {
-                                    return ['data' => $var_key];
-                                } else {
-                                    return $var_key;
-                                }
-
-// return json_decode($var_key);
-                            }
-//    else
-//    {
-//        //Если в кэше нет объекта с ключом our_var, создадим его
-//        //Объект our_var будет храниться 5 секунд и не будет сжат
-//        $memcache_obj->set('our_var', date('G:i:s'), false, 5);
-//         //Выведем закэшированные данные
-//        echo $memcache_obj->get('our_var');
-//    }
-//    //Закрываем соединение с сервером Memcached
-//    $memcache_obj->close();        
-                        }
+                $search_id = '';
+                $nnt = 1;
+                if (!empty(self::$search['id'])) {
+                    foreach (self::$search['id'] as $v) {
+                        self::$var_ar_for_1sql[':search_id' . $nnt] = $v;
+                        $search_id .= (!empty($search_id) ? ' OR ' : '' ) . ' mi.id = :search_id' . $nnt . ' ';
+                        $nnt++;
                     }
+                    $search_id = ' AND ( ' . $search_id . ' ) ';
+                    unset(self::$search['id']);
                 }
 
-                if (1 == 1) {
+                $nn = 99;
+                $nn2 = 99;
 
-                    if (isset($show_memory) && $show_memory === true) {
+                if (1 == 1 && !empty(self::$between)) {
 
-                        echo '<hr>mod - ' . $module . '<br/>';
+                    if (self::$show_sql === true)
+                        \f\pa(self::$between, '', '', 'self::$between');
 
-                        $sm = 0;
-                        $sm = memory_get_usage();
-//            echo '<br/>s1s ' . round(( $sm2 - $sm ) / 1024, 3);
+                    // $rebase = true;
 
-                        \f\timer::start(123);
-                    }
+                    foreach (self::$between as $k1 => $v1) {
 
-                    $folder = \Nyos\nyos::$folder_now;
+                        if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
 
-                    if (self::$dir_img_server === false) {
-                        self::creatFolderImage($folder);
-                    }
+                            self::$join_where .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                                    . ' md' . $nn . '.id_item = mi.id '
+                                    . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                    . ' AND md' . $nn . '.value between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
 
-                    if ($sort == 'date__desc') {
-                        self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
-                    }
-//
-                    elseif ($sort == 'add__asc') {
-                        self::$sql_order = ' ORDER BY mi.add_d ASC, mi.add_t ASC ';
-                    }
-//
-                    elseif ($sort == 'add__desc') {
-                        self::$sql_order = ' ORDER BY mi.add_d DESC, mi.add_t DESC ';
-                    }
-//
-                    elseif ($sort == 'add_date__desc') {
-                        self::$sql_order = ' ORDER BY mi.add_d DESC ';
-                    }
-//
-                    elseif (
-                            $sort == 'sort_asc' || $sort == 'sort'
-                    ) {
-                        self::$sql_order = ' ORDER BY mi.sort ASC ';
-                    }
-//
-                    elseif ($sort == 'sort_desc') {
-                        self::$sql_order = ' ORDER BY mi.sort DESC ';
-                    }
+                            self::$var_ar_for_1sql[':i_name' . $nn] = $k1;
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = $v1[0];
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = $v1[1];
 
-                    $search_id = '';
-                    $nnt = 1;
-                    if (!empty(self::$search['id'])) {
-                        foreach (self::$search['id'] as $v) {
-                            self::$var_ar_for_1sql[':search_id' . $nnt] = $v;
-                            $search_id .= (!empty($search_id) ? ' OR ' : '' ) . ' mi.id = :search_id' . $nnt . ' ';
-                            $nnt++;
+                            $nn++;
+                            $nn2++;
                         }
-                        $search_id = ' AND ( ' . $search_id . ' ) ';
-                        unset(self::$search['id']);
                     }
 
-                    $nn = 99;
-                    $nn2 = 99;
+                    self::$between = [];
+                }
 
-                    if (1 == 1 && !empty(self::$between)) {
+                if (1 == 1 && !empty(self::$between_date)) {
 
-                        if (self::$show_sql === true)
-                            \f\pa(self::$between, '', '', 'self::$between');
+                    // echo '<br/>#'.__LINE__;
 
-// $rebase = true;
+                    if (self::$show_sql === true)
+                        \f\pa(self::$between_date, '', '', 'self::$between_date');
 
-                        foreach (self::$between as $k1 => $v1) {
+                    // $rebase = true;
 
-                            if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+                    foreach (self::$between_date as $k1 => $v1) {
 
-                                self::$join_where .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
-                                        . ' md' . $nn . '.id_item = mi.id '
-                                        . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
-                                        . ' AND md' . $nn . '.value between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
+                        if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
 
-                                self::$var_ar_for_1sql[':i_name' . $nn] = $k1;
-                                self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = $v1[0];
-                                self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = $v1[1];
+                            // echo '<br/>#'.__LINE__;
 
-                                $nn++;
-                                $nn2++;
-                            }
+                            self::$join_where .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                                    . ' md' . $nn . '.id_item = mi.id '
+                                    . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                    . ' AND md' . $nn . '.value_date between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
+
+                            self::$var_ar_for_1sql[':i_name' . $nn] = $k1;
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = $v1[0];
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = $v1[1];
+
+                            $nn++;
+                            $nn2++;
                         }
-
-                        self::$between = [];
                     }
+                    self::$between_date = [];
+                }
 
-                    if (1 == 1 && !empty(self::$between_date)) {
+                // self::$join_where .= ' /* */ ';
 
-// echo '<br/>#'.__LINE__;
+                if (1 == 1 && !empty(self::$between_datetime)) {
 
-                        if (self::$show_sql === true)
-                            \f\pa(self::$between_date, '', '', 'self::$between_date');
+                    if (self::$show_sql === true)
+                        \f\pa(self::$between_datetime, '', '', 'self::$between_datetime');
 
-// $rebase = true;
+                    // $rebase = true;
 
-                        foreach (self::$between_date as $k1 => $v1) {
+                    foreach (self::$between_datetime as $k1 => $v1) {
 
-                            if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+                        if (sizeof($v1) > 0 && isset($v1[0]) && isset($v1[1])) {
 
-// echo '<br/>#'.__LINE__;
+                            self::$join_where .= PHP_EOL
+                                    . ' INNER JOIN `mitems-dops` md' . $nn
+                                    . PHP_EOL
+                                    . ' ON '
+                                    . ' md' . $nn . '.id_item = mi.id '
+                                    . PHP_EOL
+                                    . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                    . PHP_EOL
+                                    . ' AND md' . $nn . '.value_datetime between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
 
-                                self::$join_where .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
-                                        . ' md' . $nn . '.id_item = mi.id '
-                                        . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
-                                        . ' AND md' . $nn . '.value_date between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
+                            self::$var_ar_for_1sql[':i_name' . $nn] = $k1;
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = date('Y-m-d H:i:s', strtotime($v1[0]));
+                            self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = date('Y-m-d H:i:s', strtotime($v1[1]));
 
-                                self::$var_ar_for_1sql[':i_name' . $nn] = $k1;
-                                self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = $v1[0];
-                                self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = $v1[1];
-
-                                $nn++;
-                                $nn2++;
-                            }
+                            $nn++;
+                            $nn2++;
                         }
-                        self::$between_date = [];
                     }
+                    self::$between_datetime = [];
+                }
 
-// self::$join_where .= ' /* */ ';
+                //self::$sql_order = ' LIMIT 0,100 ';
 
-                    if (1 == 1 && !empty(self::$between_datetime)) {
-
-                        if (self::$show_sql === true)
-                            \f\pa(self::$between_datetime, '', '', 'self::$between_datetime');
-
-// $rebase = true;
-
-                        foreach (self::$between_datetime as $k1 => $v1) {
-
-                            if (sizeof($v1) > 0 && isset($v1[0]) && isset($v1[1])) {
-
-                                self::$join_where .= PHP_EOL
-                                        . ' INNER JOIN `mitems-dops` md' . $nn
-                                        . PHP_EOL
-                                        . ' ON '
-                                        . ' md' . $nn . '.id_item = mi.id '
-                                        . PHP_EOL
-                                        . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
-                                        . PHP_EOL
-                                        . ' AND md' . $nn . '.value_datetime between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
-
-                                self::$var_ar_for_1sql[':i_name' . $nn] = $k1;
-                                self::$var_ar_for_1sql[':i_val' . $nn . '_0'] = date('Y-m-d H:i:s', strtotime($v1[0]));
-                                self::$var_ar_for_1sql[':i_val' . $nn . '_1'] = date('Y-m-d H:i:s', strtotime($v1[1]));
-
-                                $nn++;
-                                $nn2++;
-                            }
-                        }
-                        self::$between_datetime = [];
-                    }
-
-//self::$sql_order = ' LIMIT 0,100 ';
-
-                    $ff1 = ' SELECT 
+                $ff1 = ' SELECT 
                 mi.id,
                 mi.head,
                 mi.sort,
@@ -1556,517 +1496,390 @@ class items {
                 ' . self::$select_var1 . '
             FROM 
                 `mitems` mi '
-                            . (self::$join_where ?? '')
-                            . ' WHERE '
-                            . (!empty($module) ? ' mi.`module` = :module ' : '')
-                            . $search_id
-                            . (!empty($stat) ? (!empty($module) ? ' AND ' : '') . ' mi.status = \'' . addslashes($stat) . '\' ' : '')
-                            . (self::$where2 ?? '')
-                            . self::$sql_order ?? '';
+                        . (self::$join_where ?? '')
+                        . ' WHERE '
+                        . (!empty($module) ? ' mi.`module` = :module ' : '')
+                        . $search_id
+                        . (!empty($stat) ? (!empty($module) ? ' AND ' : '') . ' mi.status = \'' . addslashes($stat) . '\' ' : '')
+                        . (self::$where2 ?? '')
+                        . self::$sql_order ?? '';
 
-                    if (self::$show_sql === true)
-                        \f\pa($ff1, '', '', '$ff1 sql1');
+                if (self::$show_sql === true)
+                    \f\pa($ff1, '', '', '$ff1 sql1');
 
-                    self::$join_where = self::$where2 = '';
+                self::$join_where = self::$where2 = '';
 
-                    $ff = $db->prepare($ff1);
+                $ff = $db->prepare($ff1);
 
-//                if (!empty($module))
-//                    self::$var_ar_for_1sql[':module'] = ($module ?? '');
+                if (!empty($module))
+                    self::$var_ar_for_1sql[':module'] = ($module ?? '');
 
-                    $ff->execute(self::$var_ar_for_1sql);
+                $ff->execute(self::$var_ar_for_1sql);
 
-                    if (self::$show_sql === true)
-                        \f\pa(self::$var_ar_for_1sql, '', '', 'self::$var_ar_for_1sql');
+                if (self::$show_sql === true)
+                    \f\pa(self::$var_ar_for_1sql, '', '', 'self::$var_ar_for_1sql');
 
-                    self::$var_ar_for_1sql = [];
-                    self::$join_where = self::$select_var1 = self::$sql_order = '';
+                self::$var_ar_for_1sql = [];
+                self::$join_where = self::$select_var1 = self::$sql_order = '';
 
-                    /**
-                     * возвращаем много первых запросов
-                     */
-                    if (self::$return_items_header === true) {
+                /**
+                 * возвращаем много первых запросов
+                 */
+                if (self::$return_items_header === true) {
 
-                        self::$return_items_header = false;
-// return $ff->fetchAll();
-                        $return = [];
-                        while ($w = $ff->fetch()) {
-                            $return[$w['id']] = $w;
-                        }
-                        return $return;
+                    self::$return_items_header = false;
+                    // return $ff->fetchAll();
+                    $return = [];
+                    while ($w = $ff->fetch()) {
+                        $return[$w['id']] = $w;
                     }
+                    return $return;
+                }
 
+                $re = [];
+                $sql_1id = $sql = '';
 
-// \f\pa( $ff->fetchAll(), '', '', 'все');
-// die;
-// while( \f\pa($ff->fetchAll(), '', '', 'все');
+                while ($r = $ff->fetch()) {
 
-                    $re = [];
-                    $sql_1id = $sql = '';
-
-
-
-                    while ($r = $ff->fetch()) {
-
-                        if (empty($re[$r['id']])) {
-
-// \f\pa($r);
-//                        $re[$r['id']] = [
-//                            'id' => $r['id'],
-//                            'head' => $r['head'],
-//                            'sort' => $r['sort'],
-//                            'status' => $r['status']
-//                        ];
-
-                            /**
-                             * добавляем секрет к id  ( $s )
-                             */
-                            if (self::$add_s_to_res === true) {
-                                $r['s'] = \Nyos\Nyos::creatSecret($r['id']);
-                            }
-
-                            $re[$r['id']] = $r;
-
-// \f\pa($r);
-// $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
-                            $sql .= (!empty($sql) ? ',' : '') . $r['id'];
-
-                            $sql_1id = $r['id'];
-                        }
-
-//            $re[$r['id']][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
-                    }
-
-//        echo '<br/>timer: ' . \f\timer::stop('str', 47);
-//        if ($sort == 'sort_asc') {
-//            usort($re, "\\f\\sort_ar_sort");
-//        }
-// \f\pa($re);
-
-                    if (!empty(self::$sql_order))
-                        self::$sql_order = '';
-
-                    if (!empty($sql)) {
+                    if (empty($re[$r['id']])) {
 
                         /**
-                         * пишем кеш контент
+                         * добавляем секрет к id  ( $s )
                          */
-//        if (!empty($file_cash)) {
-//            file_put_contents($file_cash, json_encode($re));
-//        }
-//        return $re;
-//        return self::$cash['itemsimple'][$cash] = $re;
+                        if (self::$add_s_to_res === true) {
+                            $r['s'] = \Nyos\Nyos::creatSecret($r['id']);
+                        }
 
-                        /*
-                          $re2 = [];
-                          foreach ($re as $k => $v) {
-                          if (isset($v['id']))
-                          $re2[$v['id']] = $k;
-                          }
+                        $re[$r['id']] = $r;
 
-                          // \f\pa($re);
-                          // \f\pa($sql);
-                          // die();
-                          // $ff1 = ' ( SELECT
-                         * */
+                        // \f\pa($r);
+                        // $re[] = [ 'id' => $r['id'], 'head' => $r['head'], 'sort' => $r['sort'] ];
+                        $sql .= (!empty($sql) ? ',' : '') . $r['id'];
 
-                        $rebase = false;
+                        $sql_1id = $r['id'];
+                    }
+                }
 
-//                    if (self::$show_sql === true)
-//                        \f\pa(self::$join_where2, '', '', 'self::$join_where2 перед обработкой допов');
+                if (!empty(self::$sql_order))
+                    self::$sql_order = '';
 
-                        if (1 == 1) {
+                if (!empty($sql)) {
 
-                            /**
-                             * счётчик для переменных что будут в поиске и фильтрах
-                             */
-                            $nn = 1;
-                            $nn2 = 1;
+                    $rebase = false;
 
-                            if (!empty(self::$search)) {
+                    if (1 == 1) {
 
-                                if (self::$show_sql === true)
-                                    \f\pa(self::$search, '', '', 'self::$search');
+                        /**
+                         * счётчик для переменных что будут в поиске и фильтрах
+                         */
+                        $nn = 1;
+                        $nn2 = 1;
 
-                                $rebase = true;
+                        if (!empty(self::$search)) {
 
-                                foreach (self::$search as $k1 => $v1) {
-// if (isset($v1[0]) && isset($v1[1])) {
+                            if (self::$show_sql === true)
+                                \f\pa(self::$search, '', '', 'self::$search');
 
-                                    self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
-                                            . ' midop' . $nn . '.id_item = midop.id_item '
-                                            . ' AND midop' . $nn . '.name = :i_name' . $nn
-                                            . ' AND ';
+                            $rebase = true;
+
+                            foreach (self::$search as $k1 => $v1) {
+                                // if (isset($v1[0]) && isset($v1[1])) {
+
+                                self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
+                                        . ' midop' . $nn . '.id_item = midop.id_item '
+                                        . ' AND midop' . $nn . '.name = :i_name' . $nn
+                                        . ' AND ';
+
+                                self::$vars_to_sql2[':i_name' . $nn] = $k1;
+
+                                $s2 = '';
+
+                                if (is_array($v1) && sizeof($v1) > 0) {
+
+                                    foreach ($v1 as $k2 => $v2) {
+
+                                        $s2 .= (!empty($s2) ? ' OR ' : '') . PHP_EOL . ' midop' . $nn . '.value = :i_val' . $nn2;
+                                        self::$vars_to_sql2[':i_val' . $nn2] = $v2;
+                                        $nn2++;
+                                    }
+                                    self::$join_where2 .= ' ( ' . $s2 . ' ) ';
+                                } else {
+
+                                    self::$join_where2 .= PHP_EOL . ' midop' . $nn . '.value = :i_val' . $nn2;
+                                    self::$vars_to_sql2[':i_val' . $nn2] = $v1;
+                                }
+
+                                $nn++;
+                                $nn2++;
+                            }
+                            self::$search = [];
+                        }
+
+                        if (1 == 1 && !empty(self::$between)) {
+
+                            if (self::$show_sql === true)
+                                \f\pa(self::$between, '', '', 'self::$between');
+
+                            $rebase = true;
+
+                            foreach (self::$between as $k1 => $v1) {
+
+                                if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+
+                                    self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                                            . ' md' . $nn . '.id_item = midop.id_item '
+                                            . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                            . ' AND md' . $nn . '.value between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
 
                                     self::$vars_to_sql2[':i_name' . $nn] = $k1;
-
-                                    $s2 = '';
-
-                                    if (is_array($v1) && sizeof($v1) > 0) {
-
-                                        foreach ($v1 as $k2 => $v2) {
-
-                                            $s2 .= (!empty($s2) ? ' OR ' : '') . PHP_EOL . ' midop' . $nn . '.value = :i_val' . $nn2;
-//                                        . ' AND midop' . $nn . '.value = :i_val' . $nn
-//                                ;
-                                            self::$vars_to_sql2[':i_val' . $nn2] = $v2;
-//                                    self::$vars_to_sql2[':i_val' . $nn . '_0'] = $v1[0];
-//                                    self::$vars_to_sql2[':i_val' . $nn . '_1'] = $v1[1];
-                                            $nn2++;
-                                        }
-// }
-                                        self::$join_where2 .= ' ( ' . $s2 . ' ) ';
-                                    } else {
-
-                                        self::$join_where2 .= PHP_EOL . ' midop' . $nn . '.value = :i_val' . $nn2;
-                                        self::$vars_to_sql2[':i_val' . $nn2] = $v1;
-                                    }
+                                    self::$vars_to_sql2[':i_val' . $nn . '_0'] = $v1[0];
+                                    self::$vars_to_sql2[':i_val' . $nn . '_1'] = $v1[1];
 
                                     $nn++;
                                     $nn2++;
                                 }
-                                self::$search = [];
                             }
-
-                            if (1 == 1 && !empty(self::$between)) {
-
-                                if (self::$show_sql === true)
-                                    \f\pa(self::$between, '', '', 'self::$between');
-
-                                $rebase = true;
-
-                                foreach (self::$between as $k1 => $v1) {
-
-                                    if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
-
-                                        self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
-                                                . ' md' . $nn . '.id_item = midop.id_item '
-                                                . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
-                                                . ' AND md' . $nn . '.value between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
-
-//                            self::$join_where .= ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
-//                                    . ' midop' . $nn . '.id_item = midop.id_item '
-//                                    . ' AND midop' . $nn . '.name = :i_name' . $nn . ' '
-//                                    . ' AND midop' . $nn . '.value_date >= :i_val' . $nn . '_0 '
-//                                    . ' AND midop' . $nn . '.value_date <= :i_val' . $nn . '_1 '
-//                            ;
-
-                                        self::$vars_to_sql2[':i_name' . $nn] = $k1;
-                                        self::$vars_to_sql2[':i_val' . $nn . '_0'] = $v1[0];
-                                        self::$vars_to_sql2[':i_val' . $nn . '_1'] = $v1[1];
-
-                                        $nn++;
-                                        $nn2++;
-                                    }
-                                }
-                                self::$between = [];
-                            }
-
-                            if (1 == 1 && !empty(self::$between_date)) {
-
-                                if (self::$show_sql === true)
-                                    \f\pa(self::$between_date, '', '', 'self::$between_date');
-
-                                $rebase = true;
-
-                                foreach (self::$between_date as $k1 => $v1) {
-
-                                    if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
-
-                                        self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
-                                                . ' md' . $nn . '.id_item = midop.id_item '
-                                                . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
-                                                . ' AND md' . $nn . '.value_date between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
-
-//                            self::$join_where .= ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
-//                                    . ' midop' . $nn . '.id_item = midop.id_item '
-//                                    . ' AND midop' . $nn . '.name = :i_name' . $nn . ' '
-//                                    . ' AND midop' . $nn . '.value_date >= :i_val' . $nn . '_0 '
-//                                    . ' AND midop' . $nn . '.value_date <= :i_val' . $nn . '_1 '
-//                            ;
-
-                                        self::$vars_to_sql2[':i_name' . $nn] = $k1;
-                                        self::$vars_to_sql2[':i_val' . $nn . '_0'] = $v1[0];
-                                        self::$vars_to_sql2[':i_val' . $nn . '_1'] = $v1[1];
-
-                                        $nn++;
-                                        $nn2++;
-                                    }
-                                }
-                                self::$between_date = [];
-                            }
-
-                            if (1 == 1 && !empty(self::$between_datetime)) {
-
-                                if (self::$show_sql === true)
-                                    \f\pa(self::$between_datetime, '', '', 'self::$between_datetime');
-
-                                $rebase = true;
-
-                                foreach (self::$between_datetime as $k1 => $v1) {
-
-                                    if (isset($v1[0]) && isset($v1[1])) {
-
-                                        self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
-                                                . ' md' . $nn . '.id_item = midop.id_item '
-                                                . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn2 . ' '
-                                                . ' AND md' . $nn . '.value_datetime between :i_val' . $nn2 . '_0 and :i_val' . $nn2 . '_1 ';
-
-//                            self::$join_where .= ' INNER JOIN `mitems-dops` midop' . $nn . ' ON '
-//                                    . ' midop' . $nn . '.id_item = midop.id_item '
-//                                    . ' AND midop' . $nn . '.name = :i_name' . $nn . ' '
-//                                    . ' AND midop' . $nn . '.value_date >= :i_val' . $nn . '_0 '
-//                                    . ' AND midop' . $nn . '.value_date <= :i_val' . $nn . '_1 '
-//                            ;
-
-                                        self::$vars_to_sql2[':i_name' . $nn2] = $k1;
-                                        self::$vars_to_sql2[':i_val' . $nn2 . '_0'] = $v1[0];
-                                        self::$vars_to_sql2[':i_val' . $nn2 . '_1'] = $v1[1];
-                                        $nn++;
-                                        $nn2++;
-                                    }
-                                }
-                                self::$between_datetime = [];
-                            }
+                            self::$between = [];
                         }
 
+                        if (1 == 1 && !empty(self::$between_date)) {
 
-                        $rebase_ar = [];
+                            if (self::$show_sql === true)
+                                \f\pa(self::$between_date, '', '', 'self::$between_date');
+
+                            $rebase = true;
+
+                            foreach (self::$between_date as $k1 => $v1) {
+
+                                if (is_array($v1) && isset($v1[0]) && isset($v1[1])) {
+
+                                    self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                                            . ' md' . $nn . '.id_item = midop.id_item '
+                                            . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn . ' '
+                                            . ' AND md' . $nn . '.value_date between :i_val' . $nn . '_0 and :i_val' . $nn . '_1 ';
+
+                                    self::$vars_to_sql2[':i_name' . $nn] = $k1;
+                                    self::$vars_to_sql2[':i_val' . $nn . '_0'] = $v1[0];
+                                    self::$vars_to_sql2[':i_val' . $nn . '_1'] = $v1[1];
+
+                                    $nn++;
+                                    $nn2++;
+                                }
+                            }
+                            self::$between_date = [];
+                        }
+
+                        if (1 == 1 && !empty(self::$between_datetime)) {
+
+                            if (self::$show_sql === true)
+                                \f\pa(self::$between_datetime, '', '', 'self::$between_datetime');
+
+                            $rebase = true;
+
+                            foreach (self::$between_datetime as $k1 => $v1) {
+
+                                if (isset($v1[0]) && isset($v1[1])) {
+
+                                    self::$join_where2 .= PHP_EOL . ' INNER JOIN `mitems-dops` md' . $nn . ' ON '
+                                            . ' md' . $nn . '.id_item = midop.id_item '
+                                            . PHP_EOL . ' AND md' . $nn . '.name = :i_name' . $nn2 . ' '
+                                            . ' AND md' . $nn . '.value_datetime between :i_val' . $nn2 . '_0 and :i_val' . $nn2 . '_1 ';
+
+                                    self::$vars_to_sql2[':i_name' . $nn2] = $k1;
+                                    self::$vars_to_sql2[':i_val' . $nn2 . '_0'] = $v1[0];
+                                    self::$vars_to_sql2[':i_val' . $nn2 . '_1'] = $v1[1];
+                                    $nn++;
+                                    $nn2++;
+                                }
+                            }
+                            self::$between_datetime = [];
+                        }
+                    }
+
+
+                    $rebase_ar = [];
+
+                    if ($rebase === true) {
+                        // массив данных с 1 запроса
+                        $rebase_ar = $re;
+                        $re = [];
+                    }
+
+
+                    // \f\pa($re);
+
+
+                    if (self::$show_sql === true)
+                        \f\pa(self::$join_where2, '', '', 'self::$join_where2 перед запросом');
+
+                    $ff1 = ' SELECT
+
+                        midop.id_item id, '
+                            // .' midop.id dops_id, '
+                            . ' midop.`name`,
+                        midop.`value`,
+                        midop.`value_date`,
+                        midop.`value_datetime`,
+                        midop.`value_text` '
+                            . (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ? ' , ' . implode(' ,', self::$sql_select_vars) : (!empty(self::$sql_select_vars) && is_string(self::$sql_select_vars) ? ' , ' . self::$sql_select_vars : '' ) )
+                            . PHP_EOL
+                            . ' FROM `mitems-dops` midop '
+                            . PHP_EOL
+                            . self::$join_where2
+                            . PHP_EOL
+                            . ' WHERE '
+                            . PHP_EOL
+                            //                            . ' midop.id_item IN (' . $sql . ') '
+                            . (
+                            ($sql_1id != $sql) ? ' midop.id_item IN (' . $sql . ') ' : ' midop.id_item = \'' . $sql_1id . '\' ')
+                            . PHP_EOL
+                            . ' AND midop.status IS NULL '
+                            . PHP_EOL
+                            . (self::$where2dop ?? '');
+
+                    self::$join_where2 = self::$where2dop = '';
+
+                    if (self::$show_sql === true)
+                        \f\pa($ff1, '', '', '$ff1 sql2');
+
+                    $ff = $db->prepare($ff1);
+
+                    if (self::$show_sql === true)
+                        \f\pa(self::$vars_to_sql2, '', '', 'self::$vars_to_sql2');
+
+                    $ff->execute(self::$vars_to_sql2);
+
+                    self::$vars_to_sql2 = [];
+
+                    while ($r = $ff->fetch()) {
 
                         if ($rebase === true) {
-// массив данных с 1 запроса
-                            $rebase_ar = $re;
-                            $re = [];
-                        }
 
+                            // массив данных с 1 запроса
+                            // $rebase_ar = $re;
 
-// \f\pa($re);
-
-
-                        if (self::$show_sql === true)
-                            \f\pa(self::$join_where2, '', '', 'self::$join_where2 перед запросом');
-
-                        $ff1 = ' SELECT
-
-                midop.id_item id, '
-// .' midop.id dops_id, '
-                                . ' midop.`name`,
-                midop.`value`,
-                midop.`value_date`,
-                midop.`value_datetime`,
-                midop.`value_text` '
-                                . (self::$sql_select_vars ?? '')
-                                . PHP_EOL
-                                . ' FROM `mitems-dops` midop '
-                                . PHP_EOL
-                                . self::$join_where2
-                                . PHP_EOL
-                                . ' WHERE '
-                                . PHP_EOL
-//                            . ' midop.id_item IN (' . $sql . ') '
-                                . (
-                                ($sql_1id != $sql) ? ' midop.id_item IN (' . $sql . ') ' : ' midop.id_item = \'' . $sql_1id . '\' ')
-                                . PHP_EOL
-                                . ' AND midop.status IS NULL '
-                                . PHP_EOL
-                                . (self::$where2dop ?? '');
-
-                        self::$join_where2 = self::$where2dop = '';
-
-                        if (self::$show_sql === true)
-                            \f\pa($ff1, '', '', '$ff1 sql2');
-
-//            \f\pa($ff1);
-
-                        $ff = $db->prepare($ff1);
-
-//        $for_sql = [];
-//        $ff->execute($for_sql);
-
-                        if (self::$show_sql === true)
-                            \f\pa(self::$vars_to_sql2, '', '', 'self::$vars_to_sql2');
-
-                        $ff->execute(self::$vars_to_sql2);
-
-                        self::$vars_to_sql2 = [];
-
-// while( \f\pa($ff->fetchAll(), '', '', 'все');
-// $re = [];
-
-                        while ($r = $ff->fetch()) {
-
-                            if ($rebase === true) {
-
-// массив данных с 1 запроса
-// $rebase_ar = $re;
-
-                                if (!isset($re[$r['id']])) {
-                                    if (isset($rebase_ar[$r['id']])) {
-                                        $re[$r['id']] = $rebase_ar[$r['id']];
-                                    } else {
-                                        $re[$r['id']] = ['skip_1sql_ar' => 'da'];
-                                    }
+                            if (!isset($re[$r['id']])) {
+                                if (isset($rebase_ar[$r['id']])) {
+                                    $re[$r['id']] = $rebase_ar[$r['id']];
+                                } else {
+                                    $re[$r['id']] = ['skip_1sql_ar' => 'da'];
                                 }
+                            }
 
-                                if (!empty($r['name'])) {
-                                    $re[$r['id']][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
-                                    $re[$r['id']]['rebase'] = 'da';
-                                }
-                            } else {
+                            if (!empty($r['name'])) {
+                                $re[$r['id']][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                                $re[$r['id']]['rebase'] = 'da';
+                            }
+                        } else {
 
-                                if (empty($re[($re2[$r['id']] ?? $r['id'])])) {
-//$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
-                                    $re[($re2[$r['id']] ?? $r['id'])] = ['id' => $r['id'], 'start2' => 'ok'];
-                                }
+                            if (empty($re[($re2[$r['id']] ?? $r['id'])])) {
+                                //$re[( $re2[$r['id']] ?? $r['id'] )] = ['id' => $r['id'], 'head' => $re1[$r['id']], 'start2' => 'ok'];
+                                $re[($re2[$r['id']] ?? $r['id'])] = ['id' => $r['id'], 'start2' => 'ok'];
+                            }
 
-                                if (!empty($r['name'])) {
-                                    if (self::$style_old === true) {
-                                        $re[($re2[$r['id']] ?? $r['id'])]['dop'][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
-                                    } else {
-                                        $re[($re2[$r['id']] ?? $r['id'])][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
-                                    }
+                            if (!empty($r['name'])) {
+                                if (self::$style_old === true) {
+                                    $re[($re2[$r['id']] ?? $r['id'])]['dop'][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
+                                } else {
+                                    $re[($re2[$r['id']] ?? $r['id'])][$r['name']] = $r['value'] ?? $r['value_date'] ?? $r['value_text'] ?? $r['value_int'] ?? $r['value_datetime'] ?? null;
                                 }
                             }
                         }
+                    }
 
 
-                        if (!empty(self::$need_polya_vars)) {
+                    if (!empty(self::$need_polya_vars)) {
 
-                            $re2 = [];
+                        $re2 = [];
 
-                            if (!empty($re))
-                                foreach ($re as $k => $v) {
+                        if (!empty($re))
+                            foreach ($re as $k => $v) {
 
-                                    $skip = false;
+                                $skip = false;
 
-                                    foreach (self::$need_polya_vars as $kk) {
+                                foreach (self::$need_polya_vars as $kk) {
 
-                                        if (!isset($v[$kk])) {
-                                            $skip = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if ($skip == true) {
-//$re2[$k] = $v;
-                                        unset($re[$k]);
+                                    if (!isset($v[$kk])) {
+                                        $skip = true;
+                                        break;
                                     }
                                 }
 
-//                $re = $re2;
-//                unset($re2);
-                        }
+                                if ($skip == true) {
+                                    //$re2[$k] = $v;
+                                    unset($re[$k]);
+                                }
+                            }
+
+                        //                $re = $re2;
+                        //                unset($re2);
+                    }
 
 
-//\f\pa($sort);
+                    //\f\pa($sort);
 
-                        if ($sort == 'sort_asc') {
-                            usort($re, "\\f\\sort_ar_sort");
-                        } elseif ($sort == 'date_asc') {
-                            usort($re, "\\f\\sort_ar_date");
-                        } elseif ($sort == 'date_desc') {
-                            usort($re, "\\f\\sort_ar_date_desc");
-// usort($re, "\\f\\sort_ar_date");
-                        }
-
-                        if (isset($show_memory) && $show_memory === true) {
-                            $sm2 = 0;
-                            $sm2 = memory_get_usage();
-                            echo '<br/>'
-                            . 's' . __LINE__ . 's > ' . round(($sm2 - $sm) / 1024, 2) . ' Kb = '
-                            . '<br/>'
-                            . 'timer:' . \f\timer::stop('str', 123) . ' - ';
-                        }
+                    if ($sort == 'sort_asc') {
+                        usort($re, "\\f\\sort_ar_sort");
+                    } elseif ($sort == 'date_asc') {
+                        usort($re, "\\f\\sort_ar_date");
+                    } elseif ($sort == 'date_desc') {
+                        usort($re, "\\f\\sort_ar_date_desc");
+                        // usort($re, "\\f\\sort_ar_date");
                     }
                 }
+            }
 
-// \f\pa($re);
+            /**
+             * трем переменные
+             */
+            self::$where2dop = '';
+            self::$need_polya_vars = [];
 
-                /**
-                 * если в начале запустили мемкеш то сохраняем результат
-                 */
-//        if (isset($memcache) && $memcache === true) {
-//            if (isset($memcache_obj) && !empty($cash_var)) {
-//
-//                //Выведем закэшированные данные
-//                $memcache_obj->set($cash_var, $re, false, 3600 * 24);
-//                //Закрываем соединение с сервером Memcached
-//                $memcache_obj->close();
-//            }
-//        }
+            self::$show_sql = false;
 
 
+            if (self::$style_old === true) {
 
-                /**
-                 * трем переменные
-                 */
-                self::$where2dop = '';
-                self::$need_polya_vars = [];
+                self::$style_old = false;
+                return ['data' => $re];
+            } elseif (self::$limit1 === true) {
 
-                self::$show_sql = false;
-
-
-                if (self::$style_old === true) {
-
-                    self::$style_old = false;
-                    return ['data' => $re];
-                } elseif (self::$limit1 === true) {
-
-                    self::$limit1 = false;
-                    foreach ($re as $k => $v) {
-                        return $v;
-                    }
-                } else {
-
-//                if ($save_cash === true) {
-////                    // $cash_var = 'items__'.$module.'_'.$stat.'_'.$sort;
-//                    // \f\Cash::setVar($cash_var, $re, 60 * 60 * 2);
-//                    \f\Cash::setVar($cash_var, $re);
-////                    // \f\pa($e,'','','$e');
-//              1  }
-//                if (!empty(self::$cash_var)) {
-//                    \f\Cash::setVar(self::$cash_var, $re, ( self::$cash_time ?? 0));
-//                }
-
-                    return $re;
+                self::$limit1 = false;
+                foreach ($re as $k => $v) {
+                    return $v;
                 }
+            } else {
 
-                /*
-                  return self::$cash['itemsimple'][$cash] = $re;
-
-                  //return \f\end2('Достали список, простой', 'ok', $re, 'array');
-                  // return \f\end3('Достали список, простой', true, $re);
-                 *
-                 */
-
-//
+                return $re;
             }
-//
-            catch (\PDOException $ex) {
+        }
 
-                echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
-                . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
-                . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
-                . PHP_EOL . $ex->getTraceAsString()
-                . '</pre>';
 
-// не найдена таблица, создаём значит её
-                if (strpos($ex->getMessage(), 'no such table') !== false) {
+        //
+        catch (\Exception $ex) {
+            \f\pa($ex);
+        }
+        //
+        catch (\Throwable $ex) {
+            \f\pa($ex);
+        }
+        //
+        catch (\PDOException $ex) {
 
-                    self::creatTable($db);
-// \f\redirect( '/' );
-                }
+            echo '<pre>--- ' . __FILE__ . ' ' . __LINE__ . '-------'
+            . PHP_EOL . $ex->getMessage() . ' #' . $ex->getCode()
+            . PHP_EOL . $ex->getFile() . ' #' . $ex->getLine()
+            . PHP_EOL . $ex->getTraceAsString()
+            . '</pre>';
 
-                return \f\end3('ошибка', false);
+            // не найдена таблица, создаём значит её
+            if (strpos($ex->getMessage(), 'no such table') !== false) {
+
+                self::creatTable($db);
+                // \f\redirect( '/' );
             }
-//
-            catch (\Exception $ex) {
-                \f\pa($ex);
-            }
-//
-            catch (\Throwable $ex) {
-                \f\pa($ex);
-            }
+
+            return \f\end3('ошибка', false);
         }
     }
 
@@ -2869,64 +2682,90 @@ class items {
     public static function adds($db, string $module, array $data, $params_in = []) {
 
         if (empty($data))
-            return false;
+            throw new \Exception( 'пустая дата' ); // return false;
 
 // \f\pa(\Nyos\Nyos::$menu);
 // return false;
 
-        if (!isset(\Nyos\Nyos::$menu))
+        if ( !isset(\Nyos\Nyos::$menu) )
             \Nyos\Nyos::getMenu();
 
         if (!isset(\Nyos\Nyos::$menu[$module]))
-            return false;
+            throw new \Exception( 'нет меню' );
 
 
-        if (isset(\Nyos\Nyos::$menu[$module]['type']) && \Nyos\Nyos::$menu[$module]['type'] == 'items' && isset(\Nyos\Nyos::$menu[$module]['version']) && \Nyos\Nyos::$menu[$module]['version'] == 3) {
+        if (isset(\Nyos\Nyos::$menu[$module]['type']) && \Nyos\Nyos::$menu[$module]['type'] == 'items' 
+                && isset(\Nyos\Nyos::$menu[$module]['version']) && \Nyos\Nyos::$menu[$module]['version'] == 3) {
 
+            echo '<br/>'.__FILE__.' #'.__LINE__;
+            
             $polya = [];
 
             if (!empty($params_in))
                 foreach ($params_in as $k => $v) {
-                    if( isset(\Nyos\Nyos::$menu[$module][$k]['name_rus']) )
-                    $polya[$k] = 1;
+                    if (isset(\Nyos\Nyos::$menu[$module][$k]['name_rus']))
+                        $polya[$k] = 1;
                 }
 
             foreach ($data as $v) {
                 // $in_db = $params_in;
                 foreach ($v as $k1 => $v1) {
                     // $in_db[$k1] = $v1;
-                    if( isset(\Nyos\Nyos::$menu[$module][$k1]['name_rus']) )
-                    $polya[$k1] = 1;
+                    if (isset(\Nyos\Nyos::$menu[$module][$k1]['name_rus']))
+                        $polya[$k1] = 1;
                 }
             }
 
-            $sql = 'INSERT INTO `mod_' . \f\translit($module, 'uri2') . '` ( `' . implode('`, `', array_keys($polya)) . '` ) VALUES ';
-            $nn = 1;
-            $vars = [];
-            $n2 = 1;
+            try {
 
-            foreach ($data as $v) {
-                $sql2 = '';
-                foreach ($polya as $p => $pp1) {
+                $sql0 = 'INSERT INTO `mod_' . \f\translit($module, 'uri2') . '` ( `' . implode('`, `', array_keys($polya)) . '` ) VALUES ';
+                $nn = 1;
+                $vars = [];
+                $n2 = 1;
+                $sql = '';
 
-                    $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' :v' . $nn . ' ';
-                    $vars[':v' . $nn] = ( isset($v[$p]) ? $v[$p] : ( !empty($params_in[$p]) ? $params_in[$p] : '' ) );
-                    $nn++;
+                foreach ($data as $v) {
+                    $sql2 = '';
+                    foreach ($polya as $p => $pp1) {
+
+                        $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' :v' . $nn . ' ';
+                        $vars[':v' . $nn] = ( isset($v[$p]) ? $v[$p] : (!empty($params_in[$p]) ? $params_in[$p] : '' ) );
+                        $nn++;
+                    }
+                    $sql .= ( $n2 > 1 ? ',' : '' ) . ' ( ' . $sql2 . ' ) ';
+                    $n2++;
+
+                    if ($n2 > 2000) {
+
+                        // \f\pa($sql);
+                        echo $sql;
+                        $s2 = $db->prepare($sql0 . $sql);
+                        $sql = '';
+                        
+                        // \f\pa($vars);
+                        $s2->execute($vars);
+                        $vars = [];
+                        $n2 = 0;
+                        // break;
+                    }
                 }
-                $sql .= ( $n2 > 1 ? ',' : '' ) . ' ( ' . $sql2 . ' ) ';
-                $n2++;
-            }
 
-            if( $n2 > 1 ){
-            // \f\pa($sql);
-            $s2 = $db->prepare($sql);
-            // \f\pa($vars);
-            $s2->execute($vars);
+                if ($n2 > 1) {
+                    // \f\pa($sql);
+                    echo $sql;
+                    $s2 = $db->prepare($sql0 . $sql);
+                    // \f\pa($vars);
+                    $s2->execute($vars);
+                }
+            } catch (\Exception $exc) {
+                //echo $exc->getTraceAsString();
+                \f\pa($exc);
+            } catch (\PDOException $exc) {
+                \f\pa($exc);
             }
-            
             return \f\end3('ok', true, ['kolvo' => $n2]);
         }
-
+        else{ echo '<br/>'.__FILE__.' #'.__LINE__; }
 
         $ee = [];
 

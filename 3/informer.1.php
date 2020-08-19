@@ -1,5 +1,66 @@
 <?php
 
+
+
+if (!empty($_REQUEST['items__refresh_db'])) {
+
+    \f\pa('грузим старые базы в новые');
+    
+    // die('23');
+    
+    \f\timer_start(233);
+    // die('123');
+    $list = [];
+    
+    \Nyos\nyos::getMenu();
+    
+    // \f\pa(\Nyos\nyos::$menu);
+    // die();
+    
+    foreach (\Nyos\nyos::$menu as $k => $v) {
+        if (isset($v['type']) && $v['type'] == 'items') {
+
+            \f\pa($k);
+            
+            if (isset($_REQUEST['only'])) {
+                if ($_REQUEST['only'] == $k) {
+                    $list[] = $k;
+                    $e = \f\db\db_creat_local_table($db, $k, null, true);
+                    \f\pa($e);
+                    break;
+                }
+            } else {
+                $list[] = $k;
+                // echo '<br/>' . $k;
+                // \f\pa($v);
+                $e = \f\db\db_creat_local_table($db, $k, null, true);
+                \f\pa($e);
+            }
+        }
+    }
+
+    // $timer = \f\timer_stop(233);
+
+//    $skip_start = true;
+//    require_once DR . '/vendor/didrive_mod/jobdesc/1/didrive/micro-service/creat-db-summ-table.php';
+
+    $timer = \f\timer_stop(233);
+
+    if (isset($_REQUEST['show_res']) && $_REQUEST['show_res'] == 'no') {
+        die('end');
+    } else {
+        \f\end2('ok', true, [$list, $timer]);
+    }
+    
+    die( 'обновление баз данных закончено' );
+    
+}
+
+
+
+
+
+
 //f\pa($vv['now_inf_cfg']);
 
 if (isset($vv['now_inf_cfg']['load_inf']) && $vv['now_inf_cfg']['load_inf'] == 'da') {

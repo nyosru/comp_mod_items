@@ -537,6 +537,8 @@ class items {
      */
     public static function getItemsSimple($db, $module = null, $stat = 'show', $sort = null) {
 
+        // \f\pa( \f\end3('getItemsSimple',true,  [ 'in' => [ $module , $stat , $sort  ] ]  ) );
+        
         $show_memory = false;
 //        $show_memory = true;
         if ($show_memory === true) {
@@ -601,17 +603,6 @@ class items {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
         try {
 
             $ff1 = 'SELECT 
@@ -622,7 +613,9 @@ class items {
                 midop.`value_date`,
                 midop.`value_datetime`,
                 midop.`value_text` '
-                    . (self::$sql_select_vars ?? '')
+                    . ( !empty(self::$sql_select_vars) ? 
+                        ( is_string(self::$sql_select_vars) ? self::$sql_select_vars : '' ) 
+                        . ( is_array(self::$sql_select_vars) ? ' , '.implode( ' ,' , self::$sql_select_vars ) : '' ) : '' )
                     . '
             FROM 
                 `mitems-dops` midop 
@@ -1164,7 +1157,7 @@ class items {
                 $where .= (!empty($where) ? ' AND ' : '' ) . ' `status` = :v' . $n . ' ';
                 $n++;
 
-                if (1 == 2)
+                if (1 == 1)
                     if (!empty(self::$search)) {
 
                         foreach (self::$search as $k => $v) {
@@ -1188,7 +1181,7 @@ class items {
                         self::$search = [];
                     }
 
-                if (1 == 2)
+                if (1 == 1)
                     if (!empty(self::$between)) {
 
                         foreach (self::$between as $k => $v) {
@@ -1268,6 +1261,8 @@ class items {
 
         try {
 
+            
+            
             if (empty(self::$cash_var)) {
 
                 $dop_cash_var = (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '')
@@ -2722,41 +2717,46 @@ class items {
                 $nn = 1;
                 $vars = [];
                 $n2 = 1;
+                $n3 = 1;
                 $sql = '';
 
                 foreach ($data as $v) {
+                    
                     $sql2 = '';
+                    $nn = 1;
                     foreach ($polya as $p => $pp1) {
-
-                        $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' :v' . $nn . ' ';
-                        $vars[':v' . $nn] = ( isset($v[$p]) ? $v[$p] : (!empty($params_in[$p]) ? $params_in[$p] : '' ) );
+                        $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' :v' . $n3.'_'.$nn . ' ';
+                        $vars[':v' . $n3.'_'.$nn] = ( isset($v[$p]) ? $v[$p] : (!empty($params_in[$p]) ? $params_in[$p] : '' ) );
                         $nn++;
                     }
                     $sql .= ( $n2 > 1 ? ',' : '' ) . ' ( ' . $sql2 . ' ) ';
                     $n2++;
+                    $n3++;
 
                     if ($n2 > 2000) {
 
                         // \f\pa($sql);
-                        echo $sql;
+                        echo '<div style="max-height: 100px; overflow: auto;" >start0 '.$sql0 . $sql.'</div>';
                         $s2 = $db->prepare($sql0 . $sql);
                         $sql = '';
                         
                         // \f\pa($vars);
                         $s2->execute($vars);
                         $vars = [];
-                        $n2 = 0;
+                        $n2 = 1;
                         // break;
                     }
+                    
                 }
 
                 if ($n2 > 1) {
                     // \f\pa($sql);
-                    echo $sql;
+                    echo '<div style="max-height: 100px; overflow: auto;" >end '.$sql0 . $sql.'</div>';
                     $s2 = $db->prepare($sql0 . $sql);
                     // \f\pa($vars);
                     $s2->execute($vars);
                 }
+                
             } catch (\Exception $exc) {
                 //echo $exc->getTraceAsString();
                 \f\pa($exc);

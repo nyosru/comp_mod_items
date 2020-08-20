@@ -14,10 +14,15 @@ if (!empty($_REQUEST['items__refresh_db'])) {
     
     \Nyos\nyos::getMenu();
     
-    // \f\pa(\Nyos\nyos::$menu);
+    \f\pa(\Nyos\nyos::$menu,2);
     // die();
     
     foreach (\Nyos\nyos::$menu as $k => $v) {
+        
+        echo '<div style="border: 1px solid green; padding: 30px;" >';
+        \f\pa($k);
+        \f\pa($v);
+        
         if (isset($v['type']) && $v['type'] == 'items') {
 
             \f\pa($k);
@@ -37,6 +42,8 @@ if (!empty($_REQUEST['items__refresh_db'])) {
                 \f\pa($e);
             }
         }
+        
+        echo '</div>';
     }
 
     // $timer = \f\timer_stop(233);

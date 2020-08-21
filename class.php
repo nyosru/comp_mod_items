@@ -2692,7 +2692,7 @@ class items {
         if (isset(\Nyos\Nyos::$menu[$module]['type']) && \Nyos\Nyos::$menu[$module]['type'] == 'items' 
                 && isset(\Nyos\Nyos::$menu[$module]['version']) && \Nyos\Nyos::$menu[$module]['version'] == 3) {
 
-            echo '<br/>'.__FILE__.' #'.__LINE__;
+            // echo '<br/>'.__FILE__.' #'.__LINE__;
             
             $polya = [];
 
@@ -2736,7 +2736,7 @@ class items {
                     if ($n2 > 2000) {
 
                         // \f\pa($sql);
-                        echo '<div style="max-height: 100px; overflow: auto;" >start0 '.$sql0 . $sql.'</div>';
+                        // echo '<div style="max-height: 100px; overflow: auto;" >start0 '.$sql0 . $sql.'</div>';
                         $s2 = $db->prepare($sql0 . $sql);
                         $sql = '';
                         
@@ -2751,7 +2751,7 @@ class items {
 
                 if ($n2 > 1) {
                     // \f\pa($sql);
-                    echo '<div style="max-height: 100px; overflow: auto;" >end '.$sql0 . $sql.'</div>';
+                    // echo '<div style="max-height: 100px; overflow: auto;" >end '.$sql0 . $sql.'</div>';
                     $s2 = $db->prepare($sql0 . $sql);
                     // \f\pa($vars);
                     $s2->execute($vars);

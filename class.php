@@ -145,12 +145,25 @@ class items {
     public static $search = [];
 
     /**
+     * массив лайкед для поиска ( все ищутся и + )
+     * get version 3
+     * @var type 
+     */
+    public static $liked_and = [];
+
+    /**
      * массив переменных для запроса
      * @var type 
      */
     public static $sql_itemsdop_add_where_array = [];
     public static $sql_order = '';
     public static $sql_limit = '';
+
+    /**
+     * сколько сек на запрос можно использовать adds ( pg )
+     * @var type 
+     */
+    public static $time_limit = null;
 
     /**
      * возвращаем 1 запись (первая из всех если их несколько)
@@ -184,6 +197,21 @@ class items {
         if ($a1 == 'head' && ($a2 == 'asc' || $a2 == 'desc')) {
             self::$sort_head = $a2;
         }
+    }
+
+    public static function getPolya($db, $table) {
+
+        if (\Nyos\nyos::$db_type == 'pg') {
+            $sql = 'select column_name from information_schema.columns where information_schema.columns.table_name= :table ;';
+            $ff = $db->prepare($sql);
+            $ff->execute([':table' => $table]);
+            $r = [];
+            while ($row = $ff->fetchAll()) {
+                $r[] = $row['column_name'];
+            }
+            return $r;
+        }
+        // return $ff->fetchAll();
     }
 
     /**
@@ -277,23 +305,29 @@ class items {
 
         try {
 
-            $f = 'SELECT * FROM `mitems` mi WHERE '
-                    . ' mi.`status` != \'delete2\' '
-// . ' AND mi.folder = :folder '
-                    . (isset($module{
-                            1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
-                    . (isset($stat{
-                            1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
-                    . 'ORDER BY '
-                    . (self::$sort_head == 'desc' ? ' mi.head DESC, ' : '')
-                    . (self::$sort_head == 'asc' ? ' mi.head ASC, ' : '')
-                    . ' mi.`sort` DESC, mi.`add_d` DESC, mi.`add_t` DESC '
-                    . (isset($limit{
-                            1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '')
-                    . ';';
-
-//            if( $_SERVER['HTTP_HOST'] == 'yapdomik.uralweb.info' )
-//                echo '<br/>'.'<br/>'.$f;
+            if (\Nyos\nyos::$db_type == 'pg') {
+                $f = 'SELECT * FROM mitems mi WHERE '
+                        . ' mi.`status` != \'delete2\' '
+                        . (!empty($module) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
+                        . (!empty($stat) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
+                        . 'ORDER BY '
+                        . (self::$sort_head == 'desc' ? ' mi.head DESC, ' : '')
+                        . (self::$sort_head == 'asc' ? ' mi.head ASC, ' : '')
+                        . ' mi.`sort` DESC, mi.`add_d` DESC, mi.`add_t` DESC '
+                        . (!empty($limit) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '')
+                        . ';';
+            } else {
+                $f = 'SELECT * FROM `mitems` mi WHERE '
+                        . ' mi.`status` != \'delete2\' '
+                        . (!empty($module) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
+                        . (!empty($stat) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
+                        . 'ORDER BY '
+                        . (self::$sort_head == 'desc' ? ' mi.head DESC, ' : '')
+                        . (self::$sort_head == 'asc' ? ' mi.head ASC, ' : '')
+                        . ' mi.`sort` DESC, mi.`add_d` DESC, mi.`add_t` DESC '
+                        . (!empty($limit) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '')
+                        . ';';
+            }
 
             $ff = $db->prepare($f);
             $ff->execute(
@@ -342,16 +376,12 @@ class items {
             INNER JOIN `mitems` mi ON '
 // .'mi.folder = :folder '
                 . ' mi.id = midop.id_item '
-                . (isset($module{
-                        1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
-                . (isset($stat{
-                        1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
+                . (!empty($module) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
+                . (!empty($stat) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
                 . 'AND mi.`status` != \'delete2\' 
-                
             WHERE 
                 midop.status IS NULL 
-                ' . (isset(self::$sql_itemsdop_add_where{
-                        3}) ? ' AND ' . self::$sql_itemsdop_add_where : '') . '                
+                ' . (!empty(self::$sql_itemsdop_add_where) ? ' AND ' . self::$sql_itemsdop_add_where : '') . '                
             ;';
         self::$sql_itemsdop_add_where = null;
 
@@ -538,7 +568,7 @@ class items {
     public static function getItemsSimple($db, $module = null, $stat = 'show', $sort = null) {
 
         // \f\pa( \f\end3('getItemsSimple',true,  [ 'in' => [ $module , $stat , $sort  ] ]  ) );
-        
+
         $show_memory = false;
 //        $show_memory = true;
         if ($show_memory === true) {
@@ -613,9 +643,9 @@ class items {
                 midop.`value_date`,
                 midop.`value_datetime`,
                 midop.`value_text` '
-                    . ( !empty(self::$sql_select_vars) ? 
-                        ( is_string(self::$sql_select_vars) ? self::$sql_select_vars : '' ) 
-                        . ( is_array(self::$sql_select_vars) ? ' , '.implode( ' ,' , self::$sql_select_vars ) : '' ) : '' )
+                    . (!empty(self::$sql_select_vars) ?
+                    ( is_string(self::$sql_select_vars) ? self::$sql_select_vars : '' )
+                    . ( is_array(self::$sql_select_vars) ? ' , ' . implode(' ,', self::$sql_select_vars) : '' ) : '' )
                     . '
             FROM 
                 `mitems-dops` midop 
@@ -662,8 +692,7 @@ class items {
 
             $for_sql = self::$sql_itemsdop_add_where_array;
 // $for_sql[':folder'] = $folder;
-            $for_sql[':module'] = (isset($module{
-                            1})) ? $module : '';
+            $for_sql[':module'] = $module ?? '';
             self::$sql_itemsdop_add_where_array = [];
 
             if (self::$show_sql === true) {
@@ -725,10 +754,8 @@ class items {
 // . ' mi.folder = :folder '
                         . 'mi.`status` != \'delete2\' '
                         . $sql_dop
-                        . (isset($module{
-                                1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
-                        . (isset($stat{
-                                1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
+                        . (!empty($module) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
+                        . (!empty($stat) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
                         . 'ORDER BY '
                         . (self::$sort_head == 'desc' ? ' mi.head DESC, ' : '')
                         . (self::$sort_head == 'asc' ? ' mi.head ASC, ' : '')
@@ -781,12 +808,10 @@ class items {
                         . ' mi.`status` != \'delete2\' '
                         . $sql_dop
 // .' mi.folder = :folder '
-                        . (isset($module{
-                                1}) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
-                        . (isset($stat{
-                                1}) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
+                        . (!empty($module) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
+                        . (!empty($stat) ? ' AND mi.`status` = \'' . addslashes($stat) . '\' ' : '')
                         . (!empty(self::$sql_items_add_where) ? ' AND ' . self::$sql_items_add_where : '') . '
-                        ' . (self::$sql_itemsdop2_add_where ?? '') . '
+                        ' . ( self::$sql_itemsdop2_add_where ?? '') . '
                         ' . (!empty(self::$sql_itemsdop_add_where) ? ' AND ' . self::$sql_itemsdop_add_where : '')
                         . ' ' . (self::$sql_order ?? '')
                         . ' ' . (self::$sql_limit ?? '')
@@ -1126,6 +1151,11 @@ class items {
      */
     public static function get($db, $module = null, $stat = 'show', $sort = null) {
 
+//        if (\Nyos\nyos::$db_type == 'pg') {
+//            \f\pa(['items get pg', $module, $stat, $sort]);
+//        } else {
+//            \f\pa(['items get', $module, $stat, $sort]);
+//        }
         // \f\pa( [ $module , $stat , $sort ] );
         // if( $module != 'sale_point' )
         // return [];
@@ -1152,9 +1182,15 @@ class items {
             try {
 
                 self::$type_module = '';
-
                 self::$var_ar_for_1sql[':v' . $n] = 'show';
-                $where .= (!empty($where) ? ' AND ' : '' ) . ' `status` = :v' . $n . ' ';
+
+                if (\Nyos\nyos::$db_type == 'pg') {
+                    // echo '<br/>'.__FILE__ . ' #' . __LINE__;
+                    $where .= (!empty($where) ? ' AND ' : '' ) . ' ( status = :v' . $n . ' OR status IS NULL ) ';
+                } else {
+                    $where .= (!empty($where) ? ' AND ' : '' ) . ' `status` = :v' . $n . ' ';
+                }
+
                 $n++;
 
                 if (1 == 1)
@@ -1165,7 +1201,11 @@ class items {
                                 $w2 = '';
                                 foreach ($v as $v1) {
                                     self::$var_ar_for_1sql[':v' . $n] = $v1;
-                                    $w2 .= (!empty($w2) ? ' OR ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` = :v' . $n . ' ';
+                                    if (\Nyos\nyos::$db_type == 'pg') {
+                                        $w2 .= (!empty($w2) ? ' OR ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" = :v' . $n . ' ';
+                                    } else {
+                                        $w2 .= (!empty($w2) ? ' OR ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` = :v' . $n . ' ';
+                                    }
                                     $n++;
                                 }
                                 $where .= (!empty($where) ? ' AND ' : '' ) . '( ' . $w2 . ' )';
@@ -1173,7 +1213,50 @@ class items {
                                 $n++;
                             } else {
                                 self::$var_ar_for_1sql[':v' . $n] = $v;
-                                $where .= (!empty($where) ? ' AND ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` = :v' . $n . ' ';
+                                if (\Nyos\nyos::$db_type == 'pg') {
+                                    $where .= (!empty($where) ? ' AND ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" = :v' . $n . ' ';
+                                } else {
+                                    $where .= (!empty($where) ? ' AND ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` = :v' . $n . ' ';
+                                }
+                                $n++;
+                            }
+                        }
+
+                        self::$search = [];
+                    }
+
+                if (1 == 1)
+                    if (!empty(self::$liked_and)) {
+
+                        // \f\pa(self::$liked_and);
+
+                        foreach (self::$liked_and as $k => $v) {
+
+                            if (is_array($v)) {
+
+                                $w2 = '';
+                                foreach ($v as $v1) {
+
+                                    self::$var_ar_for_1sql[':v' . $n] = '%' . $v1 . '%';
+
+                                    if (\Nyos\nyos::$db_type == 'pg') {
+                                        $w2 .= (!empty($w2) ? ' AND ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" LIKE :v' . $n . ' ';
+                                    } else {
+                                        $w2 .= (!empty($w2) ? ' AND ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` LIKE :v' . $n . ' ';
+                                    }
+                                    $n++;
+                                }
+                                $where .= (!empty($where) ? ' AND ' : '' ) . ' ' . $w2 . ' ';
+                                $w2 = '';
+                                $n++;
+                            } else {
+
+                                self::$var_ar_for_1sql[':v' . $n] = '%' . $v . '%';
+                                if (\Nyos\nyos::$db_type == 'pg') {
+                                    $where .= (!empty($where) ? ' AND ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" LIKE :v' . $n . ' ';
+                                } else {
+                                    $where .= (!empty($where) ? ' AND ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` LIKE :v' . $n . ' ';
+                                }
                                 $n++;
                             }
                         }
@@ -1187,19 +1270,30 @@ class items {
                         foreach (self::$between as $k => $v) {
                             self::$var_ar_for_1sql[':v' . $n . '_0'] = $v[0];
                             self::$var_ar_for_1sql[':v' . $n . '_1'] = $v[1];
-                            $where .= (!empty($where) ? ' AND ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` BETWEEN :v' . $n . '_0 AND :v' . $n . '_1 ';
+                            if (\Nyos\nyos::$db_type == 'pg') {
+                                $where .= (!empty($where) ? ' AND ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" BETWEEN :v' . $n . '_0 AND :v' . $n . '_1 ';
+                            } else {
+                                $where .= (!empty($where) ? ' AND ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` BETWEEN :v' . $n . '_0 AND :v' . $n . '_1 ';
+                            }
                             $n++;
                         }
 
                         self::$between = [];
                     }
 
-                $sql = 'SELECT ' .
-                        ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
-                        ' FROM `mod_' . \f\translit($module, 'uri2') . '` ' .
-                        (!empty($where) ? 'WHERE ' . $where : '' )
-                ;
-
+                if (\Nyos\nyos::$db_type == 'pg') {
+                    $sql = 'SELECT ' .
+                            ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
+                            ' FROM mod_' . \f\translit($module, 'uri2') . ' ' .
+                            (!empty($where) ? 'WHERE ' . $where : '' )
+                    ;
+                } else {
+                    $sql = 'SELECT ' .
+                            ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
+                            ' FROM `mod_' . \f\translit($module, 'uri2') . '` ' .
+                            (!empty($where) ? 'WHERE ' . $where : '' )
+                    ;
+                }
                 if (!empty(self::$group_by))
                     $sql .= ' GROUP BY ' . self::$group_by . ' ';
 
@@ -1207,6 +1301,11 @@ class items {
 
                 if ($sort == 'sort_asc')
                     $sql .= ' ORDER BY sort ASC ';
+
+                if (!empty(self::$sql_limit))
+                    $sql .= ' LIMIT ' . self::$sql_limit . ' ';
+                self::$sql_limit = '';
+
 
                 if (self::$show_sql === true)
                     \f\pa($sql, '', '', '$sql');
@@ -1231,12 +1330,15 @@ class items {
                 return $ff->fetchAll();
             } catch (\PDOException $ex) {
 
-                \f\pa($ex);
 // echo $exc->getTraceAsString();
 // Base table or view not found: 1146 Table 'dev_bi.mod_701_beeline_dogovors' doesn't exist
 
-                if (strpos($ex->getMessage(), 'not found') != false && strpos($ex->getMessage(), 'table') != false) {
+                if (strpos($ex->getMessage(), 'does not exist') != false && strpos($ex->getMessage(), 'relation') != false) {
                     self::creatTable($db, $module);
+                } elseif (strpos($ex->getMessage(), 'not found') != false && strpos($ex->getMessage(), 'table') != false) {
+                    self::creatTable($db, $module);
+                } else {
+                    \f\pa($ex);
                 }
             }
         }
@@ -1261,8 +1363,6 @@ class items {
 
         try {
 
-            
-            
             if (empty(self::$cash_var)) {
 
                 $dop_cash_var = (!empty(self::$sql_get_dops) ? serialize(self::$sql_get_dops) : '')
@@ -1891,10 +1991,17 @@ class items {
             if (!isset(\Nyos\Nyos::$menu[$module]))
                 return \f\end3('нет такого модуля', false);
 
+            \f\pa(\Nyos\Nyos::$menu[$module]);
+
             $table_new = 'mod_' . \f\translit($module, 'uri2');
 
             $sql_in = [];
-            $sql_setup = 'CREATE TABLE `' . $table_new . '` ( `id` int(11) NOT NULL AUTO_INCREMENT ';
+
+            if (\Nyos\nyos::$db_type == 'pg') {
+                $sql_setup = 'CREATE TABLE "' . $table_new . '" ( "id" serial NOT NULL ';
+            } else {
+                $sql_setup = 'CREATE TABLE `' . $table_new . '` ( `id` int(11) NOT NULL AUTO_INCREMENT ';
+            }
 
             $n = 0;
 
@@ -1913,48 +2020,83 @@ class items {
 
             foreach ($new as $k => $v) {
 
-                if ($k == 'id' || $k == 'status' || $k == 'head' || $k == 'sort'
+                if ($k == 'id' || $k == 'status'
+                        // || $k == 'head' 
+                        || $k == 'sort'
                 )
                     continue;
 
+                $k = strtolower($k);
+
                 if (isset(\Nyos\nyos::$menu[$module][$k]['type']) && \Nyos\nyos::$menu[$module][$k]['type'] == 'date') {
-                    $sql_setup .= ' , `' . $k . '` date DEFAULT NULL ';
+                    if (\Nyos\nyos::$db_type == 'pg') {
+                        $sql_setup .= ' , "' . $k . '" date NULL DEFAULT NULL ';
+                    } else {
+                        $sql_setup .= ' , `' . $k . '` date DEFAULT NULL ';
+                    }
                 }
 //
                 elseif (isset(\Nyos\nyos::$menu[$module][$k]['type']) && \Nyos\nyos::$menu[$module][$k]['type'] == 'datetime') {
-                    $sql_setup .= ' , `' . $k . '` datetime DEFAULT NULL ';
+                    if (\Nyos\nyos::$db_type == 'pg') {
+                        $sql_setup .= ' , "' . $k . '" timestamp NULL DEFAULT NULL ';
+                    } else {
+                        $sql_setup .= ' , `' . $k . '` datetime DEFAULT NULL ';
+                    }
                 }
 //
                 elseif (isset(\Nyos\nyos::$menu[$module][$k]['type']) && ( \Nyos\nyos::$menu[$module][$k]['type'] == 'textarea' || \Nyos\nyos::$menu[$module][$k]['type'] == 'text' )) {
-                    $sql_setup .= ' , `' . $k . '` text DEFAULT NULL ';
+                    if (\Nyos\nyos::$db_type == 'pg') {
+                        $sql_setup .= ' , "' . $k . '" text NULL DEFAULT NULL ';
+                    } else {
+                        $sql_setup .= ' , `' . $k . '` text DEFAULT NULL ';
+                    }
                 }
 //
                 elseif ($k == 'jobman' || $k == 'sale_point' || $k == 'sort') {
 
-                    $sql_setup .= ' , `' . $k . '` int(9) DEFAULT NULL ';
+                    if (\Nyos\nyos::$db_type == 'pg') {
+                        $sql_setup .= ' , "' . $k . '" integer NULL DEFAULT NULL ';
+                    } else {
+                        $sql_setup .= ' , `' . $k . '` int(9) DEFAULT NULL ';
+                    }
                 }
 //
                 else {
 
-                    $sql_setup .= ' , `' . $k . '` varchar(150) DEFAULT NULL ';
+                    if (\Nyos\nyos::$db_type == 'pg') {
+                        // $sql_setup .= ' , "' . $k . '" character(150) NULL ';
+                        $sql_setup .= ' , "' . $k . '" text NULL DEFAULT NULL ';
+                    } else {
+                        $sql_setup .= ' , `' . $k . '` varchar(150) DEFAULT NULL ';
+                    }
                 }
 
                 $n++;
             }
 
-            $sql_setup .= // ' , `head` varchar(150) DEFAULT NULL '
-                    ' , `add_dt` datetime DEFAULT NULL '
-                    . ' , `add_who` int(9) DEFAULT NULL '
-                    . ' , `sort` int(2) NOT NULL DEFAULT 50 '
-                    . ' , `status` set( \'show\', \'hide\', \'delete\' ) NOT NULL DEFAULT \'show\' '
-                    . ' ,  UNIQUE (`id`)  '
-                    . ' ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ';
-            \f\pa($sql_setup);
+            if (\Nyos\nyos::$db_type == 'pg') {
+                $sql_setup .= // ' , `head` varchar(150) DEFAULT NULL '
+                        ' , "add_dt" timestamp NULL DEFAULT NULL '
+                        . ' , "add_who" integer NULL DEFAULT NULL '
+                        . ' , "sort" integer NOT NULL DEFAULT \'50\' '
+                        . ' , "status" text NOT NULL DEFAULT \'show\' '
+                        . ' ); ';
+            } else {
+                $sql_setup .= // ' , `head` varchar(150) DEFAULT NULL '
+                        ' , `add_dt` datetime DEFAULT NULL '
+                        . ' , `add_who` int(9) DEFAULT NULL '
+                        . ' , `sort` int(2) NOT NULL DEFAULT 50 '
+                        . ' , `status` set( \'show\', \'hide\', \'delete\' ) NOT NULL DEFAULT \'show\' '
+                        . ' ,  UNIQUE (`id`)  '
+                        . ' ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ';
+            }
+            // \f\pa($sql_setup);
 
             try {
 
                 $sql = $db->prepare($sql_setup);
-                $sql->execute($sql_in);
+                // $sql->execute($sql_in);
+                $sql->execute();
 
 //$sql_in = [':table' => $table_new];
                 $sql_in = [];
@@ -1968,8 +2110,13 @@ class items {
 
 // добавляем индекс в базу
                 foreach (\Nyos\nyos::$menu[$module] as $k => $v) {
-                    if (isset($v['type']) and isset($v['db_key']) and$v['db_key'] == 'index') {
-                        $sql = $db->prepare('ALTER TABLE  `' . $table_new . '` ADD INDEX(`' . $k . '`);');
+                    if (isset($v['type']) && isset($v['db_key']) && $v['db_key'] == 'index') {
+                        if (\Nyos\nyos::$db_type == 'pg') {
+                            // $sql = $db->prepare('CREATE INDEX "' . $k . '" ON "' . $table_new . '" ("' . $k . '");');
+                            $sql = $db->prepare('CREATE INDEX "' . $table_new . '_' . $k . '" ON "' . $table_new . '" ("' . $k . '");');
+                        } else {
+                            $sql = $db->prepare('ALTER TABLE  `' . $table_new . '` ADD INDEX(`' . $k . '`);');
+                        }
                         $sql->execute();
                         $skip_index[$k] = 1;
                     }
@@ -1982,7 +2129,12 @@ class items {
                         if (isset($skip_index[$k]))
                             continue;
 
-                        $sql = $db->prepare('ALTER TABLE  `' . $table_new . '` ADD INDEX(`' . $k . '`);');
+                        if (\Nyos\nyos::$db_type == 'pg') {
+                            // $sql = $db->prepare('CREATE INDEX "' . $k . '" ON "' . $table_new . '" ("' . $k . '");');
+                            $sql = $db->prepare('CREATE INDEX "' . $table_new . '_' . $k . '" ON "' . $table_new . '" ("' . $k . '");');
+                        } else {
+                            $sql = $db->prepare('ALTER TABLE  `' . $table_new . '` ADD INDEX(`' . $k . '`);');
+                        }
                         $sql->execute();
                     }
                 }
@@ -1996,8 +2148,6 @@ class items {
             catch (\PDOException $exc) {
                 \f\pa($exc);
             }
-
-
 
             \nyos\Msg::sendTelegramm('Создали таблицу для итемов ' . $module, null, 1);
         } else {
@@ -2062,14 +2212,13 @@ class items {
         $cash_dir = DR . dir_site;
 
         $cash_file = 'items.'
-                . (isset($folder{
-                        1}) ? (string) $folder . '.' : '')
-                . (isset($module{
-                        1}) ? (string) $module . '.' : '')
-                . (isset($stat{
-                        1}) ? (string) $stat . '.' : '')
-                . (isset($limit{
-                        1}) ? (string) $limit . '.' : '')
+                . ( (string) $folder ?? '')
+                . '.'
+                . ( (string) $module ?? '' )
+                . '.'
+                . ( (string) $stat ?? '' )
+                . '.'
+                . ( (string) $limit ?? '' )
                 . '.cash';
 
         if (file_exists($cash_dir . $cash_file))
@@ -2079,14 +2228,11 @@ class items {
             self::creatFolderImage2($folder);
 
         $out = array('data' => \f\db\getSql($db, 'SELECT * FROM `mitems` WHERE `folder` = \'' . addslashes($folder) . '\' '
-                    . (isset($module{
-                            1}) ? ' AND `module` = \'' . addslashes($module) . '\' ' : '')
-                    . (isset($stat{
-                            1}) ? ' AND `status` = \'' . addslashes($stat) . '\' ' : '')
+                    . (!empty($module) ? ' AND `module` = \'' . addslashes($module) . '\' ' : '')
+                    . (!empty($stat) ? ' AND `status` = \'' . addslashes($stat) . '\' ' : '')
                     . 'AND `status` != \'delete2\' '
                     . 'ORDER BY `sort` DESC, `add_d` DESC, `add_t` DESC '
-                    . (isset($limit{
-                            1}) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '')
+                    . (!empty($limit) && is_numeric($limit) ? 'LIMIT ' . $limit . ' ' : '')
                     . ';'));
 
         $sql2 = $db->sql_query('SELECT 
@@ -2106,8 +2252,7 @@ class items {
                 i.id = d.id_item 
                 AND i.folder = \'' . addslashes($folder) . '\' 
                 AND i.module = \'' . addslashes($module) . '\' ' .
-                (isset($stat{
-                        1}) ? ' AND i.status = \'' . addslashes($stat) . '\' ' : '')
+                (!empty($stat) ? ' AND i.status = \'' . addslashes($stat) . '\' ' : '')
                 . ' WHERE 
                 d.`status` IS NULL 
 
@@ -2555,9 +2700,29 @@ class items {
 
 // \f\pa($data);
 
-            foreach ($data as $k => $v) {
+            $img_to_dir = DR . 'sites' . DS . \Nyos\Nyos::$folder_now . DS . 'download' . DS . 'module_items_image' . DS;
+
+            // foreach ($data as $k => $v) {
+            foreach (\Nyos\Nyos::$menu[$mod_name] as $k => $v) {
+
+                $in = '';
+
                 if ($k == 'head' || isset(\Nyos\Nyos::$menu[$mod_name][$k]['name_rus'])) {
-                    $data_in[$k] = $v;
+
+                    if (isset($v['type']) && $v['type'] == 'image') {
+                        $file = substr(\f\translit($_FILES[$k]['name'], 'uri2'), 0, 50) . '.' . rand(0, 99999) . '.' . \f\get_file_ext($_FILES[$k]['name']);
+                        copy($_FILES[$k]['tmp_name'], $img_to_dir . $file);
+                        $in = $file;
+                    }
+                    //
+
+                    if (!empty($new[$k])) {
+                        $in = $new[$k];
+                    }
+
+                    if (!empty($in)) {
+                        $data_in[$k] = $in;
+                    }
                 }
             }
 
@@ -2676,24 +2841,37 @@ class items {
      */
     public static function adds($db, string $module, array $data, $params_in = []) {
 
-        if (empty($data))
-            throw new \Exception( 'пустая дата' ); // return false;
+        // \f\pa( [ $module, $data ] ,2);
+        \f\pa(['items', __FUNCTION__, $module], 2);
 
+        if (empty($data))
+            throw new \Exception('пустst данные'); // return false;
+
+
+
+            
 // \f\pa(\Nyos\Nyos::$menu);
 // return false;
 
-        if ( !isset(\Nyos\Nyos::$menu) )
+        if (!isset(\Nyos\Nyos::$menu))
             \Nyos\Nyos::getMenu();
 
         if (!isset(\Nyos\Nyos::$menu[$module]))
-            throw new \Exception( 'нет меню' );
+            throw new \Exception('нет меню');
 
+        if (!empty(self::$time_limit))
+            \f\timer_start(456);
 
-        if (isset(\Nyos\Nyos::$menu[$module]['type']) && \Nyos\Nyos::$menu[$module]['type'] == 'items' 
-                && isset(\Nyos\Nyos::$menu[$module]['version']) && \Nyos\Nyos::$menu[$module]['version'] == 3) {
+        \f\pa(\Nyos\Nyos::$menu[$module], 2);
 
-            // echo '<br/>'.__FILE__.' #'.__LINE__;
-            
+        if (
+                (
+                isset(\Nyos\Nyos::$menu[$module]['type']) && \Nyos\Nyos::$menu[$module]['type'] == 'items' && isset(\Nyos\Nyos::$menu[$module]['version']) && \Nyos\Nyos::$menu[$module]['version'] == 3
+                ) || self::$type_module == 3
+        ) {
+
+            echo '<br/>' . __FILE__ . ' #' . __LINE__;
+
             $polya = [];
 
             if (!empty($params_in))
@@ -2713,59 +2891,82 @@ class items {
 
             try {
 
-                $sql0 = 'INSERT INTO `mod_' . \f\translit($module, 'uri2') . '` ( `' . implode('`, `', array_keys($polya)) . '` ) VALUES ';
+                if (\Nyos\nyos::$db_type == 'pg') {
+                    $sql0 = 'INSERT INTO mod_' . \f\translit($module, 'uri2') . ' ( ' . implode(' , ', array_keys($polya)) . ' ) VALUES ';
+                } else {
+                    $sql0 = 'INSERT INTO mod_' . \f\translit($module, 'uri2') . ' ( `' . implode('`, `', array_keys($polya)) . '` ) VALUES ';
+                }
                 $nn = 1;
                 $vars = [];
                 $n2 = 1;
+                $n20 = 1;
                 $n3 = 1;
                 $sql = '';
 
                 foreach ($data as $v) {
-                    
+
                     $sql2 = '';
                     $nn = 1;
                     foreach ($polya as $p => $pp1) {
-                        $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' :v' . $n3.'_'.$nn . ' ';
-                        $vars[':v' . $n3.'_'.$nn] = ( isset($v[$p]) ? $v[$p] : (!empty($params_in[$p]) ? $params_in[$p] : '' ) );
+                        $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' :v' . $n3 . '_' . $nn . ' ';
+                        $vars[':v' . $n3 . '_' . $nn] = ( isset($v[$p]) ? $v[$p] : (!empty($params_in[$p]) ? $params_in[$p] : '' ) );
                         $nn++;
                     }
                     $sql .= ( $n2 > 1 ? ',' : '' ) . ' ( ' . $sql2 . ' ) ';
                     $n2++;
+                    $n20++;
                     $n3++;
 
                     if ($n2 > 2000) {
 
                         // \f\pa($sql);
-                        // echo '<div style="max-height: 100px; overflow: auto;" >start0 '.$sql0 . $sql.'</div>';
+                        if (\Nyos\mod\items::$show_sql == true)
+                            echo '<div style="max-height: 100px; overflow: auto;" >start0 ' . $sql0 . $sql . '</div>';
                         $s2 = $db->prepare($sql0 . $sql);
                         $sql = '';
-                        
-                        // \f\pa($vars);
+                        if (\Nyos\mod\items::$show_sql == true)
+                            \f\pa($vars, 2, '', 'vars in sql');
                         $s2->execute($vars);
                         $vars = [];
                         $n2 = 1;
                         // break;
+
+                        if (!empty(self::$time_limit)) {
+                            $time = \f\timer_stop(456, 'ar');
+                            \f\pa($time);
+                            if ($time['sec'] > self::$time_limit)
+                                break;
+                        }
                     }
-                    
+                }
+
+                if (!empty(self::$time_limit)) {
+                    $time = \f\timer_stop(456, 'ar');
+//                        if( $time['sec'] > self::$time_limit )
+//                            break;
                 }
 
                 if ($n2 > 1) {
                     // \f\pa($sql);
-                    // echo '<div style="max-height: 100px; overflow: auto;" >end '.$sql0 . $sql.'</div>';
+                    if (\Nyos\mod\items::$show_sql == true)
+                        echo '<div style="max-height: 100px; overflow: auto;" >end ' . $sql0 . $sql . '</div>';
                     $s2 = $db->prepare($sql0 . $sql);
-                    // \f\pa($vars);
+                    if (\Nyos\mod\items::$show_sql == true)
+                        \f\pa($vars, 2, '', 'vars in sql');
                     $s2->execute($vars);
                 }
-                
             } catch (\Exception $exc) {
                 //echo $exc->getTraceAsString();
                 \f\pa($exc);
             } catch (\PDOException $exc) {
                 \f\pa($exc);
             }
-            return \f\end3('ok', true, ['kolvo' => $n2]);
+            return \f\end3('ok', true, ['kolvo' => $n20]);
         }
-        else{ echo '<br/>'.__FILE__.' #'.__LINE__; }
+        //
+        else {
+            echo '<br/>' . __FILE__ . ' #' . __LINE__ . ' ( vers < 3 ) ';
+        }
 
         $ee = [];
 
@@ -2918,7 +3119,7 @@ class items {
                 }
             }
 //
-            elseif (!empty($v['type']) && $v['type'] == 'translit' && !empty($v['var_in']{0}) && !empty($data[$v['var_in']]{0})) {
+            elseif (!empty($v['type']) && $v['type'] == 'translit' && !empty($v['var_in']) && !empty($data[$v['var_in']])) {
                 $in_db[] = array(
                     'name' => $v['var_in'] . '_translit',
                     'value_text' => \f\translit($data[$v['var_in']], 'uri2')
@@ -3133,8 +3334,7 @@ class items {
 //        echo 'tt'.\f\timer::stop( 'str', 778 );
 //        echo 'tt'. \f\CalcMemory::stop( 778 );
 
-        if (isset($data['head']{
-                        0}) && $data_old[$id_item]['head'] != $data['head']) {
+        if (!empty($data['head']) && $data_old[$id_item]['head'] != $data['head']) {
 
 // echo '<br/>' . __FILE__ . ' ' . __LINE__;
             \f\db\db_edit2($db, 'mitems', array('id' => $id_item), array('head' => $data['head']), false, 1, 'da');
@@ -3175,8 +3375,7 @@ class items {
 
 //echo '<br/>'.__LINE__;
 //if (isset($data[$k]{0}) && is_array($v) && !empty($v['name_rus']) ) {
-                if (isset($data[$k]{
-                                0}) && !empty($v['name_rus'])) {
+                if (!empty($data[$k]) && !empty($v['name_rus'])) {
 
 //echo '<br/>'.__LINE__;
 // $dop_sql .= ( isset($dop_sql{1}) ? ' OR ' : '' ) . ' `name` = \'' . addslashes($k) . '\' ';

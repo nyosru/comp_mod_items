@@ -5,6 +5,26 @@ Russian
 composer require didrive_mod/items
 
 
+
+
+отправка инфы аякс + результат в #res_to_id
+<input class="base__send_to_ajax" type="button" 
+       res_to_id="res{{ v1.id }}"
+       href_to_ajax="/vendor/didrive_mod/items/3/micro-service/edit-dop-pole.php"
+       id="{{v1.id}}"
+       s="{{ creatSecret(v1.id) }}"
+       ajax_module="{{ get.level }}"
+       dop_name="status"
+       new_val="delete"
+       value="Удалить" />
+
+
+
+
+
+
+------------- ниже этой строки под вопросом инфа 2020,08,26 -------------
+
 --- сделать выборку с кешированием ----
 
 // дополнение к запросу

@@ -23,25 +23,38 @@ try {
 
     $error2 = '';
     $sql2 = '';
-    
-    try {
 
-        $ff = $db->prepare('UPDATE `mod_'.\f\translit( $_REQUEST['ajax_module'], 'uri2' ).'` SET `'. \f\translit($_REQUEST['dop_name'],'uri2').'` = :val WHERE `id` = :id ');
-        $ff->execute(
-                array(
-                    // ':table' => 'mod_'.\f\translit( $_REQUEST['ajax_module'], 'uri2' ),
-                    ':id' => $_REQUEST['item_id'],
-                    // ':pole' => $_REQUEST['dop_name'],
-                    ':val' => $_REQUEST['new_val']
-                )
-        );
+    if (empty(\Nyos\Nyos::$menu))
+        \Nyos\Nyos::getMenu();
 
-        $sql2 = 'ок2';
+    if (isset(\Nyos\Nyos::$menu[$_REQUEST['ajax_module']]['type']) && \Nyos\Nyos::$menu[$_REQUEST['ajax_module']]['type'] == 'items' && \Nyos\Nyos::$menu[$_REQUEST['ajax_module']]['version'] == 3) {
+
+        try {
+
+            if (\Nyos\Nyos::$db_type == 'pg') {
+                $ff = $db->prepare('UPDATE "mod_' . \f\translit($_REQUEST['ajax_module'], 'uri2') . '" SET "' . \f\translit($_REQUEST['dop_name'], 'uri2') . '" = :val WHERE "id" = :id ');
+            } else {
+                $ff = $db->prepare('UPDATE `mod_' . \f\translit($_REQUEST['ajax_module'], 'uri2') . '` SET `' . \f\translit($_REQUEST['dop_name'], 'uri2') . '` = :val WHERE `id` = :id ');
+            }
+            
+            $ff->execute(
+                    array(
+                        // ':table' => 'mod_'.\f\translit( $_REQUEST['ajax_module'], 'uri2' ),
+                        ':id' => $_REQUEST['id'],
+                        // ':pole' => $_REQUEST['dop_name'],
+                        ':val' => $_REQUEST['new_val']
+                    )
+            );
+
+            $sql2 = 'ок2';
+        } catch (\PDOException $exc) {
+            $error2 = $exc->getMessage();
+            \f\end2( 'ошибка: '.$exc->getMessage() , false );
+        }
         
-    } catch (\PDOException $exc) {
-        $error2 = $exc->getMessage();
+        \f\end2( 'сохранено' );
+        
     }
-
 
 
 
@@ -89,8 +102,7 @@ try {
 
 
 
-    f\end2( 'ок', true, [ 'sql2' => $sql2, '$error2' => $error2 ]  );
-    
+    f\end2('ок', true, ['sql2' => $sql2, '$error2' => $error2]);
 } catch (Exception $exc) {
 
     echo '<pre>';

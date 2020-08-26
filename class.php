@@ -201,7 +201,7 @@ class items {
 
     public static function getPolya($db, $table) {
 
-        if (\Nyos\nyos::$db_type == 'pg') {
+        if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
             $sql = 'select column_name from information_schema.columns where information_schema.columns.table_name= :table ;';
             $ff = $db->prepare($sql);
             $ff->execute([':table' => $table]);
@@ -305,7 +305,7 @@ class items {
 
         try {
 
-            if (\Nyos\nyos::$db_type == 'pg') {
+            if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                 $f = 'SELECT * FROM mitems mi WHERE '
                         . ' mi.`status` != \'delete2\' '
                         . (!empty($module) ? ' AND mi.`module` = \'' . addslashes($module) . '\' ' : '')
@@ -1151,7 +1151,7 @@ class items {
      */
     public static function get($db, $module = null, $stat = 'show', $sort = null) {
 
-//        if (\Nyos\nyos::$db_type == 'pg') {
+//        if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
 //            \f\pa(['items get pg', $module, $stat, $sort]);
 //        } else {
 //            \f\pa(['items get', $module, $stat, $sort]);
@@ -1184,7 +1184,7 @@ class items {
                 self::$type_module = '';
                 self::$var_ar_for_1sql[':v' . $n] = 'show';
 
-                if (\Nyos\nyos::$db_type == 'pg') {
+                if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
                     // echo '<br/>'.__FILE__ . ' #' . __LINE__;
                     $where .= (!empty($where) ? ' AND ' : '' ) . ' ( status = :v' . $n . ' OR status IS NULL ) ';
                 } else {
@@ -1201,7 +1201,7 @@ class items {
                                 $w2 = '';
                                 foreach ($v as $v1) {
                                     self::$var_ar_for_1sql[':v' . $n] = $v1;
-                                    if (\Nyos\nyos::$db_type == 'pg') {
+                                    if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                                         $w2 .= (!empty($w2) ? ' OR ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" = :v' . $n . ' ';
                                     } else {
                                         $w2 .= (!empty($w2) ? ' OR ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` = :v' . $n . ' ';
@@ -1213,7 +1213,7 @@ class items {
                                 $n++;
                             } else {
                                 self::$var_ar_for_1sql[':v' . $n] = $v;
-                                if (\Nyos\nyos::$db_type == 'pg') {
+                                if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                                     $where .= (!empty($where) ? ' AND ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" = :v' . $n . ' ';
                                 } else {
                                     $where .= (!empty($where) ? ' AND ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` = :v' . $n . ' ';
@@ -1239,7 +1239,7 @@ class items {
 
                                     self::$var_ar_for_1sql[':v' . $n] = '%' . $v1 . '%';
 
-                                    if (\Nyos\nyos::$db_type == 'pg') {
+                                    if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                                         $w2 .= (!empty($w2) ? ' AND ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" LIKE :v' . $n . ' ';
                                     } else {
                                         $w2 .= (!empty($w2) ? ' AND ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` LIKE :v' . $n . ' ';
@@ -1252,7 +1252,7 @@ class items {
                             } else {
 
                                 self::$var_ar_for_1sql[':v' . $n] = '%' . $v . '%';
-                                if (\Nyos\nyos::$db_type == 'pg') {
+                                if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                                     $where .= (!empty($where) ? ' AND ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" LIKE :v' . $n . ' ';
                                 } else {
                                     $where .= (!empty($where) ? ' AND ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` LIKE :v' . $n . ' ';
@@ -1270,7 +1270,7 @@ class items {
                         foreach (self::$between as $k => $v) {
                             self::$var_ar_for_1sql[':v' . $n . '_0'] = $v[0];
                             self::$var_ar_for_1sql[':v' . $n . '_1'] = $v[1];
-                            if (\Nyos\nyos::$db_type == 'pg') {
+                            if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                                 $where .= (!empty($where) ? ' AND ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" BETWEEN :v' . $n . '_0 AND :v' . $n . '_1 ';
                             } else {
                                 $where .= (!empty($where) ? ' AND ' : '' ) . ' `' . \f\translit($k, 'uri2') . '` BETWEEN :v' . $n . '_0 AND :v' . $n . '_1 ';
@@ -1281,7 +1281,7 @@ class items {
                         self::$between = [];
                     }
 
-                if (\Nyos\nyos::$db_type == 'pg') {
+                if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                     $sql = 'SELECT ' .
                             ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
                             ' FROM mod_' . \f\translit($module, 'uri2') . ' ' .
@@ -1997,7 +1997,7 @@ class items {
 
             $sql_in = [];
 
-            if (\Nyos\nyos::$db_type == 'pg') {
+            if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                 $sql_setup = 'CREATE TABLE "' . $table_new . '" ( "id" serial NOT NULL ';
             } else {
                 $sql_setup = 'CREATE TABLE `' . $table_new . '` ( `id` int(11) NOT NULL AUTO_INCREMENT ';
@@ -2029,7 +2029,7 @@ class items {
                 $k = strtolower($k);
 
                 if (isset(\Nyos\nyos::$menu[$module][$k]['type']) && \Nyos\nyos::$menu[$module][$k]['type'] == 'date') {
-                    if (\Nyos\nyos::$db_type == 'pg') {
+                    if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                         $sql_setup .= ' , "' . $k . '" date NULL DEFAULT NULL ';
                     } else {
                         $sql_setup .= ' , `' . $k . '` date DEFAULT NULL ';
@@ -2037,7 +2037,7 @@ class items {
                 }
 //
                 elseif (isset(\Nyos\nyos::$menu[$module][$k]['type']) && \Nyos\nyos::$menu[$module][$k]['type'] == 'datetime') {
-                    if (\Nyos\nyos::$db_type == 'pg') {
+                    if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                         $sql_setup .= ' , "' . $k . '" timestamp NULL DEFAULT NULL ';
                     } else {
                         $sql_setup .= ' , `' . $k . '` datetime DEFAULT NULL ';
@@ -2045,7 +2045,7 @@ class items {
                 }
 //
                 elseif (isset(\Nyos\nyos::$menu[$module][$k]['type']) && ( \Nyos\nyos::$menu[$module][$k]['type'] == 'textarea' || \Nyos\nyos::$menu[$module][$k]['type'] == 'text' )) {
-                    if (\Nyos\nyos::$db_type == 'pg') {
+                    if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                         $sql_setup .= ' , "' . $k . '" text NULL DEFAULT NULL ';
                     } else {
                         $sql_setup .= ' , `' . $k . '` text DEFAULT NULL ';
@@ -2054,7 +2054,7 @@ class items {
 //
                 elseif ($k == 'jobman' || $k == 'sale_point' || $k == 'sort') {
 
-                    if (\Nyos\nyos::$db_type == 'pg') {
+                    if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                         $sql_setup .= ' , "' . $k . '" integer NULL DEFAULT NULL ';
                     } else {
                         $sql_setup .= ' , `' . $k . '` int(9) DEFAULT NULL ';
@@ -2063,7 +2063,7 @@ class items {
 //
                 else {
 
-                    if (\Nyos\nyos::$db_type == 'pg') {
+                    if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                         // $sql_setup .= ' , "' . $k . '" character(150) NULL ';
                         $sql_setup .= ' , "' . $k . '" text NULL DEFAULT NULL ';
                     } else {
@@ -2074,7 +2074,7 @@ class items {
                 $n++;
             }
 
-            if (\Nyos\nyos::$db_type == 'pg') {
+            if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                 $sql_setup .= // ' , `head` varchar(150) DEFAULT NULL '
                         ' , "add_dt" timestamp NULL DEFAULT NULL '
                         . ' , "add_who" integer NULL DEFAULT NULL '
@@ -2111,7 +2111,7 @@ class items {
 // добавляем индекс в базу
                 foreach (\Nyos\nyos::$menu[$module] as $k => $v) {
                     if (isset($v['type']) && isset($v['db_key']) && $v['db_key'] == 'index') {
-                        if (\Nyos\nyos::$db_type == 'pg') {
+                        if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                             // $sql = $db->prepare('CREATE INDEX "' . $k . '" ON "' . $table_new . '" ("' . $k . '");');
                             $sql = $db->prepare('CREATE INDEX "' . $table_new . '_' . $k . '" ON "' . $table_new . '" ("' . $k . '");');
                         } else {
@@ -2129,7 +2129,7 @@ class items {
                         if (isset($skip_index[$k]))
                             continue;
 
-                        if (\Nyos\nyos::$db_type == 'pg') {
+                        if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                             // $sql = $db->prepare('CREATE INDEX "' . $k . '" ON "' . $table_new . '" ("' . $k . '");');
                             $sql = $db->prepare('CREATE INDEX "' . $table_new . '_' . $k . '" ON "' . $table_new . '" ("' . $k . '");');
                         } else {
@@ -2891,7 +2891,7 @@ class items {
 
             try {
 
-                if (\Nyos\nyos::$db_type == 'pg') {
+                if ( isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg' ) {
                     $sql0 = 'INSERT INTO mod_' . \f\translit($module, 'uri2') . ' ( ' . implode(' , ', array_keys($polya)) . ' ) VALUES ';
                 } else {
                     $sql0 = 'INSERT INTO mod_' . \f\translit($module, 'uri2') . ' ( `' . implode('`, `', array_keys($polya)) . '` ) VALUES ';

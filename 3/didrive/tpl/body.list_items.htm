@@ -85,6 +85,7 @@
 
                                         {% if v1.head is defined  %}
 
+                                            
                                             {# if isset($v1.dop.head_translit) }
                                             <abbr style="float:right;" title="{$v1.dop.head_translit}" >t</abbr>
                                             {/if #}
@@ -178,9 +179,7 @@
                                     {% for k, v in now_level if k != 'head' and v.name_rus is defined and ( v.skip_didr_list is not defined or ( v.skip_didr_list is defined and v.skip_didr_list != 'da' ) ) %}
 
                                         <td class="va-top">
-
-                                            {#{ pa(v) }#}
-
+                                            
                                             {% if v.type is defined and v.type == 'image' %}
 
                                                 {% if list[k1][k] is not empty %}

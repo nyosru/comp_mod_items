@@ -44,28 +44,22 @@ if (1 == 1) {
 
         try {
 
-            $new = [];
-            foreach ($_POST as $k => $v) {
-                if (!empty($v))
-                    $new[$k] = $v;
-            }
+//            $new = [];
+//            foreach ($_POST as $k => $v) {
+//                if (!empty($v))
+//                    $new[$k] = $v;
+//            }
 
-//            \f\pa($vv['now_level']);
-            
-            Nyos\mod\items::$type_module = 3;
-            Nyos\mod\items::add($db, $vv['now_level']['cfg.level'], $new);
+            $r = Nyos\mod\items::add($db, $vv['now_level']['cfg.level'], $_POST );
             $vv['warn'] .= (!empty($vv['warn']) ? '<br/>' : '' ) . 'Запись добавлена';
-
-//            \f\pa($_FILES);
-//            \f\pa($new);
-//            
-//die();
 
             if (isset($_GET['goto_start']))
                 \f\redirect('/', 'i.didrive.php', array('warn' => 'Запись добавлена'));
+            
         } catch (Exception $e) {
 
             $vv['warn'] .= (!empty($vv['warn']) ? '<br/>' : '' ) . 'Произошла неописуемая ситуация #' . $e->getCode() . '.' . $e->getLine() . ' (ошибка: ' . $e->getMessage() . ' )';
+            
         }
     }
 //
@@ -147,14 +141,16 @@ if (1 == 1) {
 
         if (isset($v['import_1_module']) && empty($vv['v_data'][$v['import_1_module']])) {
             // $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::getItems($db, $vv['folder'], $v['import_1_module']);
-            $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::getItemsSimple3($db, $v['import_1_module']);
+            // $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::getItemsSimple3($db, $v['import_1_module']);
+            $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::get($db, $v['import_1_module'], 'show', 'id_id');
 //        \f\pa($v['import_1_module']);
 //        \f\pa($vv['v_data'][$v['import_1_module']],2);
         }
 
         if (isset($v['import_2_module']) && empty($vv['v_data'][$v['import_2_module']])) {
             // $vv['v_data'][$v['import_2_module']] = Nyos\mod\items::getItems($db, $vv['folder'], $v['import_2_module']);
-            $vv['v_data'][$v['import_2_module']] = Nyos\mod\items::getItemsSimple3($db, $v['import_2_module']);
+            // $vv['v_data'][$v['import_2_module']] = Nyos\mod\items::getItemsSimple3($db, $v['import_2_module']);
+            $vv['v_data'][$v['import_2_module']] = Nyos\mod\items::get($db, $v['import_2_module'], 'show', 'id_id');
 //        \f\pa($v['import_2_module']);
 //        \f\pa($vv['v_data'][$v['import_2_module']],2);
         }

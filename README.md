@@ -6,8 +6,31 @@ composer require didrive_mod/items
 
 
 
+-------- пример конфига селект если в итеме указываем какой выше итем ----------
 
-отправка инфы аякс + результат в #res_to_id
+
+    {# пример конфига
+    [id_cat]
+    name_rus = Каталог
+    type = select
+    ; import 1 module
+    ; модуль 
+    import_1_module = 020.cats
+    ; номер в текущем каталоге
+    import_1_up = a_parentid
+    ; номер равный текущему каталогу в другом каталоге
+    import_1_id = a_id
+    ; какое поле показываем
+    import_1_show = head
+    ; cоеденитель для найденных соответсвий
+    import_1_concat = /
+    ;какое поле сохраняем при добавлении записи
+    import_1_value = a_id
+    #}    
+
+
+
+----------- отправка инфы аякс + результат в #res_to_id  ---------------
 <input class="base__send_to_ajax" type="button" 
        res_to_id="res{{ v1.id }}"
        href_to_ajax="/vendor/didrive_mod/items/3/micro-service/edit-dop-pole.php"

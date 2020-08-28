@@ -38,6 +38,12 @@ class items {
     public static $sort_head = null;
 
     /**
+     * добавляем joins in sql query in get function's 
+     * @var type 
+     */
+    public static $joins = '';
+
+    /**
      * переменная с переменными для get2
      * @var type 
      */
@@ -1187,9 +1193,9 @@ class items {
 
                 if (isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
                     // echo '<br/>'.__FILE__ . ' #' . __LINE__;
-                    $where .= (!empty($where) ? ' AND ' : '' ) . ' ( status = :v' . $n . ' OR status IS NULL ) ';
+                    $where .= (!empty($where) ? ' AND ' : '' ) . ' ( items.status = :v' . $n . ' OR items.status IS NULL ) ';
                 } else {
-                    $where .= (!empty($where) ? ' AND ' : '' ) . ' `status` = :v' . $n . ' ';
+                    $where .= (!empty($where) ? ' AND ' : '' ) . ' items.status = :v' . $n . ' ';
                 }
 
                 $n++;
@@ -1285,23 +1291,29 @@ class items {
                 if (isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
                     $sql = 'SELECT ' .
                             ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
-                            ' FROM mod_' . \f\translit($module, 'uri2') . ' ' .
-                            (!empty($where) ? 'WHERE ' . $where : '' )
+                            ' FROM "mod_' . \f\translit($module, 'uri2'). '" as "items" '
+                            . ( self::$joins ?? '' )
+                            . ( !empty($where) ? ' WHERE ' . $where : '' )
                     ;
                 } else {
                     $sql = 'SELECT ' .
                             ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
-                            ' FROM `mod_' . \f\translit($module, 'uri2') . '` ' .
-                            (!empty($where) ? 'WHERE ' . $where : '' )
+                            ' FROM `mod_' . \f\translit($module, 'uri2'). '` as `items` '
+                            . ( self::$joins ?? '' )
+                            . (!empty($where) ? 'WHERE ' . $where : '')
                     ;
                 }
+
+                self::$sql_select_vars = [];
+                self::$joins = '';
+
                 if (!empty(self::$group_by))
                     $sql .= ' GROUP BY ' . self::$group_by . ' ';
 
                 self::$group_by = '';
 
                 if ($sort == 'sort_asc')
-                    $sql .= ' ORDER BY sort ASC ';
+                    $sql .= ' ORDER BY items.sort ASC ';
 
                 if (!empty(self::$sql_limit))
                     $sql .= ' LIMIT ' . self::$sql_limit . ' ';
@@ -1310,7 +1322,12 @@ class items {
 
                 if (self::$show_sql === true)
                     \f\pa($sql, '', '', '$sql');
+                
+                
+//                    \f\pa($sql, '', '', '$sql');
+//                    return [];
 
+                    
                 $ff = $db->prepare($sql);
 
 //                    if (!empty($module))
@@ -1340,6 +1357,8 @@ class items {
                 }
             } catch (\PDOException $ex) {
 
+                echo $sql;
+                
 // echo $exc->getTraceAsString();
 // Base table or view not found: 1146 Table 'dev_bi.mod_701_beeline_dogovors' doesn't exist
 
@@ -2696,17 +2715,17 @@ class items {
     public static function add($db, string $mod_name, array $data, $files = array(), $add_all_dops = false) {
 
 
-            if (!isset(\Nyos\Nyos::$menu[$mod_name]))
-                \Nyos\Nyos::getMenu();
+        if (!isset(\Nyos\Nyos::$menu[$mod_name]))
+            \Nyos\Nyos::getMenu();
 
-            if (!isset(\Nyos\Nyos::$menu[$mod_name]))
-                return \f\end3('нет модуля', false);
+        if (!isset(\Nyos\Nyos::$menu[$mod_name]))
+            return \f\end3('нет модуля', false);
 
-            
-            
+
+
 // новая модель пишем только в новую бд
-        if ( self::$type_module == 3 || !empty(\Nyos\Nyos::$menu[$mod_name]['version']) && \Nyos\Nyos::$menu[$mod_name]['version'] == 3 ) {
-            
+        if (self::$type_module == 3 || !empty(\Nyos\Nyos::$menu[$mod_name]['version']) && \Nyos\Nyos::$menu[$mod_name]['version'] == 3) {
+
             // \f\pa( [ \Nyos\Nyos::$menu[$mod_name], $_POST, $data ] );
 
             $data_in = [];
@@ -2720,7 +2739,7 @@ class items {
                 $in = '';
 
                 // if ( $k == 'head' || isset(\Nyos\Nyos::$menu[$mod_name][$k]['name_rus'])) {
-                if ( isset(\Nyos\Nyos::$menu[$mod_name][$k]['name_rus'])) {
+                if (isset(\Nyos\Nyos::$menu[$mod_name][$k]['name_rus'])) {
 
                     if (isset($v['type']) && $v['type'] == 'image') {
                         $file = substr(\f\translit($_FILES[$k]['name'], 'uri2'), 0, 50) . '.' . rand(0, 99999) . '.' . \f\get_file_ext($_FILES[$k]['name']);
@@ -2736,7 +2755,6 @@ class items {
                     if (!empty($in)) {
                         $data_in[$k] = $in;
                     }
-                    
                 }
             }
 
@@ -2754,7 +2772,6 @@ class items {
 // $ee = self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
 
             return $in;
-            
         } elseif (self::$type_module == 2) {
 
 // \f\pa( [ $mod_name, $data, $files , $add_all_dops ] );
@@ -2861,6 +2878,7 @@ class items {
 
         if (empty($data))
             throw new \Exception('пустst данные'); // return false;
+
 
 
 

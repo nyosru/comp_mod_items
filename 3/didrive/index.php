@@ -50,16 +50,14 @@ if (1 == 1) {
 //                    $new[$k] = $v;
 //            }
 
-            $r = Nyos\mod\items::add($db, $vv['now_level']['cfg.level'], $_POST );
+            $r = Nyos\mod\items::add($db, $vv['now_level']['cfg.level'], $_POST);
             $vv['warn'] .= (!empty($vv['warn']) ? '<br/>' : '' ) . 'Запись добавлена';
 
             if (isset($_GET['goto_start']))
                 \f\redirect('/', 'i.didrive.php', array('warn' => 'Запись добавлена'));
-            
         } catch (Exception $e) {
 
             $vv['warn'] .= (!empty($vv['warn']) ? '<br/>' : '' ) . 'Произошла неописуемая ситуация #' . $e->getCode() . '.' . $e->getLine() . ' (ошибка: ' . $e->getMessage() . ' )';
-            
         }
     }
 //
@@ -142,7 +140,52 @@ if (1 == 1) {
         if (isset($v['import_1_module']) && empty($vv['v_data'][$v['import_1_module']])) {
             // $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::getItems($db, $vv['folder'], $v['import_1_module']);
             // $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::getItemsSimple3($db, $v['import_1_module']);
-            $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::get($db, $v['import_1_module'], 'show', 'id_id');
+            if (!empty($v['import_1_up']) && !empty($v['import_1_id']) && !empty($v['import_1_show'])) {
+
+                $table = 'mod_' . \f\translit($v['import_1_module'], 'uri2');
+
+                // \Nyos\mod\items::$show_sql = true;
+
+                \Nyos\mod\items::$sql_select_vars = [];
+                \Nyos\mod\items::$sql_select_vars[] = ' items.* ';
+
+                \Nyos\mod\items::$sql_select_vars[] = ' t1."' . $v['import_1_id'] . '" as "t1id" ';
+                \Nyos\mod\items::$sql_select_vars[] = ' t1."' . $v['import_1_show'] . '" as "t1v" ';
+
+                \Nyos\mod\items::$joins = ' LEFT JOIN ' . $table . ' t1 ON items.' . $v['import_1_up'] . ' = t1.' . $v['import_1_id'] . '  ';
+
+                \Nyos\mod\items::$sql_select_vars[] = ' t2."' . $v['import_1_id'] . '" as "t2id" ';
+                \Nyos\mod\items::$sql_select_vars[] = ' t2."' . $v['import_1_show'] . '" as "t2v" ';
+
+                \Nyos\mod\items::$joins .= ' LEFT JOIN ' . $table . ' t2 ON t1.' . $v['import_1_up'] . ' = t2.' . $v['import_1_id'] . '  ';
+
+                \Nyos\mod\items::$sql_select_vars[] = ' t3."' . $v['import_1_id'] . '" as "t3id" ';
+                \Nyos\mod\items::$sql_select_vars[] = ' t3."' . $v['import_1_show'] . '" as "t3v" ';
+
+                \Nyos\mod\items::$joins .= ' LEFT JOIN ' . $table . ' t3 ON t2.' . $v['import_1_up'] . ' = t3.' . $v['import_1_id'] . '  ';
+
+                \Nyos\mod\items::$sql_select_vars[] = ' t4."' . $v['import_1_id'] . '" as "t3id" ';
+                \Nyos\mod\items::$sql_select_vars[] = ' t4."' . $v['import_1_show'] . '" as "t3v" ';
+
+                \Nyos\mod\items::$joins .= ' LEFT JOIN ' . $table . ' t4 ON t3.' . $v['import_1_up'] . ' = t4.' . $v['import_1_id'] . '  ';
+
+                if (!empty($v['import_1_concat'])) {
+
+                    \Nyos\mod\items::$sql_select_vars[] = ' CONCAT( 
+                    t4."' . $v['import_1_show'] . '" 
+                    , CASE WHEN t4."' . $v['import_1_show'] . '" != \'\' THEN \' ' . $v['import_1_concat'] . ' \' END
+                    , t3."' . $v['import_1_show'] . '" 
+                    , CASE WHEN t3."' . $v['import_1_show'] . '" != \'\' THEN \' ' . $v['import_1_concat'] . ' \' END
+                    , t2."' . $v['import_1_show'] . '"
+                    , CASE WHEN t2."' . $v['import_1_show'] . '" != \'\' THEN \' ' . $v['import_1_concat'] . ' \' END
+                    , t1."' . $v['import_1_show'] . '" 
+                    , CASE WHEN t1."' . $v['import_1_show'] . '" != \'\' THEN \' ' . $v['import_1_concat'] . ' \' END
+                    ) concat_' . $v['import_1_show'] . ' ';
+                }
+            }
+
+            $vv['v_data'][$v['import_1_module']] = \Nyos\mod\items::get($db, $v['import_1_module'], 'show', 'id_id');
+
 //        \f\pa($v['import_1_module']);
 //        \f\pa($vv['v_data'][$v['import_1_module']],2);
         }

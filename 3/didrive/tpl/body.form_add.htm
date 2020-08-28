@@ -47,27 +47,29 @@
             <div class="container-fluid">
                 <div class="grid" style="xborder:0; xoverflow:auto; ">
 
-                    {% if now_level.head_skip is defined and now_level.head_skip == 'da' %}
-                        <input type="hidden" name="head" value="1" />
-                    {% else %}
-                        <div class="row">
+                    {% if 1 == 2 %}
+                        {% if now_level.head_skip is defined and now_level.head_skip == 'da' %}
+                            <input type="hidden" name="head" value="1" />
+                        {% else %}
+                            <div class="row">
 
-                            <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right">
-                                <label for='i_head'>
-                                    {% if now_level.head_name is defined and now_level.head_name|length > 1 %}
-                                        {{ now_level.head_name }}
-                                    {% else %}
-                                        Заголовок записи
-                                    {% endif %}
-                                </label>
-                            </div>
-                            <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
-                                <input id='i_head' type="text" name="head" class="form-control" 
-                                       {% if edit_item is defined and list[edit_item]['head'] is defined %} value="{{ list[edit_item]['head']|escape }}" {% endif %}
-                                       />
-                            </div>
+                                <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right">
+                                    <label for='i_head'>
+                                        {% if now_level.head_name is defined and now_level.head_name|length > 1 %}
+                                            {{ now_level.head_name }}
+                                        {% else %}
+                                            Заголовок записи
+                                        {% endif %}
+                                    </label>
+                                </div>
+                                <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
+                                    <input id='i_head' type="text" name="head" class="form-control" 
+                                           {% if edit_item is defined and list[edit_item]['head'] is defined %} value="{{ list[edit_item]['head']|escape }}" {% endif %}
+                                           />
+                                </div>
 
-                        </div>
+                            </div>
+                        {% endif %}
                     {% endif %}
 
                     {% set di_tpls = items__get_file_didrive_tpls() %}
@@ -92,8 +94,7 @@
                                 <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
 
                                     {# { v.type } #}
-                                    {#{ pa(k} }}
-                                    {{ pa(v} }#}
+                                    {#{{ pa(k} }} {{ pa(v} }}#}
 
                                     {% if v.type is defined and di_tpls['body.form_add.'~v.type~'.htm'] is defined %}
 

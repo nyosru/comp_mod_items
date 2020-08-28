@@ -85,7 +85,6 @@
 
                                         {% if v1.head is defined  %}
 
-                                            
                                             {# if isset($v1.dop.head_translit) }
                                             <abbr style="float:right;" title="{$v1.dop.head_translit}" >t</abbr>
                                             {/if #}
@@ -107,7 +106,7 @@
 
                                                 <b>Статус:</b>
                                                 <span id="shows{{ v1.id }}" >
-                                                    {% if v1.status == 'show' %}видно
+                                                    {% if v1.status is empty or v1.status == 'show' %}видно
                                                     {% elseif v1.status == 'hide' %}скрыто
                                                     {% elseif v1.status == 'delete' %}удалено
                                                     {% else %}непонятно
@@ -179,13 +178,13 @@
                                     {% for k, v in now_level if k != 'head' and v.name_rus is defined and ( v.skip_didr_list is not defined or ( v.skip_didr_list is defined and v.skip_didr_list != 'da' ) ) %}
 
                                         <td class="va-top">
-                                            
+
                                             {% if v.type is defined and v.type == 'image' %}
 
                                                 {% if list[k1][k] is not empty %}
-                                                    <a href="{{ sd }}{{ item_dir_img_uri_download() }}{{ list[k1][k] }}" target="_blank" >
-                                                        {# <img src='{{ sd }}{{ item_dir_img_uri_download() }}{{ list[k1][k] }}' style='max-width: 150px;' /> #}
-                                                        <img src='{{ sd }}module_items_image/{{ list[k1][k] }}' style='max-width: 150px;' />
+                                                    <a href="{{ sd }}module_items_image/{{ list[k1][k] }}" target="_blank" >
+                                                        {#<img src='{{ sd }}module_items_image/{{ list[k1][k] }}' style='max-width: 150px;' />#}
+                                                        <img src='/di-img/min/150/module_items_image/{{ list[k1][k] }}' xstyle='max-width: 150px;' />
                                                     </a>
                                                 {% endif %}
 
@@ -230,10 +229,24 @@
 
                                             {% elseif v.type is defined and v.type == 'select' %}
 
-                                                {% if v_data[v.import_1_module][list[k1][k]]['head'] is defined %}
-                                                    {{ v_data[v.import_1_module][list[k1][k]]['head'] }}
+                                                {% if v.import_1_value is defined and list[k1][k] is not empty %}
+                                                    
+                                                    {% for k5,v5 in v_data[v.import_1_module] if v5[v.import_1_value] is defined and list[k1][k] is not empty and list[k1][k] == v5[v.import_1_value] %}
+                                                        {% if v.import_1_show is defined %}
+                                                            {{ v5[v.import_1_show] }}
+                                                        {% else %}
+                                                            {{ v5[v.import_1_value] }}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    
                                                 {% else %}
-                                                    -- ? --
+
+                                                    {% if v_data[v.import_1_module][list[k1][k]]['head'] is defined %}
+                                                        {{ v_data[v.import_1_module][list[k1][k]]['head'] }}
+                                                    {% else %}
+                                                        -- ? --
+                                                    {% endif %}
+
                                                 {% endif %}
 
                                                 {# тип данных - выбор из списка #}

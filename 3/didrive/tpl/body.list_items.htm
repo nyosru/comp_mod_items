@@ -181,10 +181,14 @@
 
                                             {% if v.type is defined and v.type == 'image' %}
 
+
                                                 {% if list[k1][k] is not empty %}
                                                     <a href="{{ sd }}module_items_image/{{ list[k1][k] }}" target="_blank" >
-                                                        {#<img src='{{ sd }}module_items_image/{{ list[k1][k] }}' style='max-width: 150px;' />#}
-                                                        <img src='/di-img/min/150/module_items_image/{{ list[k1][k] }}' xstyle='max-width: 150px;' />
+                                                        {%  if 'png' in list[k1][k] %}
+                                                            <img src='{{ sd }}module_items_image/{{ list[k1][k] }}' style='max-width: 150px;' />
+                                                        {% else %}
+                                                            <img src='/di-img/min/150/module_items_image/{{ list[k1][k] }}' xstyle='max-width: 150px;' />
+                                                        {% endif %}
                                                     </a>
                                                 {% endif %}
 
@@ -230,7 +234,7 @@
                                             {% elseif v.type is defined and v.type == 'select' %}
 
                                                 {% if v.import_1_value is defined and list[k1][k] is not empty %}
-                                                    
+
                                                     {% for k5,v5 in v_data[v.import_1_module] if v5[v.import_1_value] is defined and list[k1][k] is not empty and list[k1][k] == v5[v.import_1_value] %}
                                                         {% if v.import_1_show is defined %}
                                                             {{ v5[v.import_1_show] }}
@@ -238,7 +242,7 @@
                                                             {{ v5[v.import_1_value] }}
                                                         {% endif %}
                                                     {% endfor %}
-                                                    
+
                                                 {% else %}
 
                                                     {% if v_data[v.import_1_module][list[k1][k]]['head'] is defined %}

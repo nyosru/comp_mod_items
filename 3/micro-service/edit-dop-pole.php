@@ -13,7 +13,7 @@ try {
         require_once '0start.php';
     }
 
-    // \f\pa($_REQUEST);
+// \f\pa($_REQUEST);
 
     if (!empty($_REQUEST['id']) && !empty($_REQUEST['s']) && \Nyos\Nyos::checkSecret($_REQUEST['s'], $_REQUEST['id']) !== false) {
         
@@ -27,7 +27,45 @@ try {
     if (empty(\Nyos\Nyos::$menu))
         \Nyos\Nyos::getMenu();
 
-    if (isset(\Nyos\Nyos::$menu[$_REQUEST['ajax_module']]['type']) && \Nyos\Nyos::$menu[$_REQUEST['ajax_module']]['type'] == 'items' && \Nyos\Nyos::$menu[$_REQUEST['ajax_module']]['version'] == 3) {
+    if (!empty($_REQUEST['ajax_delete1mod']) && !empty($_REQUEST['ajax_delete1s'])) {
+
+        if (!empty(\Nyos\Nyos::$menu[$_REQUEST['ajax_delete1mod']])) {
+
+            $mod = \Nyos\Nyos::$menu[$_REQUEST['ajax_delete1mod']];
+
+            if (!empty($mod['type']) && $mod['type'] == 'items' && !empty($mod['version']) && $mod['version'] == 3) {
+
+                $s_text = '';
+
+                $sql0 = '';
+                $sql0_v = [];
+
+                for ($w = 1; $w <= 10; $w++) {
+                    if (!empty($_REQUEST['ajax_delete1v' . $w . 'pole']) && !empty($_REQUEST['ajax_delete1v' . $w . 'val'])) {
+                        $s_text .= $_REQUEST['ajax_delete1v' . $w . 'val'];
+
+                        $sql0 .= (!empty($sql0) ? ' AND ' : '' ) . ' ' . $_REQUEST['ajax_delete1v' . $w . 'pole'] . ' = :vv' . $w . ' ';
+                        $sql0_v[':vv' . $w] = $_REQUEST['ajax_delete1v' . $w . 'val'];
+                    }
+                }
+
+                if (!empty($s_text) && \Nyos\nyos::checkSecret($_REQUEST['ajax_delete1s'], $s_text) !== false) {
+
+                    if (\Nyos\Nyos::$db_type == 'pg') {
+                        $ff = $db->prepare('UPDATE "mod_' . \f\translit($_REQUEST['ajax_module'], 'uri2') . '" SET status = delete WHERE ' . $sql0);
+                    } else {
+                        $ff = $db->prepare('UPDATE `mod_' . \f\translit($_REQUEST['ajax_module'], 'uri2') . '` SET status = delete WHERE ' . $sql0);
+                    }
+
+                    $ff->execute($sql0_v);
+
+                    $sql0 .= ' ok ';
+                }
+            }
+        }
+    }
+
+    if ( isset(\Nyos\Nyos::$menu[$_REQUEST['ajax_module']]['type']) && \Nyos\Nyos::$menu[$_REQUEST['ajax_module']]['type'] == 'items' && \Nyos\Nyos::$menu[$_REQUEST['ajax_module']]['version'] == 3 ) {
 
         try {
 
@@ -36,12 +74,10 @@ try {
             } else {
                 $ff = $db->prepare('UPDATE `mod_' . \f\translit($_REQUEST['ajax_module'], 'uri2') . '` SET `' . \f\translit($_REQUEST['dop_name'], 'uri2') . '` = :val WHERE `id` = :id ');
             }
-            
+
             $ff->execute(
                     array(
-                        // ':table' => 'mod_'.\f\translit( $_REQUEST['ajax_module'], 'uri2' ),
                         ':id' => $_REQUEST['id'],
-                        // ':pole' => $_REQUEST['dop_name'],
                         ':val' => $_REQUEST['new_val']
                     )
             );
@@ -49,11 +85,10 @@ try {
             $sql2 = 'ок2';
         } catch (\PDOException $exc) {
             $error2 = $exc->getMessage();
-            \f\end2( 'ошибка: '.$exc->getMessage() , false );
+            \f\end2('ошибка: ' . $exc->getMessage(), false);
         }
-        
-        \f\end2( 'сохранено' );
-        
+
+        \f\end2('сохранено');
     }
 
 
@@ -76,14 +111,14 @@ try {
 
     if (isset($_POST['new_val'])) {
         $sql = 'INSERT INTO `mitems-dops` ( `id_item`, `name`, `value` ) values ( :id, :name , :val ) ';
-        // \f\pa($sql);
+// \f\pa($sql);
         $ff = $db->prepare($sql);
         $in_sql = [
             ':id' => $_POST['item_id'],
             ':name' => $_POST['dop_name'],
             ':val' => $_POST['new_val'] ?? 0,
         ];
-        // \f\pa($in_sql);
+// \f\pa($in_sql);
         $ff->execute($in_sql);
     }
 
@@ -108,5 +143,5 @@ try {
     echo '<pre>';
     print_r($exc);
     echo '</pre>';
-    // echo $exc->getTraceAsString();
+// echo $exc->getTraceAsString();
 }

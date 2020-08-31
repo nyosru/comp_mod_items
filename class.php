@@ -1291,14 +1291,14 @@ class items {
                 if (isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
                     $sql = 'SELECT ' .
                             ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
-                            ' FROM "mod_' . \f\translit($module, 'uri2'). '" as "items" '
+                            ' FROM "mod_' . \f\translit($module, 'uri2') . '" as "items" '
                             . ( self::$joins ?? '' )
-                            . ( !empty($where) ? ' WHERE ' . $where : '' )
+                            . (!empty($where) ? ' WHERE ' . $where : '' )
                     ;
                 } else {
                     $sql = 'SELECT ' .
                             ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
-                            ' FROM `mod_' . \f\translit($module, 'uri2'). '` as `items` '
+                            ' FROM `mod_' . \f\translit($module, 'uri2') . '` as `items` '
                             . ( self::$joins ?? '' )
                             . (!empty($where) ? 'WHERE ' . $where : '')
                     ;
@@ -1322,12 +1322,12 @@ class items {
 
                 if (self::$show_sql === true)
                     \f\pa($sql, '', '', '$sql');
-                
-                
+
+
 //                    \f\pa($sql, '', '', '$sql');
 //                    return [];
 
-                    
+
                 $ff = $db->prepare($sql);
 
 //                    if (!empty($module))
@@ -1358,7 +1358,7 @@ class items {
             } catch (\PDOException $ex) {
 
                 echo $sql;
-                
+
 // echo $exc->getTraceAsString();
 // Base table or view not found: 1146 Table 'dev_bi.mod_701_beeline_dogovors' doesn't exist
 
@@ -2873,16 +2873,8 @@ class items {
      */
     public static function adds($db, string $module, array $data, $params_in = []) {
 
-        // \f\pa( [ $module, $data ] ,2);
-        \f\pa(['items', __FUNCTION__, $module], 2);
-
         if (empty($data))
             throw new \Exception('пустst данные'); // return false;
-
-
-
-
-
             
 // \f\pa(\Nyos\Nyos::$menu);
 // return false;
@@ -2896,15 +2888,11 @@ class items {
         if (!empty(self::$time_limit))
             \f\timer_start(456);
 
-        \f\pa(\Nyos\Nyos::$menu[$module], 2);
-
         if (
                 (
                 isset(\Nyos\Nyos::$menu[$module]['type']) && \Nyos\Nyos::$menu[$module]['type'] == 'items' && isset(\Nyos\Nyos::$menu[$module]['version']) && \Nyos\Nyos::$menu[$module]['version'] == 3
                 ) || self::$type_module == 3
         ) {
-
-            echo '<br/>' . __FILE__ . ' #' . __LINE__;
 
             $polya = [];
 

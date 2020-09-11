@@ -2875,6 +2875,8 @@ class items {
 
         if (empty($data))
             throw new \Exception('пустst данные'); // return false;
+
+
             
 // \f\pa(\Nyos\Nyos::$menu);
 // return false;
@@ -2930,9 +2932,16 @@ class items {
                     $sql2 = '';
                     $nn = 1;
                     foreach ($polya as $p => $pp1) {
-                        $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' :v' . $n3 . '_' . $nn . ' ';
-                        $vars[':v' . $n3 . '_' . $nn] = ( isset($v[$p]) ? $v[$p] : (!empty($params_in[$p]) ? $params_in[$p] : '' ) );
-                        $nn++;
+
+                        $tt = ( isset($v[$p]) ? $v[$p] : (!empty($params_in[$p]) ? $params_in[$p] : '' ) );
+
+                        if ($tt == '') {
+                            $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' NULL ';
+                        }else{
+                            $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' :v' . $n3 . '_' . $nn . ' ';
+                            $vars[':v' . $n3 . '_' . $nn] = ( isset($v[$p]) ? $v[$p] : (!empty($params_in[$p]) ? $params_in[$p] : '' ) );
+                            $nn++;
+                        }
                     }
                     $sql .= ( $n2 > 1 ? ',' : '' ) . ' ( ' . $sql2 . ' ) ';
                     $n2++;

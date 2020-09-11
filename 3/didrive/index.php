@@ -49,12 +49,24 @@ if (1 == 1) {
 //                if (!empty($v))
 //                    $new[$k] = $v;
 //            }
+//            \f\pa($_FILES);
+//            \f\pa($_POST);
 
-            $r = Nyos\mod\items::add($db, $vv['now_level']['cfg.level'], $_POST);
+            $p = $_POST;
+
+            if (!empty($_FILES)) {
+                foreach ($_FILES as $k => $v) {
+                    $p[$k] = $v['name'] . '.' . \f\get_file_ext($v['name']);
+                    copy($v['tmp_name'], DR . DS . 'sites' . DS . \Nyos\Nyos::$folder_now . DS . 'download' . DS . 'module_items_image' . DS . $p[$k]);
+                }
+            }
+
+            $r = Nyos\mod\items::add($db, $vv['now_level']['cfg.level'], $p);
             $vv['warn'] .= (!empty($vv['warn']) ? '<br/>' : '' ) . 'Запись добавлена';
 
             if (isset($_GET['goto_start']))
                 \f\redirect('/', 'i.didrive.php', array('warn' => 'Запись добавлена'));
+            
         } catch (Exception $e) {
 
             $vv['warn'] .= (!empty($vv['warn']) ? '<br/>' : '' ) . 'Произошла неописуемая ситуация #' . $e->getCode() . '.' . $e->getLine() . ' (ошибка: ' . $e->getMessage() . ' )';
@@ -101,7 +113,7 @@ if (1 == 1) {
 
         // \f\pa($d);
         // \Nyos\mod\items::$show_sql = true;
-        $r = \Nyos\mod\items::edit($db,);
+        // $r = \Nyos\mod\items::edit($db,);
         $r = \Nyos\mod\items::saveEdit($db, $_REQUEST['save_id'], $vv['folder'], $vv['now_level'], $d);
 
         if (isset($r['status']) && $r['status'] == 'ok') {

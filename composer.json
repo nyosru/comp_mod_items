@@ -1,7 +1,7 @@
 {
     "name": "didrive_mod/items",
     "description": "Модуль для Didrive - items",
-    "version": "1.3.22",
+    "version": "1.11.0",
 
     "keywords": [
         "didrive",
@@ -9,6 +9,7 @@
         "nyos",
         "uralweb.info"
     ],
+
     "authors": [
         {
             "name": "Sergey Baklanov",
@@ -20,12 +21,15 @@
 
     "homepage": "https://uralweb.info/php/#classes",
     "license": "MIT",
+    
     "require": {
         "php": ">=7.1.0"
         ,
         "twig/twig": ">=2.10.0"
         ,
-        "didrive/base": "0.1.3"
+        "didrive/base": ">=0.1.9"
+        ,
+        "didrive/f": ">=2.3.2"
     }
     ,
     "autoload": {

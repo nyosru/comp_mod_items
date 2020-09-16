@@ -1,0 +1,89 @@
+{% spaceless %}
+
+    {# пример конфига
+    [id_cat]
+    name_rus = Каталог
+    type = select
+    ; import 1 module
+    ; модуль 
+    import_1_module = 020.cats
+    ; номер в текущем каталоге
+    import_1_up = a_parentid
+    ; номер равный текущему каталогу в другом каталоге
+    import_1_id = a_id
+    ; какое поле показываем
+    import_1_show = head
+    ; cоеденитель для найденных соответсвий
+    import_1_concat = /
+    ;какое поле сохраняем при добавлении записи
+    import_1_value = a_id
+    #}    
+
+    {# формирумем массив для пропуска #}
+    {#{% set skip = [] %}#}
+    {#{% for k4,v4 in v if k4[:4] == 'skip' %}#}
+    {#{% set skip = skip|merge( { (v4): '1' } ) %}#}
+    {#{% endfor %}#}
+
+    <span>
+
+        {#{{ pa(k) }}#}
+        {#{{ pa(v) }}#}
+        {#{{ pa(v,2) }}#}
+        {#{{ pa(v_data[v.import_1_module],2) }}#}
+        {#{{ pa(v_data,2) }}#}
+
+        <select id='i_{{ k }}' name="{{ k }}" class="form-control" 
+                {% if v.config_noedit is defined and v.config_noedit == 'da' %} readonly {% endif %}
+                />
+
+        {% if v.obayz is not defined %}
+            <option value="">можете выбрать</option>
+        {% endif %}
+
+        {% if v_data[v.import_1_module] is defined %}
+
+            {% for k1, v1 in v_data[v.import_1_module] %} 
+
+                {#{% if skip[v1.head] is not defined %}#}
+                {% if 1 == 1 %}
+
+                    <option 
+
+                        {% if v.import_1_value is defined %}
+
+                            value='{{ v1[v.import_1_value] }}' 
+
+                        {% else %}
+                            
+                            value='{{ k1 }}'
+
+                            {% if edit_item is defined and list[edit_item][k] is defined and list[edit_item][k] == k1 %}
+                                selected="selected" 
+                            {% elseif get.var[k] is defined and get.var[k] == k1 %}
+                                selected="selected" 
+                            {% elseif get['edit__'~k] is defined and get['edit__'~k] == k1 %}
+                                selected="selected" 
+                            {% endif %} 
+
+                        {% endif %}
+
+                        >
+
+                        {{ v1.concat_head }} {{ v1.head }} 
+
+                        {#{{ v1 }}#}
+                        {# % if v1['status'] == 'hide'} (скрыто) {% endif % #}
+
+                    </option>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+    </select>
+
+    <small>выберете из списка (<a href="?level={$v.value_import_local}" >управление данными в списке</a>)</small>
+
+</span>
+
+{% endspaceless %}

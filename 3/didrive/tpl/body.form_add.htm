@@ -1,0 +1,155 @@
+{% spaceless %}
+
+    {# если есть $edit_item то форма редактирования  #}
+    {#  в переменной $edit_item данные редактируемого объекта #}
+
+    {#{  pa(list) }#}
+
+    {% set edit_item = 'x' %}
+
+    {#% if get.edit_id is defined and list[edit_item] is defined %#}
+    {% if get.edit_id is defined %}
+        {% for k3,v3 in list if v3.id == get.edit_id %}
+            {% set edit_item = k3 %}
+        {% endfor %}
+    {% endif %}
+
+    <button class="btn btn-success btn-xs" id='but_add' style='float:right; {% if edit_item != 'x' %} display:none; {% endif %}' onclick="$('#addform1').show('slow');
+            $(this).hide();
+            $('#i_head').focus();">
+        Добавить
+    </button>
+
+    {#% set run_cfg_edit = false %#}
+    {#% if list[edit_item] is defined %}
+        {{ pa(list[edit_item]) }}
+    {% endif %#}
+
+    <form 
+        action="?level={{ get.level }}&rand={{ random() }}{% if get.showonly is defined %}&goto_start=da{% endif %}" 
+
+        method="POST" 
+        enctype="multipart/form-data" id="addform1" 
+        style="{% if list[edit_item] is defined %}{% else %} display:none; {% endif %} padding:10px; background-color: #eeeeee;" 
+        >
+
+        {% if get.showonly is not defined %}
+            <button class="btn btn-success btn-xs" style='float:right;' onclick="$('#addform1').slow('slow');
+                    $('#but_add').show();">закрыть форму</button>
+        {% endif %}    
+
+        <br clear='all' />
+
+        {#{ pa(list[edit_item]) }#}
+
+        <br clear='all' />
+        <div style="xoverflow: auto; xborder: 1px solid gray;">
+            <div class="container-fluid">
+                <div class="grid" style="xborder:0; xoverflow:auto; ">
+
+                    {% if 1 == 2 %}
+                        {% if now_level.head_skip is defined and now_level.head_skip == 'da' %}
+                            <input type="hidden" name="head" value="1" />
+                        {% else %}
+                            <div class="row">
+
+                                <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right">
+                                    <label for='i_head'>
+                                        {% if now_level.head_name is defined and now_level.head_name|length > 1 %}
+                                            {{ now_level.head_name }}
+                                        {% else %}
+                                            Заголовок записи
+                                        {% endif %}
+                                    </label>
+                                </div>
+                                <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
+                                    <input id='i_head' type="text" name="head" class="form-control" 
+                                           {% if edit_item is defined and list[edit_item]['head'] is defined %} value="{{ list[edit_item]['head']|escape }}" {% endif %}
+                                           />
+                                </div>
+
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                    {% set di_tpls = items__get_file_didrive_tpls() %}
+
+                    {% for k, v in now_level if v.name_rus is defined %}
+
+                        {% if v.type is defined and v.type == 'head' %}
+
+                            <div class="row">
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" >
+                                    <h4>{{ v.name_rus }}</h4>
+                                </div>
+                            </div>
+
+                        {% else %}
+
+                            <div class="row">
+
+                                <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right" >
+                                    <label for='i_{{ k }}'>{{ v.name_rus }}</label>
+                                </div>
+                                <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12">
+
+                                    {# { v.type } #}
+                                    {#{{ pa(k} }} {{ pa(v} }}#}
+
+                                    {% if v.type is defined and di_tpls['body.form_add.'~v.type~'.htm'] is defined %}
+
+                                        {% include dir_mod_now_mod_ditpl~'body.form_add.'~v.type~'.htm' %}
+
+                                        {#% elseif v.type is defined and v.type == 'date' %}
+                                        {% elseif v.type is defined and v.type == 'datetime' %}
+                                        {% elseif v.type is defined and v.type == 'number' %}
+                                        {% elseif v.type is defined and v.type == 'textarea' %}
+                                        {% elseif v.type is defined and v.type == 'textarea_html' %#}
+                                        {# иначе text string #}
+
+                                    {% else %}
+
+                                        <input id='i_{{ k }}' type="text" name="{{ k }}" 
+                                               value="{% if edit_item is defined and list[edit_item][k] is defined %}{{ list[edit_item][k] }}{% endif %}" 
+                                               class="form-control" />
+
+                                    {% endif %}
+
+                                    {% if v.comment is defined %}
+                                        <small>{{ v.comment }}</small>
+                                    {% endif %}
+
+                                </div>                    
+                            </div>                    
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                    <div class="row" style="position:sticky; bottom:0;  " >
+                        <div class="col-lg-2 col-md-4 col-sm-4 col-xs-12 text-right">
+                        </div>
+                        <div class="col-lg-10 col-md-8 col-sm-8 col-xs-12" style="xposition:sticky; xbottom:0;  " >
+
+                            {% if edit_item is defined and list[edit_item]['id'] is defined %}
+
+                                <input type="hidden" name="save_id" value="{{ list[edit_item]['id'] }}" />
+                                <input type="submit" name="save_edit" value="Сохранить" class="btn btn-warning"  />
+
+                            {% else %}
+
+                                <input type="submit" name="addnew" value="Добавить" class="btn btn-success" style="position:sticky; bottom:0;position: -webkit-sticky;  position: -moz-sticky; position: -ms-sticky;  position: -o-sticky;" />
+
+                            {% endif %}
+
+                            {% if now_level.folder is defined and now_level.folder is not empty %}<input type="hidden" name="dop_folder" value="{{ now_level.folder }}" />{% endif %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+
+    </form>
+
+{% endspaceless %}

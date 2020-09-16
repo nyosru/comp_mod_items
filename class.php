@@ -1154,6 +1154,7 @@ class items {
      * show hide ''
      * @param строка $sort
      * id_id = тогда ключи это id
+     * sort_asc/ head / head_desc
      * @return массив
      */
     public static function get($db, $module = null, $stat = 'show', $sort = null) {
@@ -1189,11 +1190,11 @@ class items {
             try {
 
                 self::$type_module = '';
-                self::$var_ar_for_1sql[':v' . $n] = 'show';
+                self::$var_ar_for_1sql[':v' . $n] = $stat;
 
                 if (isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
                     // echo '<br/>'.__FILE__ . ' #' . __LINE__;
-                    $where .= (!empty($where) ? ' AND ' : '' ) . ' ( items.status = :v' . $n . ' OR items.status IS NULL ) ';
+                    $where .= (!empty($where) ? ' AND ' : '' ) . ' ( items.status = :v' . $n . ( $stat == 'show' ? ' OR items.status IS NULL ' : '' ).' ) ';
                 } else {
                     $where .= (!empty($where) ? ' AND ' : '' ) . ' items.status = :v' . $n . ' ';
                 }
@@ -1291,14 +1292,14 @@ class items {
                 if (isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
                     $sql = 'SELECT ' .
                             ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
-                            ' FROM "mod_' . \f\translit($module, 'uri2') . '" as "items" '
+                            ' FROM "mod_' . \f\translit($module, 'uri2'). '" as "items" '
                             . ( self::$joins ?? '' )
-                            . (!empty($where) ? ' WHERE ' . $where : '' )
+                            . ( !empty($where) ? ' WHERE ' . $where : '' )
                     ;
                 } else {
                     $sql = 'SELECT ' .
                             ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
-                            ' FROM `mod_' . \f\translit($module, 'uri2') . '` as `items` '
+                            ' FROM `mod_' . \f\translit($module, 'uri2'). '` as `items` '
                             . ( self::$joins ?? '' )
                             . (!empty($where) ? 'WHERE ' . $where : '')
                     ;
@@ -1312,8 +1313,13 @@ class items {
 
                 self::$group_by = '';
 
-                if ($sort == 'sort_asc')
+                if ($sort == 'sort_asc'){
                     $sql .= ' ORDER BY items.sort ASC ';
+                }elseif ($sort == 'head'){
+                    $sql .= ' ORDER BY items.head ASC ';
+                }elseif ($sort == 'head_desc'){
+                    $sql .= ' ORDER BY items.head DESC ';
+                }
 
                 if (!empty(self::$sql_limit))
                     $sql .= ' LIMIT ' . self::$sql_limit . ' ';
@@ -1322,12 +1328,12 @@ class items {
 
                 if (self::$show_sql === true)
                     \f\pa($sql, '', '', '$sql');
-
-
+                
+                
 //                    \f\pa($sql, '', '', '$sql');
 //                    return [];
 
-
+                    
                 $ff = $db->prepare($sql);
 
 //                    if (!empty($module))
@@ -1358,7 +1364,7 @@ class items {
             } catch (\PDOException $ex) {
 
                 echo $sql;
-
+                
 // echo $exc->getTraceAsString();
 // Base table or view not found: 1146 Table 'dev_bi.mod_701_beeline_dogovors' doesn't exist
 
@@ -2794,6 +2800,14 @@ class items {
         }
     }
 
+
+/**
+ * старая для версии 1 2
+ * @param type $db
+ * @param string $mod_name
+ * @param array $items_id
+ * @param type $new_dop
+ */
     public static function edits($db, string $mod_name, array $items_id, $new_dop = []) {
 
         \f\Cash::deleteKeyPoFilter([$mod_name]);
@@ -2873,8 +2887,14 @@ class items {
      */
     public static function adds($db, string $module, array $data, $params_in = []) {
 
+        // \f\pa( [ $module, $data ] ,2);
+        \f\pa(['items', __FUNCTION__, $module], 2);
+
         if (empty($data))
             throw new \Exception('пустst данные'); // return false;
+
+
+
 
 
             
@@ -2890,11 +2910,15 @@ class items {
         if (!empty(self::$time_limit))
             \f\timer_start(456);
 
+        \f\pa(\Nyos\Nyos::$menu[$module], 2);
+
         if (
                 (
                 isset(\Nyos\Nyos::$menu[$module]['type']) && \Nyos\Nyos::$menu[$module]['type'] == 'items' && isset(\Nyos\Nyos::$menu[$module]['version']) && \Nyos\Nyos::$menu[$module]['version'] == 3
                 ) || self::$type_module == 3
         ) {
+
+            // echo '<br/>' . __FILE__ . ' #' . __LINE__;
 
             $polya = [];
 
@@ -2932,16 +2956,9 @@ class items {
                     $sql2 = '';
                     $nn = 1;
                     foreach ($polya as $p => $pp1) {
-
-                        $tt = ( isset($v[$p]) ? $v[$p] : (!empty($params_in[$p]) ? $params_in[$p] : '' ) );
-
-                        if ($tt == '') {
-                            $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' NULL ';
-                        }else{
-                            $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' :v' . $n3 . '_' . $nn . ' ';
-                            $vars[':v' . $n3 . '_' . $nn] = ( isset($v[$p]) ? $v[$p] : (!empty($params_in[$p]) ? $params_in[$p] : '' ) );
-                            $nn++;
-                        }
+                        $sql2 .= (!empty($sql2) ? ' ,' : '' ) . ' :v' . $n3 . '_' . $nn . ' ';
+                        $vars[':v' . $n3 . '_' . $nn] = ( isset($v[$p]) ? $v[$p] : (!empty($params_in[$p]) ? $params_in[$p] : '' ) );
+                        $nn++;
                     }
                     $sql .= ( $n2 > 1 ? ',' : '' ) . ' ( ' . $sql2 . ' ) ';
                     $n2++;
@@ -2979,11 +2996,15 @@ class items {
 
                 if ($n2 > 1) {
                     // \f\pa($sql);
+                    
                     if (\Nyos\mod\items::$show_sql == true)
                         echo '<div style="max-height: 100px; overflow: auto;" >end ' . $sql0 . $sql . '</div>';
+                    
                     $s2 = $db->prepare($sql0 . $sql);
+                    
                     if (\Nyos\mod\items::$show_sql == true)
                         \f\pa($vars, 2, '', 'vars in sql');
+                    
                     $s2->execute($vars);
                 }
             } catch (\Exception $exc) {

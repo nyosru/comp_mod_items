@@ -6,6 +6,18 @@ composer require didrive_mod/items
 
 
 
+
+
+----- добавление в структуру новых полей (пока только строки) -------------
+https://****/vendor/didrive_mod/items/3/micro-service/update-db.php
+
+
+
+
+
+
+
+
 -------- пример конфига селект если в итеме указываем какой выше итем ----------
 
 
@@ -26,10 +38,6 @@ composer require didrive_mod/items
     import_1_concat = /
     ;какое поле сохраняем при добавлении записи
     import_1_value = a_id
-
-db_key = index
-; добавить индекс на поле
-
     #}    
 
 

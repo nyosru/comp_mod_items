@@ -54,6 +54,7 @@ class items {
 // эти поля должны быть на выходе в допах
     public static $need_polya_vars = [];
     public static $where = [];
+    public static $where_add = '';
 
     /**
      * отмена кеширования в запросе get2
@@ -1190,13 +1191,17 @@ class items {
             try {
 
                 self::$type_module = '';
-                self::$var_ar_for_1sql[':v' . $n] = $stat;
+
+
+                if (!empty($stat))
+                    self::$var_ar_for_1sql[':v' . $n] = $stat;
 
                 if (isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
                     // echo '<br/>'.__FILE__ . ' #' . __LINE__;
-                    $where .= (!empty($where) ? ' AND ' : '' ) . ' ( items.status = :v' . $n . ( $stat == 'show' ? ' OR items.status IS NULL ' : '' ).' ) ';
+                    $where .= (!empty($where) ? ' AND ' : '' ) . ' ( items.status = :v' . $n . ( $stat == 'show' ? ' OR items.status IS NULL ' : '' ) . ' ) ';
                 } else {
-                    $where .= (!empty($where) ? ' AND ' : '' ) . ' items.status = :v' . $n . ' ';
+                    if (!empty($stat))
+                        $where .= (!empty($where) ? ' AND ' : '' ) . ' items.status = :v' . $n . ' ';
                 }
 
                 $n++;
@@ -1292,32 +1297,33 @@ class items {
                 if (isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
                     $sql = 'SELECT ' .
                             ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
-                            ' FROM "mod_' . \f\translit($module, 'uri2'). '" as "items" '
+                            ' FROM "mod_' . \f\translit($module, 'uri2') . '" as "items" '
                             . ( self::$joins ?? '' )
-                            . ( !empty($where) ? ' WHERE ' . $where : '' )
+                            . (!empty($where) ? ' WHERE ' . $where : '' )
                     ;
                 } else {
                     $sql = 'SELECT ' .
                             ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
-                            ' FROM `mod_' . \f\translit($module, 'uri2'). '` as `items` '
+                            ' FROM `mod_' . \f\translit($module, 'uri2') . '` as `items` '
                             . ( self::$joins ?? '' )
-                            . (!empty($where) ? 'WHERE ' . $where : '')
+                            . (!empty($where) ? 'WHERE ' . $where . ( self::$where_add ?? '' ) : '')
                     ;
                 }
 
                 self::$sql_select_vars = [];
                 self::$joins = '';
+                self::$where_add = '';
 
                 if (!empty(self::$group_by))
                     $sql .= ' GROUP BY ' . self::$group_by . ' ';
 
                 self::$group_by = '';
 
-                if ($sort == 'sort_asc'){
+                if ($sort == 'sort_asc') {
                     $sql .= ' ORDER BY items.sort ASC ';
-                }elseif ($sort == 'head'){
+                } elseif ($sort == 'head') {
                     $sql .= ' ORDER BY items.head ASC ';
-                }elseif ($sort == 'head_desc'){
+                } elseif ($sort == 'head_desc') {
                     $sql .= ' ORDER BY items.head DESC ';
                 }
 
@@ -1328,12 +1334,12 @@ class items {
 
                 if (self::$show_sql === true)
                     \f\pa($sql, '', '', '$sql');
-                
-                
+
+
 //                    \f\pa($sql, '', '', '$sql');
 //                    return [];
 
-                    
+
                 $ff = $db->prepare($sql);
 
 //                    if (!empty($module))
@@ -1364,7 +1370,7 @@ class items {
             } catch (\PDOException $ex) {
 
                 echo $sql;
-                
+
 // echo $exc->getTraceAsString();
 // Base table or view not found: 1146 Table 'dev_bi.mod_701_beeline_dogovors' doesn't exist
 
@@ -2800,14 +2806,13 @@ class items {
         }
     }
 
-
-/**
- * старая для версии 1 2
- * @param type $db
- * @param string $mod_name
- * @param array $items_id
- * @param type $new_dop
- */
+    /**
+     * старая для версии 1 2
+     * @param type $db
+     * @param string $mod_name
+     * @param array $items_id
+     * @param type $new_dop
+     */
     public static function edits($db, string $mod_name, array $items_id, $new_dop = []) {
 
         \f\Cash::deleteKeyPoFilter([$mod_name]);
@@ -2847,6 +2852,56 @@ class items {
         self::$show_sql = false;
 
 // return self::addNewSimple($db, $mod_name, $data, $files, $add_all_dops);
+    }
+
+    /**
+     * 2007 версия
+     * @param type $db
+     * @param string $module
+     * @param array $items_edit
+     * [ 'id' = 123 ]
+     * @param type $new_dop
+     * [ 'param' => 'new', 'param2' => 'new' ]
+     */
+    public static function edit($db, string $module, array $items_edit, $new_dop = []) {
+
+        $for_sql = [];
+        $nn = 1;
+
+        $sql1 = '';
+        foreach ($items_edit as $k => $v) {
+            $sql1 .= (!empty($sql1) ? ' AND ' : '' ) . ' `' . addslashes($k) . '` = :v' . $nn . ' ';
+            $for_sql[':v' . $nn] = $v;
+            $nn++;
+        }
+
+        $sql2 = '';
+        foreach ($new_dop as $k => $v) {
+            if ($v == 'now()') {
+                $sql2 .= (!empty($sql2) ? ' , ' : '' ) . ' `' . addslashes($k) . '` = NOW() ';
+            } else {
+                $sql2 .= (!empty($sql2) ? ' , ' : '' ) . ' `' . addslashes($k) . '` = :v' . $nn . ' ';
+                $for_sql[':v' . $nn] = $v;
+                $nn++;
+            }
+        }
+
+        $sql = 'UPDATE `mod_' . $module . '` SET ' . $sql2 . ' WHERE ' . $sql1 . ' ;';
+
+        if (self::$show_sql === true)
+            \f\pa($sql);
+
+        $ff = $db->prepare($sql);
+
+        if (self::$show_sql === true)
+            \f\pa($for_sql);
+
+        $e = $ff->execute($for_sql);
+
+        self::$show_sql = false;
+
+        \f\pa($e);
+        
     }
 
     /**
@@ -2892,6 +2947,7 @@ class items {
 
         if (empty($data))
             throw new \Exception('пустst данные'); // return false;
+
 
 
 
@@ -2996,15 +3052,15 @@ class items {
 
                 if ($n2 > 1) {
                     // \f\pa($sql);
-                    
+
                     if (\Nyos\mod\items::$show_sql == true)
                         echo '<div style="max-height: 100px; overflow: auto;" >end ' . $sql0 . $sql . '</div>';
-                    
+
                     $s2 = $db->prepare($sql0 . $sql);
-                    
+
                     if (\Nyos\mod\items::$show_sql == true)
                         \f\pa($vars, 2, '', 'vars in sql');
-                    
+
                     $s2->execute($vars);
                 }
             } catch (\Exception $exc) {
@@ -3354,6 +3410,7 @@ class items {
     }
 
     /**
+     * старая версия
      * редактируем 1 итем
      * @param type $db
      * @param type $id_item

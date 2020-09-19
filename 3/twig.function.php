@@ -4,6 +4,8 @@ $function = new Twig_SimpleFunction('items__get', function ( $db, $module, $stat
 
     \Nyos\mod\items::$var_ar_for_1sql = [];
 
+    // echo __FILE__;
+    
     try {
 
         if ($stat == 'show_id') {
@@ -17,9 +19,12 @@ $function = new Twig_SimpleFunction('items__get', function ( $db, $module, $stat
                 $e1[$v['id']] = $v;
             }
             return $e1;
+            
         } else {
 
+            // \Nyos\mod\items::$show_sql = true;
             return \Nyos\mod\items::get($db, $module, $stat, $sort);
+            
         }
     } catch (Exception $exc) {
 

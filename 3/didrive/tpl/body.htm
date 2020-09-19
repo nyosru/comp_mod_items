@@ -1,7 +1,8 @@
 {% spaceless %}
 
 
-    {% set list = items__get( db, get.level, null, 'sort_asc' ) %}
+    {% set list = items__get( db, get.level, null, 'id_id' ) %}
+    {#{{ pa(list) }}#}
 
     <div class="container-fluid">
         <div class="grid">

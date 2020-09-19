@@ -14,15 +14,24 @@ try {
 
     $return = [];
 
-    if (!empty($_REQUEST['r_module']) && !empty($_REQUEST['remove']))
-        $res2 = \Nyos\mod\items::deleteItemForDops($db, $_REQUEST['r_module'], $_REQUEST['remove']);
+    if (!empty($_REQUEST['r_module']) && !empty($_REQUEST['remove'])) {
+
+        if (!empty($_REQUEST['delete_id']) && !empty($_REQUEST['s']) && \Nyos\Nyos::checkSecret($_REQUEST['s'], $_REQUEST['delete_id']) !== false) {
+            $sql = 'UPDATE `mod_' . \f\translit($_REQUEST['r_module']) . '` SET status = \'delete\' WHERE id = :id ;';
+            $ff = $db->prepare($sql);
+            $vars = [':id' => $_REQUEST['id']];
+            $ff->execute($vars);
+        } else {
+            $res2 = \Nyos\mod\items::deleteItemForDops($db, $_REQUEST['r_module'], $_REQUEST['remove']);
+        }
+    }
 
     if (strpos($_SERVER['HTTP_HOST'], 'dev') !== false) {
         $return['r2'] = ( $res2 ?? [] );
         $return['deleted'] = ( $deleted ?? [] );
     }
 
-    \f\end2('удалено', true, $return );
+    \f\end2('удалено', true, $return);
 
     //\f\end2($res['html'], true);
 } catch (Exception $exc) {

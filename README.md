@@ -8,18 +8,14 @@ composer require didrive_mod/items
 
 
 
------ добавление в структуру новых полей (пока только строки) -------------
-https://****/vendor/didrive_mod/items/3/micro-service/update-db.php
+-------------
+добавление в структуру новых полей (пока только строки) 
+-------------
+    https://****/vendor/didrive_mod/items/3/micro-service/update-db.php
 
-
-
-
-
-
-
-
--------- пример конфига селект если в итеме указываем какой выше итем ----------
-
+-------- 
+пример конфига селект если в итеме указываем какой выше итем 
+----------
 
     {# пример конфига
     [id_cat]
@@ -40,50 +36,52 @@ https://****/vendor/didrive_mod/items/3/micro-service/update-db.php
     import_1_value = a_id
     #}    
 
+----------- 
+отправка инфы аякс + результат в #res_to_id  
+---------------
+    <input class="base__send_to_ajax" type="button" 
+        res_to_id="res{{ v1.id }}"
+        href_to_ajax="/vendor/didrive_mod/items/3/micro-service/edit-dop-pole.php"
+        id="{{v1.id}}"
+        s="{{ creatSecret(v1.id) }}"
+        ajax_module="{{ get.level }}"
+        dop_name="status"
+        new_val="delete"
+        value="Удалить" />
+
+------------- 
+ниже этой строки под вопросом инфа 2020,08,26 
+-------------
 
 
------------ отправка инфы аякс + результат в #res_to_id  ---------------
-<input class="base__send_to_ajax" type="button" 
-       res_to_id="res{{ v1.id }}"
-       href_to_ajax="/vendor/didrive_mod/items/3/micro-service/edit-dop-pole.php"
-       id="{{v1.id}}"
-       s="{{ creatSecret(v1.id) }}"
-       ajax_module="{{ get.level }}"
-       dop_name="status"
-       new_val="delete"
-       value="Удалить" />
-
-
-
-
-
-
-------------- ниже этой строки под вопросом инфа 2020,08,26 -------------
-
---- сделать выборку с кешированием ----
+--- 
+сделать выборку с кешированием 
+----
 
 // дополнение к запросу
-            \Nyos\mod\items::$join_where .= ' INNER JOIN `mitems-dops` midop01 ON '
-                    . ' midop01.id_item = mi.id '
-                    . ' AND midop01.name = :name71 '
-                    . ' AND midop01.value_datetime >= :ds '
-                    . ' AND midop01.value_datetime <= :df '
-            ;
+
+    \Nyos\mod\items::$join_where .= ' INNER JOIN `mitems-dops` midop01 ON '
+        . ' midop01.id_item = mi.id '
+        . ' AND midop01.name = :name71 '
+        . ' AND midop01.value_datetime >= :ds '
+        . ' AND midop01.value_datetime <= :df '
+    ;
+
 // переменные
     \Nyos\mod\items::$sql_vars[':name71'] = 'start';
     \Nyos\mod\items::$sql_vars[':ds'] = date('Y-m-d 08:00:00', strtotime($date_start));
     \Nyos\mod\items::$sql_vars[':df'] = date('Y-m-d 03:00:00', strtotime($date_finish . ' +1 day'));
 
-// поиск переменных с точным указанием
+    // поиск переменных с точным указанием
     \Nyos\mod\items::$search = [
         'date' => '01-01-2020',
         'sp' => '1'
         ];
 
-// выключатель кеша
+    // выключатель кеша
     // \Nyos\mod\items::$cancel_cash = true;
 
-// переменная для кеша
+    // переменная для кеша
     \Nyos\mod\items::$cash_var_name = 'asdasd';
 
     $return['checks'] = \Nyos\mod\items::get2($db, self::$mod_checks);
@@ -91,7 +89,9 @@ https://****/vendor/didrive_mod/items/3/micro-service/update-db.php
 
 
 
------ запись новой записи с доп параметром, и удаление страой если была -----------
+----- 
+запись новой записи с доп параметром, и удаление страой если была 
+-----------
 
     {% set action = 'didrive__items__new_edit' %}
     {% set aj_module = '003_money_buh_pm' %}
@@ -139,7 +139,9 @@ https://****/vendor/didrive_mod/items/3/micro-service/update-db.php
 
 
 
------------- изменение доп параметра после клика по ссылке с вопросом и секретом ------------
+------------ 
+изменение доп параметра после клика по ссылке с вопросом и секретом 
+------------
 
         <a href="#" class="btn3 edit_items_dop_values drop2_{{ pay.id }} btn btn-xs btn-light" 
 

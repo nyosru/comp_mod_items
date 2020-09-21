@@ -44,13 +44,34 @@ if (1 == 1) {
 
         try {
 
-//            $new = [];
-//            foreach ($_POST as $k => $v) {
-//                if (!empty($v))
-//                    $new[$k] = $v;
-//            }
+            if (empty(\Nyos\Nyos::$menu))
+                \Nyos\Nyos::getMenu();
 
-            $r = Nyos\mod\items::add($db, $vv['now_level']['cfg.level'], $_POST);
+//            \f\pa(\Nyos\Nyos::$menu[$_REQUEST['level']]);
+//            \f\pa($_FILES);
+
+            // die();
+
+            $new = $_POST;
+
+            foreach ($_FILES as $k => $v) {
+
+                if (isset(\Nyos\Nyos::$menu[$_REQUEST['level']][$k]) && !empty($v) &&
+                        isset(\Nyos\Nyos::$menu[$_REQUEST['level']][$k]['type']) && \Nyos\Nyos::$menu[$_REQUEST['level']][$k]['type'] == 'image'
+                ) {
+               
+                    $new_file = substr(\f\translit($v['name'],'uri2'),0,50).'.'.rand(0,999).'.'. \f\get_file_ext($v['name']);
+                    $new_file_dir = DR.dir_site_sd.'module_items_image'.DS. $new_file ;
+                    // echo $new_file;
+                    copy( $v['tmp_name']  , $new_file_dir );
+                    $new[$k] = $new_file;
+                    
+                }
+            }
+
+//            \f\pa($new);
+//            die();
+            $r = Nyos\mod\items::add($db, $vv['now_level']['cfg.level'], $new);
             $vv['warn'] .= (!empty($vv['warn']) ? '<br/>' : '' ) . 'Запись добавлена';
 
             if (isset($_GET['goto_start']))
@@ -105,16 +126,14 @@ if (1 == 1) {
         // \Nyos\mod\items::$show_sql = true;
         // $r = \Nyos\mod\items::edit($db,);
         // $r = \Nyos\mod\items::saveEdit($db, $_REQUEST['save_id'], $vv['folder'], $vv['now_level'], $d);
-        
-        $ee = \f\db\db_edit2($db, 'mod_'.$_REQUEST['level'], [ 'id' => $_REQUEST['save_id'] ], $d );
+
+        $ee = \f\db\db_edit2($db, 'mod_' . $_REQUEST['level'], ['id' => $_REQUEST['save_id']], $d);
         // \f\pa($ee);
 
         if (isset($r['status']) && $r['status'] == 'ok') {
-            $vv['warn'] .= ( !empty($vv['warn']) ? '<br/>' : '' ) . $r['html'];
+            $vv['warn'] .= (!empty($vv['warn']) ? '<br/>' : '' ) . $r['html'];
         }
-        
-    } 
-    elseif (isset($_GET['refresh_cash']) && $_GET['refresh_cash'] == 'da') {
+    } elseif (isset($_GET['refresh_cash']) && $_GET['refresh_cash'] == 'da') {
         \Nyos\mod\items::clearCash($vv['folder']);
     }
 

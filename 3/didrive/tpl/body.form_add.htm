@@ -14,11 +14,17 @@
         {% endfor %}
     {% endif %}
 
-    <button class="btn btn-success btn-xs" id='but_add' style='float:right; {% if edit_item != 'x' %} display:none; {% endif %}' onclick="$('#addform1').show('slow');
-            $(this).hide();
-            $('#i_head').focus();">
+    <button class="btn btn-success btn-xs" 
+            style="float:right; {% if edit_item != 'x' %} display:none; {% endif %}" 
+            id='but_add' 
+            onclick="$('#addform1').show('slow');
+                    $(this).hide();
+                    $('#i_head').focus();"
+            >
         Добавить
     </button>
+
+    <br clear="all" />
 
     {#% set run_cfg_edit = false %#}
     {#% if list[edit_item] is defined %}

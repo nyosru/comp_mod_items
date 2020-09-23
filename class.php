@@ -2856,14 +2856,16 @@ class items {
 
     /**
      * 2007 версия
-     * @param type $db
-     * @param string $module
-     * @param array $items_edit
+     * @param класс $db
+     * @param строка $module
+     * @param массив $items_edit
      * [ 'id' = 123 ]
-     * @param type $new_dop
+     * @param массив $new_dop
      * [ 'param' => 'new', 'param2' => 'new' ]
+     * @param строка $return
+     * kolvo - вернёт количество задетых строк
      */
-    public static function edit($db, string $module, array $items_edit, $new_dop = []) {
+    public static function edit($db, string $module, array $items_edit, $new_dop = [], $return = null ) {
 
         $for_sql = [];
         $nn = 1;
@@ -2896,11 +2898,17 @@ class items {
         if (self::$show_sql === true)
             \f\pa($for_sql);
 
-        $e = $ff->execute($for_sql);
+        $ff->execute($for_sql);
 
         self::$show_sql = false;
 
-        \f\pa($e);
+        // \f\pa($e);
+        
+        if( $return == 'kolvo' ){
+            return $ff->rowCount();
+        }
+            
+        return ;
         
     }
 

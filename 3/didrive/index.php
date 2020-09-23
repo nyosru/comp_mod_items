@@ -122,17 +122,37 @@ if (1 == 1) {
         if (!empty($_FILES))
             $d['files'] = $_FILES;
 
-        // \f\pa($d);
+         // \f\pa($d);
         // \Nyos\mod\items::$show_sql = true;
         // $r = \Nyos\mod\items::edit($db,);
         // $r = \Nyos\mod\items::saveEdit($db, $_REQUEST['save_id'], $vv['folder'], $vv['now_level'], $d);
 
-        $ee = \f\db\db_edit2($db, 'mod_' . $_REQUEST['level'], ['id' => $_REQUEST['save_id']], $d);
+         if( isset(\Nyos\Nyos::$menu[$_REQUEST['level']]) ){
+         
+             //\f\pa( \Nyos\Nyos::$menu[$_REQUEST['level']] );
+             
+             foreach( $d as $k=>$v ){
+                 if( isset(\Nyos\Nyos::$menu[$_REQUEST['level']][$k]['name_rus']) ){
+                     $d2[$k] = $v;
+                 }
+             }
+             
+             
+         }else{
+             $d2 = $d;
+         }
+         
+         //\f\pa($d2);
+         
+        $ee = \f\db\db_edit2($db, 'mod_' . \f\translit($_REQUEST['level'],'uri2'), ['id' => $_REQUEST['save_id']], $d2);
         // \f\pa($ee);
 
         if (isset($r['status']) && $r['status'] == 'ok') {
             $vv['warn'] .= (!empty($vv['warn']) ? '<br/>' : '' ) . $r['html'];
         }
+        
+        // die();
+        
     } elseif (isset($_GET['refresh_cash']) && $_GET['refresh_cash'] == 'da') {
         \Nyos\mod\items::clearCash($vv['folder']);
     }

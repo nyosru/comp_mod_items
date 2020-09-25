@@ -69,6 +69,14 @@ try {
 
         try {
 
+//                   if( !empty($_REQUEST['dop_name']) && !empty($_REQUEST['new_val']) ){
+//                        $in_sql_pole = addslashes($_REQUEST['dop_name']);
+//                        $sql0_v[':new_val'] = $_REQUEST['new_val'];
+//                    }else{
+//                        $in_sql_pole = 'status';
+//                        $sql0_v[':new_val'] = 'delete';
+//                    }
+            
             if (\Nyos\Nyos::$db_type == 'pg') {
                 $ff = $db->prepare('UPDATE "mod_' . \f\translit($_REQUEST['ajax_module'], 'uri2') . '" SET "' . \f\translit($_REQUEST['dop_name'], 'uri2') . '" = :val WHERE "id" = :id ');
             } else {
@@ -77,7 +85,7 @@ try {
 
             $ff->execute(
                     array(
-                        ':id' => $_REQUEST['id'],
+                        ':id' => $_REQUEST['item_id'] ?? $_REQUEST['id'],
                         ':val' => $_REQUEST['new_val']
                     )
             );

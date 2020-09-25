@@ -2888,7 +2888,7 @@ class items {
             }
         }
 
-        $sql = 'UPDATE `mod_' . $module . '` SET ' . $sql2 . ' WHERE ' . $sql1 . ' ;';
+        $sql = 'UPDATE `mod_' . \f\translit($module,'uri2') . '` SET ' . $sql2 . ' WHERE ' . $sql1 . ' ;';
 
         if (self::$show_sql === true)
             \f\pa($sql);
@@ -2951,7 +2951,7 @@ class items {
     public static function adds($db, string $module, array $data, $params_in = []) {
 
         // \f\pa( [ $module, $data ] ,2);
-        \f\pa(['items', __FUNCTION__, $module], 2);
+        // \f\pa(['items', __FUNCTION__, $module], 2);
 
         if (empty($data))
             throw new \Exception('пустst данные'); // return false;
@@ -2974,7 +2974,7 @@ class items {
         if (!empty(self::$time_limit))
             \f\timer_start(456);
 
-        \f\pa(\Nyos\Nyos::$menu[$module], 2);
+        // \f\pa(\Nyos\Nyos::$menu[$module], 2);
 
         if (
                 (

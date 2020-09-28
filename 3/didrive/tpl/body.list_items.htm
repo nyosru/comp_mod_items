@@ -60,7 +60,6 @@
                             {# if skip == true %}{% else %}{% endif % #}
 
                             {% if v1.status == 'delete' %}
-                            {% if 1 == 2 %}
 
                                 <tr id='item_id_{$v1.id}a' >
                                     <td class="va-top">{{ v1.id }}</td>
@@ -80,7 +79,6 @@
                                     </td>
                                 </tr>
 
-                            {% endif %}
                             {% else %}
 
                                 <tr id='item_id_{{ v1.id }}' {# % if v1.status == 'delete' %} style="display:none" {% endif % #} >

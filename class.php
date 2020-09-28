@@ -157,6 +157,7 @@ class items {
      * @var type 
      */
     public static $liked_and = [];
+    public static $liked_or = [];
 
     /**
      * массив переменных для запроса
@@ -1275,6 +1276,51 @@ class items {
                         }
 
                         self::$search = [];
+                    }
+
+                if (1 == 1)
+                    if (!empty(self::$liked_or )) {
+
+                        // \f\pa(self::$liked_and);
+
+                        $where2 = '';
+                        
+                        foreach (self::$liked_or as $k => $v) {
+
+                            if (is_array($v)) {
+
+                                $w2 = '';
+                                foreach ($v as $v1) {
+
+                                    self::$var_ar_for_1sql[':v' . $n] = '%' . $v1 . '%';
+
+                                    if (isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
+                                        $w2 .= (!empty($w2) ? ' OR ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" LIKE :v' . $n . ' ';
+                                    } else {
+                                        $w2 .= (!empty($w2) ? ' OR ' : '' ) . ' LOWER(`' . \f\translit($k, 'uri2') . '`) LIKE :v' . $n . ' ';
+                                    }
+                                    $n++;
+                                }
+                                
+                                $where2 .= (!empty($where2) ? ' OR ' : '' ) . ' ' . $w2 . ' ';
+                                $w2 = '';
+                                $n++;
+                            } else {
+
+                                self::$var_ar_for_1sql[':v' . $n] = '%' . strtolower($v) . '%';
+                                if (isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
+                                    $where2 .= (!empty($where2) ? ' OR ' : '' ) . ' "' . \f\translit($k, 'uri2') . '" LIKE :v' . $n . ' ';
+                                } else {
+                                    $where2 .= (!empty($where2) ? ' OR ' : '' ) . ' LOWER(`' . \f\translit($k, 'uri2') . '`) LIKE :v' . $n . ' ';
+                                }
+                                $n++;
+                            }
+                        }
+
+                        $where .= (!empty($where) ? ' AND ' : '' ) . ' ( '.$where2.' ) ';
+                        
+                        $where2 = '';
+                        self::$liked_or = [];
                     }
 
                 if (1 == 1)

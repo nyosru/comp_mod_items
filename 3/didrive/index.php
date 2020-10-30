@@ -186,6 +186,7 @@ if (1 == 1) {
         if (isset($v['import_1_module']) && empty($vv['v_data'][$v['import_1_module']])) {
             // $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::getItems($db, $vv['folder'], $v['import_1_module']);
             // $vv['v_data'][$v['import_1_module']] = Nyos\mod\items::getItemsSimple3($db, $v['import_1_module']);
+  /*          
             if (!empty($v['import_1_up']) && !empty($v['import_1_id']) && !empty($v['import_1_show'])) {
 
                 $table = 'mod_' . \f\translit($v['import_1_module'], 'uri2');
@@ -229,7 +230,7 @@ if (1 == 1) {
                     ) concat_' . $v['import_1_show'] . ' ';
                 }
             }
-
+*/
             $vv['v_data'][$v['import_1_module']] = \Nyos\mod\items::get($db, $v['import_1_module'], 'show', 'id_id');
 
 //        \f\pa($v['import_1_module']);

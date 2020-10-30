@@ -6,7 +6,36 @@ composer require didrive_mod/items
 
 
 
+---- изменение по вводу в инпут ---------
 
+  <input type="number" min="0" max="99" size="3"
+                                                           
+                                                           class="form-control didrive__items__new_edit3"
+                                                           value="{{ v1.sort }}"
+
+// или таблица
+                                                           aj_table="mod_table"
+                                                           aj_s="{{ creatSecret( "mod_table"~v1.id ) }}"
+
+// или модуль ( добавится мод_ )
+                                                           aj_mod="{{ get.level }}"
+                                                           aj_s="{{ creatSecret( get.level~v1.id ) }}"
+
+                                                           aj_id="{{ v1.id }}"
+
+                                                           var1="id"
+                                                           var1v="{{ v1.id }}"
+
+                                                           xvar2="date"
+                                                           xvar2v="{{ get.date }}"
+
+// что за поле редактируем                                                           
+                                                           var_edit="sort"
+
+// если есть эта запись то только редактируем и не добавляем
+                                                           no_new_save="da"
+
+                                                           />                         
 
 -------------
 добавление в структуру новых полей (пока только строки) 

@@ -15,7 +15,9 @@ try {
 
 // \f\pa($_REQUEST);
 
-    if (!empty($_REQUEST['aj_id']) && !empty($_REQUEST['aj_s']) && !empty($_REQUEST['aj_table']) && \Nyos\Nyos::checkSecret($_REQUEST['aj_s'], $_REQUEST['aj_table'] . $_REQUEST['aj_id']) !== false) {
+    if (!empty($_REQUEST['aj_id']) && !empty($_REQUEST['aj_s']) && !empty($_REQUEST['aj_mod']) && \Nyos\Nyos::checkSecret($_REQUEST['aj_s'], $_REQUEST['aj_mod'] . $_REQUEST['aj_id']) !== false) {
+        
+    }elseif (!empty($_REQUEST['aj_id']) && !empty($_REQUEST['aj_s']) && !empty($_REQUEST['aj_table']) && \Nyos\Nyos::checkSecret($_REQUEST['aj_s'], $_REQUEST['aj_table'] . $_REQUEST['aj_id']) !== false) {
         
     } else {
         \f\end3('что то пошло не так', false, [__FILE__, __LINE__]);
@@ -39,29 +41,36 @@ try {
 
     for ($e = 1; $e <= 10; $e++) {
         if (isset($_REQUEST['var' . $e]) && isset($_REQUEST['var' . $e . 'v'])) {
+            
             $dop_sql .= (!empty($dop_sql) ? ' AND ' : '' ) . ' `' . addslashes($_REQUEST['var' . $e]) . '` = :v' . $e . ' ';
             $v1[':v' . $e] = $_REQUEST['var' . $e . 'v'];
-
             $ar_in[$_REQUEST['var' . $e]] = $_REQUEST['var' . $e . 'v'];
+            
         }
     }
 
-    $ff = $db->prepare('UPDATE `' . addslashes($_REQUEST['aj_table']) . '` SET `' . $_REQUEST['var_edit'] . '` = :new_val WHERE ' . $dop_sql);
+    $table = !empty($_REQUEST['aj_mod']) ? 'mod_'.\f\translit($_REQUEST['aj_mod'], 'uri2') : addslashes($_REQUEST['aj_table']);
+    
+    $sql = 'UPDATE `' . $table . '` SET `' . $_REQUEST['var_edit'] . '` = :new_val WHERE ' . $dop_sql;
+    
+    $ff = $db->prepare('UPDATE `' . $table . '` SET `' . $_REQUEST['var_edit'] . '` = :new_val WHERE ' . $dop_sql);
+    
     $ff->execute($v1);
 
     $ss = $ff->rowCount();
     // \f\pa($ss);
     // если нет задетых строк редактированием
-    if ($ss == 0) {
+    if ($ss == 0 && !isset($_REQUEST['no_new_save']) ) {
 
-        \f\db\db2_insert($db, $_REQUEST['aj_table'], $ar_in);
-        f\end2('ок добавлено', true);
+        \f\db\db2_insert($db, $table, $ar_in);
+        f\end2('ок добавлено', true,[ 'sql' => $sql , 'vars' => $v1 , 'table' => $table, 'ar_in' => $ar_in ]);
     }
     // если есть задетые строки запросом
     else {
 
-        f\end2('ок изменено', true);
+        f\end2('ок изменено', true,[ 'sql' => $sql , 'vars' => $v1 ]);
     }
+    
 } catch (\Exception $exc) {
 
 //    echo '<pre>';

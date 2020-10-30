@@ -1,9 +1,9 @@
 {% spaceless %}
 
     {#<p>Сортировка от большего к меньшему, при изменении рамка должна стать зелёной, порядок обновится после обновления страницы</p>#}
-    
-    
-    
+
+
+
     {# <!-- p>Удаление помеченных пунктов "удалить" происходит в 00:05</p --> #}
     {# <p>После внесения изменений в видимость записей, кликните ссылку > <a href="?level={$smarty.get.level}&refresh_cash=da">обновить данные на сайте</a></p> #}
 
@@ -87,15 +87,15 @@
                                         {% endif %}
 
                                         <span class="action">
-                                            
-                                            
-                                        {% if 1 == 1 %}
-                                            <a href="?level={{ get.level }}&edit_id={{ v1.id }}" 
-                                               title="Редактировать"
-                                               class="xbtn xbtn-xs xbtn-info" style="float:right;" ><span class="fa fa-edit"></span></a>
-                                        {% endif %}
-                                            
-                                            
+
+
+                                            {% if 1 == 1 %}
+                                                <a href="?level={{ get.level }}&edit_id={{ v1.id }}" 
+                                                   title="Редактировать"
+                                                   class="xbtn xbtn-xs xbtn-info" style="float:right;" ><span class="fa fa-edit"></span></a>
+                                                {% endif %}
+
+
                                             <div onclick='$("#but_{{ v1.id }}").show();' >
 
                                                 <b>Статус:</b>
@@ -158,6 +158,38 @@
                                                         s='{{ creatSecret(v1.id) }}' for_res="shows{{ v1.id }}" 
                                                         value="{{ v1.sort }}" 
                                                         />
+                                                </span>
+                                            </label>
+                                        {% endif %}
+                                        {% if 1 == 1 %}
+                                            <label style="margin-left:15px;" >
+                                                Сортировка <span>
+                                                    {#<input 
+                                                        type="number" min="0" max="99" class="edit_pole edit_sort" 
+                                                        rel="{{ v1.id }}" name="sort" 
+                                                        s='{{ creatSecret(v1.id) }}' for_res="shows{{ v1.id }}" 
+                                                        value="{{ v1.sort }}" 
+                                                        />#}
+                                                    <input type="number" min="0" max="99" size="3"
+                                                           
+                                                           class="form-control didrive__items__new_edit3"
+                                                           value="{{ v1.sort }}"
+
+                                                           aj_mod="{{ get.level }}"
+                                                           aj_id="{{ v1.id }}"
+                                                           aj_s="{{ creatSecret( get.level~v1.id ) }}"
+
+                                                           var1="id"
+                                                           var1v="{{ v1.id }}"
+
+                                                           xvar2="date"
+                                                           xvar2v="{{ get.date }}"
+
+                                                           no_new_save="da"
+                                                           
+                                                           var_edit="sort"
+
+                                                           />                                                    
                                                 </span>
                                             </label>
                                         {% endif %}

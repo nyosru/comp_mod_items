@@ -61,24 +61,6 @@
 
                             {% if v1.status == 'delete' %}
 
-                                <tr id='item_id_{$v1.id}a' >
-                                    <td class="va-top">{{ v1.id }}</td>
-                                    <td class="va-top" >
-
-                                        {# % if now_level.head_skip is defined && now_level.head_skip == 'da' %}
-                                        {else #}
-
-                                        {% if v1.head is defined %}
-                                            {{ v1.head }}
-                                        {% endif %}
-
-                                        {# /if #}
-                                        <br/>
-                                        Удалено {# <button onclick="$('#item_id_{$v1.id}').toggle('slow'); return false;">показать/скрыть</button> #}
-
-                                    </td>
-                                </tr>
-
                             {% else %}
 
                                 <tr id='item_id_{{ v1.id }}' {# % if v1.status == 'delete' %} style="display:none" {% endif % #} >

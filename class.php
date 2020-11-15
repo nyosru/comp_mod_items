@@ -1279,12 +1279,12 @@ class items {
                     }
 
                 if (1 == 1)
-                    if (!empty(self::$liked_or )) {
+                    if (!empty(self::$liked_or)) {
 
                         // \f\pa(self::$liked_and);
 
                         $where2 = '';
-                        
+
                         foreach (self::$liked_or as $k => $v) {
 
                             if (is_array($v)) {
@@ -1301,7 +1301,7 @@ class items {
                                     }
                                     $n++;
                                 }
-                                
+
                                 $where2 .= (!empty($where2) ? ' OR ' : '' ) . ' ' . $w2 . ' ';
                                 $w2 = '';
                                 $n++;
@@ -1317,8 +1317,8 @@ class items {
                             }
                         }
 
-                        $where .= (!empty($where) ? ' AND ' : '' ) . ' ( '.$where2.' ) ';
-                        
+                        $where .= (!empty($where) ? ' AND ' : '' ) . ' ( ' . $where2 . ' ) ';
+
                         $where2 = '';
                         self::$liked_or = [];
                     }
@@ -2911,7 +2911,7 @@ class items {
      * @param строка $return
      * kolvo - вернёт количество задетых строк
      */
-    public static function edit($db, string $module, array $items_edit, $new_dop = [], $return = null ) {
+    public static function edit($db, string $module, array $items_edit, $new_dop = [], $return = null) {
 
         $for_sql = [];
         $nn = 1;
@@ -2934,7 +2934,7 @@ class items {
             }
         }
 
-        $sql = 'UPDATE `mod_' . \f\translit($module,'uri2') . '` SET ' . $sql2 . ' WHERE ' . $sql1 . ' ;';
+        $sql = 'UPDATE `mod_' . \f\translit($module, 'uri2') . '` SET ' . $sql2 . ' WHERE ' . $sql1 . ' ;';
 
         if (self::$show_sql === true)
             \f\pa($sql);
@@ -2949,13 +2949,12 @@ class items {
         self::$show_sql = false;
 
         // \f\pa($e);
-        
-        if( $return == 'kolvo' ){
+
+        if ($return == 'kolvo') {
             return $ff->rowCount();
         }
-            
-        return ;
-        
+
+        return;
     }
 
     /**
@@ -3007,6 +3006,7 @@ class items {
 
 
 
+
             
 // \f\pa(\Nyos\Nyos::$menu);
 // return false;
@@ -3046,6 +3046,9 @@ class items {
                         $polya[$k1] = 1;
                 }
             }
+
+//            if (!empty($polya[$k1]))
+//                $polya['add_dt'] = 1;
 
             try {
 

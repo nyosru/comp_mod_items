@@ -46,19 +46,19 @@
             {#1111111#}
             {#{{ pa(v_data[v.import_1_module]) }}#}
 
-            {% for k1, v1 in v_data[v.import_1_module] if v.import_1_up is defined and v1[v.import_1_up] is empty %} 
+            {% for k1, v1 in v_data[v.import_1_module] if ( v.import_1_up is defined and v1[v.import_1_up] is empty ) or v.import_1_up is not defined %} 
                 <option 
 
                     {% if v.import_1_value is defined %}
                         value='{{ v1[v.import_1_value] }}' 
                     {% else %}
-                        value='{{ k1 }}'
+                        value='{{ v1.id }}'
 
-                        {% if edit_item is defined and list[edit_item][k] is defined and list[edit_item][k] == k1 %}
+                        {% if edit_item is defined and list[edit_item][k] is defined and list[edit_item][k] == v1.id %}
                             selected="selected" 
-                        {% elseif get.var[k] is defined and get.var[k] == k1 %}
+                        {% elseif get.var[k] is defined and get.var[k] == v1.id %}
                             selected="selected" 
-                        {% elseif get['edit__'~k] is defined and get['edit__'~k] == k1 %}
+                        {% elseif get['edit__'~k] is defined and get['edit__'~k] == v1.id %}
                             selected="selected" 
                         {% endif %} 
 

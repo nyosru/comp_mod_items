@@ -2918,9 +2918,27 @@ class items {
 
         $sql1 = '';
         foreach ($items_edit as $k => $v) {
-            $sql1 .= (!empty($sql1) ? ' AND ' : '' ) . ' `' . addslashes($k) . '` = :v' . $nn . ' ';
-            $for_sql[':v' . $nn] = $v;
-            $nn++;
+
+            if (is_array($v) && !empty($v)) {
+                
+                $sql10 = '';
+                
+                foreach ($v as $k1 => $v1) {
+
+                    $sql10 .= (!empty($sql10) ? ' AND ' : '' ) . ' `' . addslashes($k1) . '` = :v' . $nn . ' ';
+                    $for_sql[':v' . $nn] = $v1;
+                    $nn++;
+                    
+                }
+                
+                $sql1 .= (!empty($sql1) ? ' OR ' : '' ) . ' ( '.$sql10.' ) ';
+                
+            } else {
+
+                $sql1 .= (!empty($sql1) ? ' AND ' : '' ) . ' `' . addslashes($k) . '` = :v' . $nn . ' ';
+                $for_sql[':v' . $nn] = $v;
+                $nn++;
+            }
         }
 
         $sql2 = '';
@@ -3046,9 +3064,6 @@ class items {
                         $polya[$k1] = 1;
                 }
             }
-
-//            if (!empty($polya[$k1]))
-//                $polya['add_dt'] = 1;
 
             try {
 

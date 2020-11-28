@@ -51,16 +51,23 @@ try {
 
                         try {
 
-                            // $ff = $db->prepare('ALTER TABLE `'.$table.'` ADD `'.addslashes($k).'` VARCHAR(250) NULL DEFAULT NULL FIRST, ADD INDEX (`'.addslashes($k).'`);');
-                            $ff = $db->prepare('ALTER TABLE `' . $table . '` ADD `' . addslashes($k) . '` VARCHAR(250) NULL DEFAULT NULL FIRST ;');
+                            if (!empty($v['type']) && $v['type'] == 'select') {
+                                $ff = $db->prepare('ALTER TABLE `' . $table . '` ADD `' . addslashes($k) . '` INT(9) NULL DEFAULT NULL ;');
+                            } 
+                            //
+                            elseif ((!empty($v['type']) && $v['type'] == 'date') || (!empty($v['db_type']) && $v['db_type'] == 'date')) {
+                                $ff = $db->prepare('ALTER TABLE `' . $table . '` ADD `' . addslashes($k) . '` DATE NULL DEFAULT NULL ;');
+                            } 
+                            //
+                            else {
+                                // $ff = $db->prepare('ALTER TABLE `'.$table.'` ADD `'.addslashes($k).'` VARCHAR(250) NULL DEFAULT NULL FIRST, ADD INDEX (`'.addslashes($k).'`);');
+                                $ff = $db->prepare('ALTER TABLE `' . $table . '` ADD `' . addslashes($k) . '` VARCHAR(250) NULL DEFAULT NULL FIRST ;');
+                            }
                             $ff->execute();
-                            
                         } catch (\Exception $ex) {
-                            
-                            \f\pa($ex);
-                            
-                        }
 
+                            \f\pa($ex);
+                        }
                     }
 //                    else{
 //                        echo '<br/>'.__LINE__.' есть поле';

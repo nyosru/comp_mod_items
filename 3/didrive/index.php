@@ -137,16 +137,20 @@ if (1 == 1) {
                  }
              }
              
-             
          }else{
              $d2 = $d;
          }
-         
-         //\f\pa($d2);
-         
-        $ee = \f\db\db_edit2($db, 'mod_' . \f\translit($_REQUEST['level'],'uri2'), ['id' => $_REQUEST['save_id']], $d2);
-        // \f\pa($ee);
 
+         // \f\pa($d2,2,'','d2');
+        // \f\pa( [\f\db_table($_REQUEST['level']), ['id' => $_REQUEST['save_id']], $d2 ] );
+         
+        $ee = \Nyos\mod\items::edit($db, $_REQUEST['level'], ['id' => $_REQUEST['save_id']], $d2);
+         
+        // $ee = \f\db\db_edit2($db, 'mod_' . \f\translit($_REQUEST['level'],'uri2'), ['id' => $_REQUEST['save_id']], $d2);
+         // \f\pa($ee);
+
+        // die();
+        
         if (isset($r['status']) && $r['status'] == 'ok') {
             $vv['warn'] .= (!empty($vv['warn']) ? '<br/>' : '' ) . $r['html'];
         }

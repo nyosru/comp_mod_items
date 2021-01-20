@@ -1343,14 +1343,14 @@ class items {
                 if (isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
                     $sql = 'SELECT ' .
                             ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
-                            ' FROM "mod_' . \f\translit($module, 'uri2') . '" as "items" '
+                            ' FROM "'. \f\db_table($module) . '" as "items" '
                             . ( self::$joins ?? '' )
                             . (!empty($where) ? ' WHERE ' . $where : '' )
                     ;
                 } else {
                     $sql = 'SELECT ' .
                             ( (!empty(self::$sql_select_vars) && is_array(self::$sql_select_vars) ) ? implode(',', self::$sql_select_vars) : ' * ' ) .
-                            ' FROM `mod_' . \f\translit($module, 'uri2') . '` as `items` '
+                            ' FROM `'. \f\db_table($module) . '` as `items` '
                             . ( self::$joins ?? '' )
                             . (!empty($where) ? 'WHERE ' . $where . ( self::$where_add ?? '' ) : '')
                     ;
@@ -1380,7 +1380,6 @@ class items {
 
                 if (self::$show_sql === true)
                     \f\pa($sql, '', '', '$sql');
-
 
 //                    \f\pa($sql, '', '', '$sql');
 //                    return [];
@@ -2163,16 +2162,16 @@ class items {
 
             if (isset(\Nyos\nyos::$db_type) && \Nyos\nyos::$db_type == 'pg') {
                 $sql_setup .= // ' , `head` varchar(150) DEFAULT NULL '
-                        ' , "add_dt" timestamp NULL DEFAULT NULL '
-                        . ' , "add_who" integer NULL DEFAULT NULL '
-                        . ' , "sort" integer NOT NULL DEFAULT \'50\' '
+//                        ' , "add_dt" timestamp NULL DEFAULT NULL '
+//                        . ' , "add_who" integer NULL DEFAULT NULL '
+                         ' , "sort" integer NOT NULL DEFAULT \'50\' '
                         . ' , "status" text NOT NULL DEFAULT \'show\' '
                         . ' ); ';
             } else {
                 $sql_setup .= // ' , `head` varchar(150) DEFAULT NULL '
-                        ' , `add_dt` datetime DEFAULT NULL '
-                        . ' , `add_who` int(9) DEFAULT NULL '
-                        . ' , `sort` int(2) NOT NULL DEFAULT 50 '
+                        // ' , `add_dt` datetime DEFAULT NULL '
+                        // . ' , `add_who` int(9) DEFAULT NULL '
+                         ' , `sort` int(2) NOT NULL DEFAULT 50 '
                         . ' , `status` set( \'show\', \'hide\', \'delete\' ) NOT NULL DEFAULT \'show\' '
                         . ' ,  UNIQUE (`id`)  '
                         . ' ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ';
@@ -2920,19 +2919,17 @@ class items {
         foreach ($items_edit as $k => $v) {
 
             if (is_array($v) && !empty($v)) {
-                
+
                 $sql10 = '';
-                
+
                 foreach ($v as $k1 => $v1) {
 
                     $sql10 .= (!empty($sql10) ? ' AND ' : '' ) . ' `' . addslashes($k1) . '` = :v' . $nn . ' ';
                     $for_sql[':v' . $nn] = $v1;
                     $nn++;
-                    
                 }
-                
-                $sql1 .= (!empty($sql1) ? ' OR ' : '' ) . ' ( '.$sql10.' ) ';
-                
+
+                $sql1 .= (!empty($sql1) ? ' OR ' : '' ) . ' ( ' . $sql10 . ' ) ';
             } else {
 
                 $sql1 .= (!empty($sql1) ? ' AND ' : '' ) . ' `' . addslashes($k) . '` = :v' . $nn . ' ';
@@ -2952,7 +2949,7 @@ class items {
             }
         }
 
-        $sql = 'UPDATE `mod_' . \f\translit($module, 'uri2') . '` SET ' . $sql2 . ' WHERE ' . $sql1 . ' ;';
+        $sql = 'UPDATE `' . \f\db_table($module) . '` SET ' . $sql2 . ' WHERE ' . $sql1 . ' ;';
 
         if (self::$show_sql === true)
             \f\pa($sql);
@@ -3005,6 +3002,92 @@ class items {
     }
 
     /**
+     * сравниваем массивы и возвращаем значение из массива 2 если они изменены
+     * @param array $ar1
+     * @param array $ar2
+     * @param type $diff_polya
+     * @return boolean|array
+     */
+    public static function array_diff(array $ar1, array $ar2, $diff_polya = []) {
+
+        if (empty($diff_polya))
+            return false;
+
+        $diff_new = [];
+
+        foreach ($diff_polya as $v) {
+            if (isset($ar1[$v]) && isset($ar2[$v]) && $ar1[$v] != $ar2[$v]) {
+
+                // \f\pa( [ $ar1[$v], $ar2[$v] ] );
+                $diff_new[$v] = $ar2[$v];
+            }
+        }
+
+        if (empty($diff_new)) {
+            return false;
+        } else {
+            return $diff_new;
+        }
+
+    }
+
+    public static function addsAndUpdate($db, string $module, array $items_add, string $key_pole, array $polya_for_diff) {
+
+
+        // \f\pa($items_add, 2, '', '$items_add');
+
+        $items_now = self::get($db, $module);
+        // \f\pa($items_now, 2, '', '$items_now');
+
+        $items_now2 = [];
+        foreach ($items_now as $v) {
+            $items_now2[$v[$key_pole]] = $v;
+        }
+
+        $items_now = [];
+
+        $it_add = [];
+        $ee = 0;
+
+
+        $db->beginTransaction();
+
+        foreach ($items_add as $it) {
+
+            if (!isset($items_now2[$it[$key_pole]])) {
+                $it_add[] = $it;
+            } else {
+
+                $diff = self::array_diff($items_now2[$it[$key_pole]], $it, $polya_for_diff);
+
+                if ($diff !== false) {
+                    //\f\pa($diff, 2, '', '$diff ' . $it['item_id']);
+                    // if ($ee < 10) {
+                    //echo '<br/>' . __FILE__ . ' #' . __LINE__;
+                    //\Nyos\mod\items::$show_sql = true;
+                    self::edit($db, $module, ['id' => $items_now2[$it[$key_pole]]['id']], $diff);
+                        $ee++;
+//                    }
+                }
+
+//            if( $it != $items_now2[$it['item_id']] ){
+//                \f\pa( [ $it , $items_now2[$it['item_id']] ],2,'','$it');
+//            }
+            }
+        }
+
+        // \f\pa($it_add, 2, '', '$it_add');
+        // \f\pa('добавлено новых записей ' . sizeof($it_add));
+
+        if (!empty($it_add))
+            self::adds($db, $module, $it_add);
+
+        $db->commit();
+
+        return \f\end3('провели добавление и замены в бд', true, ['added' => sizeof($it_add), 'edited' => $ee ]);
+    }
+
+    /**
      * 
      * @param type $db
      * @param string $mod_name
@@ -3018,9 +3101,6 @@ class items {
 
         if (empty($data))
             throw new \Exception('пустst данные'); // return false;
-
-
-
 
 
 
@@ -3050,6 +3130,12 @@ class items {
 
             $polya = [];
 
+            if( !isset($params_in['add_dt']) )
+            $params_in['add_dt'] = date('Y-m-d H:i:s');
+            
+            if( !isset($params_in['add_who']) && !empty( $_SESSION['now_user_di']['id'] ) )
+            $params_in['add_who'] = $_SESSION['now_user_di']['id'];
+            
             if (!empty($params_in))
                 foreach ($params_in as $k => $v) {
                     if (isset(\Nyos\Nyos::$menu[$module][$k]['name_rus']))

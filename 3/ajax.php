@@ -283,7 +283,6 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'remove_item') {
             $ff = $db->prepare($sql);
             $ff->execute($var_in);
         }
-        
     }
 
     // новая версия 2007
@@ -300,6 +299,28 @@ elseif (isset($_POST['action']) && $_POST['action'] == 'remove_item') {
 elseif (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit_pole') {
 
     try {
+
+        \Nyos\Nyos::getMenu();
+
+        if (isset(\Nyos\Nyos::$menu[$_REQUEST['module']])) {
+
+            if (isset(\Nyos\Nyos::$menu[$_REQUEST['module']]['type']) && \Nyos\Nyos::$menu[$_REQUEST['module']]['type'] == 'items' && isset(\Nyos\Nyos::$menu[$_REQUEST['module']]['version']) && \Nyos\Nyos::$menu[$_REQUEST['module']]['version'] == 3) {
+
+                $new_dop = [];
+
+                for ($ww = 1; $ww <= 10; $ww++) {
+                    if (isset($_REQUEST['new_dop' . $ww . 'var']) && isset($_REQUEST['new_dop' . $ww . 'val'])) {
+                        $new_dop[$_REQUEST['new_dop' . $ww . 'var']] = $_REQUEST['new_dop' . $ww . 'val'];
+                    }
+                }
+
+                \Nyos\mod\items::edit($db, $_REQUEST['module'], ['id' => $_REQUEST['aj_id']], $new_dop);
+
+                \f\end2('sdfsdf', true, ['sdf' => \Nyos\Nyos::$menu[$_REQUEST['module']]]);
+            }
+        }
+
+        \f\end2('sdf', false, ['menu' => \Nyos\Nyos::$menu]);
 
         if (!empty($_REQUEST['clear_cash']))
             \f\Cash::deleteKeyPoFilter($_REQUEST['clear_cash']);

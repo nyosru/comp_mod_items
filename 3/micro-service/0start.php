@@ -26,7 +26,8 @@ define('IN_NYOS_PROJECT', true);
 
 require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 //\f\timer::start();
-require($_SERVER['DOCUMENT_ROOT'] . '/all/ajax.start.php');
+// require($_SERVER['DOCUMENT_ROOT'] . '/all/ajax.start.php');
+require($_SERVER['DOCUMENT_ROOT'] . '/vendor/didrive/base/all/ajax.start.php');
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (!empty($input) && empty($_REQUEST))
